@@ -7,11 +7,6 @@ import (
 
 type Config struct {
 	ServerPort string
-	DBUser     string
-	DBPassword string
-	DBName     string
-	DBHost     string
-	DBPort     string
 }
 
 func LoadConfig() (*Config, error) {
@@ -30,11 +25,6 @@ func LoadConfig() (*Config, error) {
 	viper.AutomaticEnv()
 	config := &Config{
 		ServerPort: viper.GetString("WEB.PORT"),
-		DBUser:     viper.GetString("DB.USERNAME"),
-		DBPassword: viper.GetString("DB.PASSWORD"),
-		DBName:     viper.GetString("DB.NAME"),
-		DBHost:     viper.GetString("DB.HOST"),
-		DBPort:     viper.GetString("DB.PORT"),
 	}
 	return config, nil
 }
