@@ -45,5 +45,10 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.GCE_USER }}@${{ secrets.GCE_HOST }} << 'EOF'
             docker pull ${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
             docker rm timewise-api --force || true
-            docker run -d --name timewise-api -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
+            docker run \
+              --name timewise-api \
+              -dp 8080:8080 \
+              -e ENV=production \
+              -v /home/khanhhn.hoang/env_files/.api_env:/.env \
+              ${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
           EOF
