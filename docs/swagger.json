@@ -1,0 +1,10 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Timewise API",
+        "title": "timewise-api",
+        "contact": {},
+        "version": "1.0"
+    },
+    "paths": {}
+}

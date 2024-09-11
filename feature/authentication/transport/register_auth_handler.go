@@ -1,4 +1,4 @@
-package authentication
+package transport
 
 import (
 	"github.com/gofiber/fiber/v2"
