@@ -7,7 +7,7 @@ require (
 	github.com/gofiber/swagger v1.1.0
 	github.com/spf13/viper v1.19.0
 	github.com/swaggo/swag v1.16.3
-	github.com/timewise-team/timewise-models v0.0.0-20240911095501-dadd00ca442d
+	github.com/timewise-team/timewise-models v0.0.0-20240913150041-469f44076dcb
 )
 
 require (
