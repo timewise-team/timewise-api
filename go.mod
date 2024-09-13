@@ -7,6 +7,7 @@ require (
 	github.com/gofiber/swagger v1.1.0
 	github.com/spf13/viper v1.19.0
 	github.com/swaggo/swag v1.16.3
+	github.com/timewise-team/timewise-models v0.0.0-20240911095501-dadd00ca442d
 )
 
 require (
@@ -19,6 +20,8 @@ require (
 	github.com/go-openapi/swag v0.23.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
+	github.com/jinzhu/gorm v1.9.16 // indirect
+	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
