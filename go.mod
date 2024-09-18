@@ -7,7 +7,8 @@ require (
 	github.com/gofiber/swagger v1.1.0
 	github.com/spf13/viper v1.19.0
 	github.com/swaggo/swag v1.16.3
-	github.com/timewise-team/timewise-models v0.0.0-20240913150041-469f44076dcb
+	github.com/timewise-team/timewise-models v0.0.0-20240918134940-6352304e5512
+	golang.org/x/crypto v0.24.0
 )
 
 require (
