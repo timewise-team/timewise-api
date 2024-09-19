@@ -5,9 +5,11 @@ go 1.22.5
 require (
 	github.com/gofiber/fiber/v2 v2.52.5
 	github.com/gofiber/swagger v1.1.0
+	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/spf13/viper v1.19.0
 	github.com/swaggo/swag v1.16.3
-	github.com/timewise-team/timewise-models v0.0.0-20240913150041-469f44076dcb
+	github.com/timewise-team/timewise-models v0.0.0-20240918143013-6277f139fcbf
+	golang.org/x/crypto v0.24.0
 )
 
 require (
