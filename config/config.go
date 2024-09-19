@@ -9,6 +9,7 @@ import (
 type Config struct {
 	ServerPort string
 	BaseURL    string
+	JWT_SECRET string
 }
 
 func LoadConfig() (*Config, error) {
@@ -24,6 +25,7 @@ func LoadConfig() (*Config, error) {
 	viper.SetConfigType("env")
 	viper.SetDefault("sever.port", "8080")
 	viper.SetDefault("BASE_URL", "http://localhost/api")
+	viper.SetDefault("JWT_SECRET", "secret")
 
 	if err := viper.ReadInConfig(); err != nil {
 		log.Printf("Error reading config file, %s", err)
@@ -34,6 +36,7 @@ func LoadConfig() (*Config, error) {
 	config := &Config{
 		ServerPort: viper.GetString("WEB.PORT"),
 		BaseURL:    viper.GetString("BASE_URL"),
+		JWT_SECRET: viper.GetString("JWT_SECRET"),
 	}
 	return config, nil
 }

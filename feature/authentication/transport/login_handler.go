@@ -21,17 +21,23 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 			"error": "Invalid input",
 		})
 	}
+	if req.Username == "" || req.Password == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Username and password are required",
+		})
+	}
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to load config",
 		})
 	}
-	user, err := usecase.CallDMSAPIForUser(req, cfg)
+	userResponse, err := usecase.CallDMSAPIForUserLogin(req, cfg)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to login user",
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Invalid email or password",
 		})
+
 	}
-	return c.JSON(user)
+	return c.JSON(userResponse)
 }

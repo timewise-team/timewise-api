@@ -5,6 +5,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos/user_login_dtos"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
@@ -64,9 +66,10 @@ func CallAPI(method string, url string, body interface{}, headers map[string]str
 	// Trả về response để hàm gọi xử lý tiếp
 	return resp, nil
 }
-func CallDMSAPIForUser(req user_login_dtos.UserLoginRequest, cfg *config.Config) (*user_login_dtos.UserLoginRequest, error) {
+func CallDMSAPIForUserLogin(req user_login_dtos.UserLoginRequest, cfg *config.Config) (*user_login_dtos.UserLoginResponse, error) {
 	// Sử dụng hàm CallAPI để gọi API DMS
 	resp, err := CallAPI("POST", cfg.BaseURL+"user/login", req, nil, nil, 10*time.Second)
+	fmt.Printf("resp: %v\n", resp)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +77,14 @@ func CallDMSAPIForUser(req user_login_dtos.UserLoginRequest, cfg *config.Config)
 
 	// Xử lý phản hồi từ API
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New("failed to login user from DMS API")
+		var errorResponse map[string]interface{}
+		if err := json.NewDecoder(resp.Body).Decode(&errorResponse); err != nil {
+			return nil, errors.New("failed to decode error response")
+		}
+		if message, ok := errorResponse["message"].(string); ok {
+			return nil, errors.New(message)
+		}
+		return nil, errors.New("unknown error occurred")
 	}
 
 	var user user_login_dtos.UserLoginRequest
@@ -82,5 +92,43 @@ func CallDMSAPIForUser(req user_login_dtos.UserLoginRequest, cfg *config.Config)
 		return nil, err
 	}
 
-	return &user, nil
+	accessToken, expiresIn, err := GenerateJWTToken(user, cfg.JWT_SECRET)
+	if err != nil {
+		return nil, err
+	}
+
+	// Tạo đối tượng UserLoginResponse
+	response := &user_login_dtos.UserLoginResponse{
+		AccessToken: accessToken,
+		ExpiresIn:   expiresIn,
+		TokenType:   "Bearer", // Sử dụng "Bearer" cho token loại này
+	}
+
+	return response, nil
+}
+
+func GenerateJWTToken(user user_login_dtos.UserLoginRequest, secretKey string) (string, int, error) {
+	// Định nghĩa thời gian hết hạn cho token (ví dụ: 2 giờ)
+	expirationTime := time.Now().Add(2 * time.Hour).Unix()
+
+	// Tạo claims cho JWT
+	claims := jwt.MapClaims{
+		"username": user.Username,
+		"exp":      expirationTime,
+	}
+
+	// Tạo token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	// Ký token với secretKey
+	tokenString, err := token.SignedString([]byte(secretKey))
+	if err != nil {
+		return "", 0, err
+	}
+
+	// Tính thời gian hết hạn
+	expiresIn := int(expirationTime - time.Now().Unix())
+
+	// Trả về token, thời gian hết hạn
+	return tokenString, expiresIn, nil
 }
