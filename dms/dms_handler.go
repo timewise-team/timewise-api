@@ -15,10 +15,6 @@ type DmsHandler struct {
 func CallAPI(method string, path string, body interface{}, headers map[string]string, queryParams map[string]string, timeout time.Duration) (*http.Response, error) {
 	dmsUrl := viper.GetString("DMS_URL")
 
-	if timeout == 0 {
-		timeout = 2 * time.Second
-	}
-
 	// Chuyển body thành JSON nếu body không rỗng
 	var requestBody []byte
 	var err error
@@ -30,9 +26,7 @@ func CallAPI(method string, path string, body interface{}, headers map[string]st
 	}
 
 	// Tạo HTTP client với timeout
-	client := &http.Client{
-		Timeout: timeout,
-	}
+	client := &http.Client{}
 
 	// Tạo request với method (GET, POST, PUT, etc.)
 	url := dmsUrl + path
