@@ -14,7 +14,7 @@ import (
 // @Produce json
 // @Param body body user_register_dto.RegisterRequestDto true "User register request"
 // @Success 200 {object} user_register_dto.RegisterResponseDto
-// @Router /register [post]
+// @Router /api/v1/auth/register [post]
 func (h *AuthHandler) register(c *fiber.Ctx) error {
 	var RegisterRequestDto user_register_dto.RegisterRequestDto
 	if err := c.BodyParser(&RegisterRequestDto); err != nil {

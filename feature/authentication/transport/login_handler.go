@@ -14,7 +14,7 @@ import (
 // @Produce json
 // @Param body body user_login_dtos.UserLoginRequest true "User login request"
 // @Success 200 {object} user_login_dtos.UserLoginResponse
-// @Router /login [post]
+// @Router /api/v1/auth/login [post]
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	var req user_login_dtos.UserLoginRequest
 	if err := c.BodyParser(&req); err != nil {
