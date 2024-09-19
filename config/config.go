@@ -8,6 +8,7 @@ import (
 
 type Config struct {
 	ServerPort string
+	BaseURL    string
 }
 
 func LoadConfig() (*Config, error) {
@@ -22,6 +23,7 @@ func LoadConfig() (*Config, error) {
 	}
 	viper.SetConfigType("env")
 	viper.SetDefault("sever.port", "8080")
+	viper.SetDefault("BASE_URL", "http://localhost/api")
 
 	if err := viper.ReadInConfig(); err != nil {
 		log.Printf("Error reading config file, %s", err)
@@ -31,6 +33,7 @@ func LoadConfig() (*Config, error) {
 	viper.AutomaticEnv()
 	config := &Config{
 		ServerPort: viper.GetString("WEB.PORT"),
+		BaseURL:    viper.GetString("BASE_URL"),
 	}
 	return config, nil
 }
