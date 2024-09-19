@@ -2,8 +2,10 @@ package transport
 
 import (
 	"api/feature/authentication/usecase"
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos/user_login_dtos"
+	"time"
 )
 
 // Login @Summary Login
@@ -26,6 +28,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 			"error": "Username and password are required",
 		})
 	}
+	fmt.Printf("req: %v\n", req)
 	userResponse, err := usecase.Login(req)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -33,5 +36,12 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		})
 
 	}
+	expiresAt := time.Now().Add(time.Duration(userResponse.ExpiresIn) * time.Second)
+
+	c.Cookie(&fiber.Cookie{
+		Name:    "access_token",
+		Value:   userResponse.AccessToken,
+		Expires: expiresAt,
+	})
 	return c.JSON(userResponse)
 }

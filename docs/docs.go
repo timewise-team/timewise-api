@@ -87,10 +87,10 @@ const docTemplate = `{
         "user_login_dtos.UserLoginRequest": {
             "type": "object",
             "properties": {
-                "PasswordHash": {
+                "password": {
                     "type": "string"
                 },
-                "Username": {
+                "username": {
                     "type": "string"
                 }
             }
@@ -98,13 +98,13 @@ const docTemplate = `{
         "user_login_dtos.UserLoginResponse": {
             "type": "object",
             "properties": {
-                "AccessToken": {
+                "access_token": {
                     "type": "string"
                 },
-                "ExpiresIn": {
+                "expires_in": {
                     "type": "integer"
                 },
-                "TokenType": {
+                "token_type": {
                     "type": "string"
                 }
             }
