@@ -8,7 +8,7 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/spf13/viper v1.19.0
 	github.com/swaggo/swag v1.16.3
-	github.com/timewise-team/timewise-models v0.0.0-20240918143013-6277f139fcbf
+	github.com/timewise-team/timewise-models v0.0.0-20240919160431-15f4ccdc77fb
 	golang.org/x/crypto v0.24.0
 )
 
