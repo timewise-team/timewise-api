@@ -7,6 +7,14 @@ import (
 	"github.com/timewise-team/timewise-models/dtos/core_dtos/user_register_dtos"
 )
 
+// @Summary Register
+// @Description Register
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param body body user_register_dto.RegisterRequestDto true "User register request"
+// @Success 200 {object} user_register_dto.RegisterResponseDto
+// @Router /register [post]
 func (h *AuthHandler) register(c *fiber.Ctx) error {
 	var RegisterRequestDto user_register_dto.RegisterRequestDto
 	if err := c.BodyParser(&RegisterRequestDto); err != nil {

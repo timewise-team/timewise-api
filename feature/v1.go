@@ -11,9 +11,8 @@ import (
 // @BasePath /api/v1
 func RegisterHandlerV1() *fiber.App {
 	router := fiber.New()
-	// add swagger
-	router.Get("/swagger/*", swagger.HandlerDefault)
 	v1 := router.Group("/api/v1")
+	v1.Get("/swagger/*", swagger.HandlerDefault)
 	//v1.Use(middleware.AuthMiddleware)
 	transport.RegisterAuthHandler(v1.Group("/auth"))
 

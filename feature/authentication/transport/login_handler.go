@@ -5,15 +5,16 @@ import (
 	"api/feature/authentication/usecase"
 	"github.com/gofiber/fiber/v2"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos/user_login_dtos"
-	"github.com/timewise-team/timewise-models/models"
 )
 
-func (h *AuthHandler) login(c *fiber.Ctx) error {
-	user := models.TwUser{
-		FirstName: "Khanh",
-	}
-	return c.SendString("logged in successfully for user: " + user.FirstName)
-}
+// Login @Summary Login
+// @Description Login
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param body body user_login_dtos.UserLoginRequest true "User login request"
+// @Success 200 {object} user_login_dtos.UserLoginResponse
+// @Router /login [post]
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	var req user_login_dtos.UserLoginRequest
 	if err := c.BodyParser(&req); err != nil {
