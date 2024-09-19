@@ -15,7 +15,7 @@ func RegisterAuthHandler(router fiber.Router) {
 
 	// Register all endpoints here
 	router.Post("/login", authHandler.Login)
-	//router.Post("/register", authHandler.register)
+	router.Post("/register", authHandler.register)
 	//router.Post("/logout", authHandler.logout)
 	//router.Post("/refresh", authHandler.refresh)
 	//router.Post("/forgot-password", authHandler.forgotPassword)

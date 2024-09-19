@@ -5,11 +5,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos/user_login_dtos"
+	user_register_dto "github.com/timewise-team/timewise-models/dtos/core_dtos/user_register_dtos"
 	"golang.org/x/crypto/bcrypt"
+	"io/ioutil"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -66,10 +68,10 @@ func CallAPI(method string, url string, body interface{}, headers map[string]str
 	// Trả về response để hàm gọi xử lý tiếp
 	return resp, nil
 }
+
 func CallDMSAPIForUserLogin(req user_login_dtos.UserLoginRequest, cfg *config.Config) (*user_login_dtos.UserLoginResponse, error) {
 	// Sử dụng hàm CallAPI để gọi API DMS
 	resp, err := CallAPI("POST", cfg.BaseURL+"user/login", req, nil, nil, 10*time.Second)
-	fmt.Printf("resp: %v\n", resp)
 	if err != nil {
 		return nil, err
 	}
@@ -131,4 +133,55 @@ func GenerateJWTToken(user user_login_dtos.UserLoginRequest, secretKey string) (
 
 	// Trả về token, thời gian hết hạn
 	return tokenString, expiresIn, nil
+
+}
+
+func CallDMSAPIForRegister(RegisterRequestDto user_register_dto.RegisterRequestDto, cfg *config.Config) error {
+
+	// Check if passwords match
+	if RegisterRequestDto.Password != RegisterRequestDto.ConfirmPassword {
+		return errors.New("Passwords do not match")
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(RegisterRequestDto.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return errors.New("Error hashing password")
+	}
+
+	fullName := strings.TrimSpace(RegisterRequestDto.FullName)
+	lastSpaceIndex := strings.LastIndex(fullName, " ")
+
+	var firstName, lastName string
+	if lastSpaceIndex != -1 {
+		firstName = fullName[:lastSpaceIndex]
+		lastName = fullName[lastSpaceIndex+1:]
+	} else {
+		firstName = fullName
+		lastName = ""
+	}
+
+	registerResponse := user_register_dto.RegisterResponseDto{
+		UserName:     RegisterRequestDto.UserName,
+		FirstName:    firstName,
+		LastName:     lastName,
+		Email:        RegisterRequestDto.Email,
+		HashPassword: string(hashedPassword),
+	}
+
+	resp, err := CallAPI("POST", cfg.BaseURL+"auth/register", registerResponse, nil, nil, 10*time.Second)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return errors.New("Can not read response body")
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return errors.New(string(body))
+	}
+
+	return nil
 }
