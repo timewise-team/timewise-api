@@ -14,7 +14,8 @@ RUN go mod download
 
 COPY . /app/
 
-RUN go get -u github.com/swaggo/swag/cmd/swag
+RUN go install github.com/swaggo/swag/cmd/swag@latest
+RUN go get -u github.com/gofiber/swagger
 RUN swag init --parseDependency
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o timewise-api .
