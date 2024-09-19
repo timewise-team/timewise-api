@@ -2,7 +2,9 @@ package usecase
 
 import (
 	"api/dms"
+	"encoding/json"
 	"errors"
+	"fmt"
 	user_register_dto "github.com/timewise-team/timewise-models/dtos/core_dtos/user_register_dtos"
 	"github.com/timewise-team/timewise-models/models"
 	"golang.org/x/crypto/bcrypt"
@@ -27,7 +29,7 @@ func RegisterUser(RegisterRequestDto user_register_dto.RegisterRequestDto) error
 	lastName := parts[len(parts)-1]
 	firstName := strings.Join(parts[:len(parts)-1], " ")
 
-	createNewUserRequest := models.TwUser{
+	newUser := models.TwUser{
 		Username:     RegisterRequestDto.UserName,
 		FirstName:    firstName,
 		LastName:     lastName,
@@ -39,7 +41,7 @@ func RegisterUser(RegisterRequestDto user_register_dto.RegisterRequestDto) error
 	resp, err := dms.CallAPI(
 		"POST",
 		"/user",
-		createNewUserRequest,
+		newUser,
 		nil,
 		nil,
 		120,
@@ -53,7 +55,38 @@ func RegisterUser(RegisterRequestDto user_register_dto.RegisterRequestDto) error
 	if err != nil {
 		return errors.New("can not read response body")
 	}
+	if resp.StatusCode != http.StatusOK {
+		return errors.New(string(body))
+	}
 
+	err = json.Unmarshal([]byte(body), &newUser)
+	if err != nil {
+		fmt.Println("Error parsing JSON: ", err)
+		return errors.New("error parsing JSON")
+	}
+
+	// Create new record in user_email
+	createNewUserEmailRequest := models.TwUserEmail{
+		UserId: newUser.ID,
+		Email:  RegisterRequestDto.Email,
+	}
+	resp, err = dms.CallAPI(
+		"POST",
+		"/user_email",
+		createNewUserEmailRequest,
+		nil,
+		nil,
+		120,
+	)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	body, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return errors.New("can not read response body")
+	}
 	if resp.StatusCode != http.StatusOK {
 		return errors.New(string(body))
 	}
