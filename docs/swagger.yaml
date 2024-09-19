@@ -1,18 +1,18 @@
 definitions:
   user_login_dtos.UserLoginRequest:
     properties:
-      PasswordHash:
+      password:
         type: string
-      Username:
+      username:
         type: string
     type: object
   user_login_dtos.UserLoginResponse:
     properties:
-      AccessToken:
+      access_token:
         type: string
-      ExpiresIn:
+      expires_in:
         type: integer
-      TokenType:
+      token_type:
         type: string
     type: object
   user_register_dto.RegisterRequestDto:

@@ -2,11 +2,11 @@ package auth_utils
 
 import (
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/timewise-team/timewise-models/dtos/core_dtos/user_login_dtos"
+	"github.com/timewise-team/timewise-models/models"
 	"time"
 )
 
-func GenerateJWTToken(user user_login_dtos.UserLoginRequest, secretKey string) (string, int, error) {
+func GenerateJWTToken(user models.TwUser, secretKey string) (string, int, error) {
 	// Định nghĩa thời gian hết hạn cho token (ví dụ: 2 giờ)
 	expirationTime := time.Now().Add(2 * time.Hour).Unix()
 
