@@ -1,11 +1,11 @@
 package usecase
 
 import (
-	"api/config"
 	"api/utils/auth"
 	"bytes"
 	"encoding/json"
 	"errors"
+	"github.com/spf13/viper"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos/user_login_dtos"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
@@ -66,9 +66,10 @@ func CallAPI(method string, url string, body interface{}, headers map[string]str
 	return resp, nil
 }
 
-func CallDMSAPIForUserLogin(req user_login_dtos.UserLoginRequest, cfg *config.Config) (*user_login_dtos.UserLoginResponse, error) {
+func Login(req user_login_dtos.UserLoginRequest) (*user_login_dtos.UserLoginResponse, error) {
+
 	// Sử dụng hàm CallAPI để gọi API DMS
-	resp, err := CallAPI("POST", cfg.BaseURL+"user/login", req, nil, nil, 10*time.Second)
+	resp, err := CallAPI("POST", "user/login", req, nil, nil, 10*time.Second)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +92,7 @@ func CallDMSAPIForUserLogin(req user_login_dtos.UserLoginRequest, cfg *config.Co
 		return nil, err
 	}
 
-	accessToken, expiresIn, err := auth_utils.GenerateJWTToken(user, cfg.JWT_SECRET)
+	accessToken, expiresIn, err := auth_utils.GenerateJWTToken(user, viper.GetString("JWT_SECRET"))
 	if err != nil {
 		return nil, err
 	}
