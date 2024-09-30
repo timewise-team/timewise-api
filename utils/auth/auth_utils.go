@@ -12,7 +12,9 @@ func GenerateJWTToken(user models.TwUser, secretKey string) (string, int, error)
 
 	// Tạo claims cho JWT
 	claims := jwt.MapClaims{
+		"userid":   user.ID,
 		"username": user.Username,
+		"email":    user.Email,
 		"exp":      expirationTime,
 	}
 
