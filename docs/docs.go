@@ -15,6 +15,40 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/auth/callback": {
+            "post": {
+                "description": "Google callback",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Google callback",
+                "parameters": [
+                    {
+                        "description": "Google auth request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/transport.GoogleAuthRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/transport.GoogleAuthResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/auth/login": {
             "post": {
                 "description": "Login",
@@ -84,6 +118,31 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "transport.GoogleAuthRequest": {
+            "type": "object",
+            "properties": {
+                "credentials": {
+                    "type": "string"
+                }
+            }
+        },
+        "transport.GoogleAuthResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "expires_in": {
+                    "type": "integer"
+                },
+                "is_new_user": {
+                    "type": "boolean"
+                },
+                "token_type": {
+                    "type": "string"
+                }
+            }
+        },
         "user_login_dtos.UserLoginRequest": {
             "type": "object",
             "properties": {

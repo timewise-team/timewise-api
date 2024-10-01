@@ -6,10 +6,16 @@ import (
 	"os"
 )
 
+type GoogleOauthConfig struct {
+	ClientID     string
+	ClientSecret string
+}
+
 type Config struct {
-	ServerPort string
-	BaseURL    string
-	JWT_SECRET string
+	ServerPort  string
+	BaseURL     string
+	JWT_SECRET  string
+	GoogleOauth GoogleOauthConfig
 }
 
 func LoadConfig() (*Config, error) {
@@ -37,6 +43,10 @@ func LoadConfig() (*Config, error) {
 		ServerPort: viper.GetString("WEB.PORT"),
 		BaseURL:    viper.GetString("BASE_URL"),
 		JWT_SECRET: viper.GetString("JWT_SECRET"),
+		GoogleOauth: GoogleOauthConfig{
+			ClientID:     viper.GetString("GOOGLE_CLIENT_ID"),
+			ClientSecret: viper.GetString("GOOGLE_CLIENT_SECRET"),
+		},
 	}
 	return config, nil
 }
