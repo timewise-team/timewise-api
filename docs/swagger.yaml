@@ -1,4 +1,20 @@
 definitions:
+  transport.GoogleAuthRequest:
+    properties:
+      credentials:
+        type: string
+    type: object
+  transport.GoogleAuthResponse:
+    properties:
+      access_token:
+        type: string
+      expires_in:
+        type: integer
+      is_new_user:
+        type: boolean
+      token_type:
+        type: string
+    type: object
   user_login_dtos.UserLoginRequest:
     properties:
       password:
@@ -47,6 +63,28 @@ info:
   title: timewise-api
   version: "1.0"
 paths:
+  /api/v1/auth/callback:
+    post:
+      consumes:
+      - application/json
+      description: Google callback
+      parameters:
+      - description: Google auth request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/transport.GoogleAuthRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/transport.GoogleAuthResponse'
+      summary: Google callback
+      tags:
+      - auth
   /api/v1/auth/login:
     post:
       consumes:
