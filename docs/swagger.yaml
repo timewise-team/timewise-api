@@ -1,7 +1,93 @@
+definitions:
+  user_login_dtos.UserLoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  user_login_dtos.UserLoginResponse:
+    properties:
+      access_token:
+        type: string
+      expires_in:
+        type: integer
+      token_type:
+        type: string
+    type: object
+  user_register_dto.RegisterRequestDto:
+    properties:
+      confirm_password:
+        type: string
+      email:
+        type: string
+      full_name:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  user_register_dto.RegisterResponseDto:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      hash_password:
+        type: string
+      last_name:
+        type: string
+      username:
+        type: string
+    type: object
 info:
   contact: {}
   description: Timewise API
   title: timewise-api
   version: "1.0"
-paths: {}
+paths:
+  /api/v1/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Login
+      parameters:
+      - description: User login request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/user_login_dtos.UserLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user_login_dtos.UserLoginResponse'
+      tags:
+      - auth
+  /api/v1/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register
+      parameters:
+      - description: User register request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/user_register_dto.RegisterRequestDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user_register_dto.RegisterResponseDto'
+      summary: Register
+      tags:
+      - auth
 swagger: "2.0"
