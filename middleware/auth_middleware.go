@@ -57,14 +57,6 @@ func AuthMiddleware(c *fiber.Ctx) error {
 			})
 		}
 
-		if username, ok := claims["username"].(string); ok {
-			// Store the username in the request context
-			c.Locals("username", username)
-		} else {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Invalid token claims",
-			})
-		}
 		if email, ok := claims["email"].(string); ok {
 			// Store the email in the request context
 			c.Locals("email", email)

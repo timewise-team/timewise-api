@@ -20,7 +20,6 @@ var whitelistPaths = []string{
 func isWhitelisted(path string) bool {
 	for _, p := range whitelistPaths {
 		if strings.HasPrefix(path, p) {
-			println("skip middleware")
 			return true
 		}
 	}

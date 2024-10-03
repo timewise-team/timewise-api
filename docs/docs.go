@@ -15,9 +15,9 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1/auth/login": {
+        "/api/v1/auth/callback": {
             "post": {
-                "description": "Login",
+                "description": "Google callback",
                 "consumes": [
                     "application/json"
                 ],
@@ -27,14 +27,15 @@ const docTemplate = `{
                 "tags": [
                     "auth"
                 ],
+                "summary": "Google callback",
                 "parameters": [
                     {
-                        "description": "User login request",
+                        "description": "Google auth request",
                         "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/user_login_dtos.UserLoginRequest"
+                            "$ref": "#/definitions/transport.GoogleAuthRequest"
                         }
                     }
                 ],
@@ -42,41 +43,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/user_login_dtos.UserLoginResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/auth/register": {
-            "post": {
-                "description": "Register",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Register",
-                "parameters": [
-                    {
-                        "description": "User register request",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/user_register_dto.RegisterRequestDto"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/user_register_dto.RegisterResponseDto"
+                            "$ref": "#/definitions/transport.GoogleAuthResponse"
                         }
                     }
                 }
@@ -84,18 +51,15 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "user_login_dtos.UserLoginRequest": {
+        "transport.GoogleAuthRequest": {
             "type": "object",
             "properties": {
-                "password": {
-                    "type": "string"
-                },
-                "username": {
+                "credentials": {
                     "type": "string"
                 }
             }
         },
-        "user_login_dtos.UserLoginResponse": {
+        "transport.GoogleAuthResponse": {
             "type": "object",
             "properties": {
                 "access_token": {
@@ -104,47 +68,13 @@ const docTemplate = `{
                 "expires_in": {
                     "type": "integer"
                 },
+                "id_token": {
+                    "type": "string"
+                },
+                "is_new_user": {
+                    "type": "boolean"
+                },
                 "token_type": {
-                    "type": "string"
-                }
-            }
-        },
-        "user_register_dto.RegisterRequestDto": {
-            "type": "object",
-            "properties": {
-                "confirm_password": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "full_name": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "user_register_dto.RegisterResponseDto": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "first_name": {
-                    "type": "string"
-                },
-                "hash_password": {
-                    "type": "string"
-                },
-                "last_name": {
-                    "type": "string"
-                },
-                "username": {
                     "type": "string"
                 }
             }
