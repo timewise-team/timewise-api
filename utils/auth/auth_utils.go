@@ -16,8 +16,11 @@ type GoogleOauthData struct {
 	Id            string `json:"id"`
 	Email         string `json:"email"`
 	VerifiedEmail bool   `json:"verified_email"`
-	//Name          string `json:"name"`
-	Picture string `json:"picture"`
+	Name          string `json:"name"`
+	Picture       string `json:"picture"`
+	GivenName     string `json:"given_name"`
+	FamilyName    string `json:"family_name"`
+	Locale        string `json:"locale"`
 }
 
 var cfg, err = config.LoadConfig()
@@ -26,8 +29,11 @@ var GoogleOauth = oauth2.Config{
 	ClientID:     cfg.GoogleOauth.ClientID,
 	ClientSecret: cfg.GoogleOauth.ClientSecret,
 	RedirectURL:  "",
-	Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},
-	Endpoint:     google.Endpoint,
+	Scopes: []string{
+		"https://www.googleapis.com/auth/userinfo.email",
+		"https://www.googleapis.com/auth/userinfo.profile",
+	},
+	Endpoint: google.Endpoint,
 }
 
 func VerifyGoogleToken(code string) ([]byte, error) {
@@ -61,10 +67,9 @@ func GenerateJWTToken(user models.TwUser, secretKey string) (string, int, error)
 
 	// Tạo claims cho JWT
 	claims := jwt.MapClaims{
-		"userid":   user.ID,
-		"username": user.Username,
-		"email":    user.Email,
-		"exp":      expirationTime,
+		"userid": user.ID,
+		"email":  user.Email,
+		"exp":    expirationTime,
 	}
 
 	// Tạo token
