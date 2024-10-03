@@ -3,6 +3,7 @@ package feature
 import (
 	_ "api/docs"
 	"api/feature/authentication/transport"
+	schedule_filter_transport "api/feature/schedule_filter/transport"
 	"api/middleware"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -45,8 +46,11 @@ func RegisterHandlerV1() *fiber.App {
 	v1 := router.Group("/api/v1")
 	v1.Get("/swagger/*", swagger.HandlerDefault)
 
+	// Register service routes
+	scheduleFilterService := schedule_filter_transport.NewScheduleFilterRequest()
+
 	// Register auth routes
 	transport.RegisterAuthHandler(v1.Group("/auth"))
-
+	schedule_filter_transport.RegisterScheduleFilterHandler(v1.Group("/schedule"), scheduleFilterService)
 	return router
 }
