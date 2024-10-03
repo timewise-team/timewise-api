@@ -1,58 +1,4 @@
 definitions:
-  models.TwUser:
-    properties:
-      calendarSettings:
-        type: string
-      created_at:
-        type: string
-      deleted_at:
-        type: string
-      email:
-        type: string
-      firstName:
-        type: string
-      googleId:
-        type: string
-      id:
-        type: integer
-      isActive:
-        type: boolean
-      isVerified:
-        type: boolean
-      lastLoginAt:
-        type: string
-      lastName:
-        type: string
-      locale:
-        type: string
-      notificationSettings:
-        type: string
-      profilePicture:
-        type: string
-      role:
-        type: string
-      timezone:
-        type: string
-      updated_at:
-        type: string
-    type: object
-  transport.CreateUserEmailsResponse:
-    properties:
-      created_at:
-        type: string
-      deleted_at:
-        type: string
-      email:
-        type: string
-      id:
-        type: integer
-      updated_at:
-        type: string
-      user:
-        $ref: '#/definitions/models.TwUser'
-      user_id:
-        type: integer
-    type: object
   transport.GoogleAuthRequest:
     properties:
       credentials:
@@ -99,19 +45,4 @@ paths:
       summary: Google callback
       tags:
       - auth
-  /api/v1/user_email:
-    post:
-      consumes:
-      - application/json
-      description: Create new user email
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/transport.CreateUserEmailsResponse'
-      summary: Create new user email
-      tags:
-      - User Emails
 swagger: "2.0"
