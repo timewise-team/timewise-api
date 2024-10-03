@@ -2,7 +2,8 @@ package feature
 
 import (
 	_ "api/docs"
-	"api/feature/authentication/transport"
+	authTransport "api/feature/authentication/transport"
+	userEmailsTransport "api/feature/user_emails/transport"
 	"api/middleware"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -14,6 +15,7 @@ import (
 var whitelistPaths = []string{
 	"/api/v1/swagger",
 	"/api/v1/auth",
+	"/api/v1/user_email",
 }
 
 func isWhitelisted(path string) bool {
@@ -45,7 +47,7 @@ func RegisterHandlerV1() *fiber.App {
 	v1.Get("/swagger/*", swagger.HandlerDefault)
 
 	// Register auth routes
-	transport.RegisterAuthHandler(v1.Group("/auth"))
-
+	authTransport.RegisterAuthHandler(v1.Group("/auth"))
+	userEmailsTransport.RegisterUserEmailsHandler(v1.Group("/user_email"))
 	return router
 }
