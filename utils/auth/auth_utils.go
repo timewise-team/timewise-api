@@ -2,7 +2,6 @@ package auth_utils
 
 import (
 	"api/config"
-	"context"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/timewise-team/timewise-models/models"
 	"golang.org/x/oauth2"
@@ -37,14 +36,7 @@ var GoogleOauth = oauth2.Config{
 }
 
 func VerifyGoogleToken(code string) ([]byte, error) {
-	// compares the generated token string to the token retrieved from the parsed URL
-	// converts authorization code into a token
-	token, err := GoogleOauth.Exchange(context.Background(), code)
-	if err != nil {
-		return nil, err
-	}
-
-	response, err := http.Get("https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + token.AccessToken)
+	response, err := http.Get("https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=" + code)
 	if err != nil {
 		return nil, err
 	}
