@@ -20,6 +20,7 @@ type GoogleAuthResponse struct {
 	ExpiresIn   int    `json:"expires_in"`
 	TokenType   string `json:"token_type"`
 	IsNewUser   bool   `json:"is_new_user"`
+	IdToken     string `json:"id_token"`
 }
 
 // @Summary Google callback
@@ -49,10 +50,14 @@ func (h *AuthHandler) googleCallback(c *fiber.Ctx) error {
 	}
 
 	getOrCreateUserReq := dtos.GetOrCreateUserRequestDto{
-		Email:    oauthData.Email,
-		UserName: oauthData.Email,
-		//FullName:       oauthData.Name,
+		Email:          oauthData.Email,
+		FullName:       oauthData.Name,
 		ProfilePicture: oauthData.Picture,
+		VerifiedEmail:  oauthData.VerifiedEmail,
+		GoogleId:       oauthData.Id,
+		GivenName:      oauthData.GivenName,
+		FamilyName:     oauthData.FamilyName,
+		Locale:         oauthData.Locale,
 	}
 
 	// Get or Create user
@@ -93,5 +98,6 @@ func (h *AuthHandler) googleCallback(c *fiber.Ctx) error {
 		ExpiresIn:   expiresIn,
 		TokenType:   "Bearer",
 		IsNewUser:   userRespDto.IsNewUser,
+		IdToken:     req.Credentials,
 	})
 }
