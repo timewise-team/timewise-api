@@ -1,13 +1,22 @@
 package transport
 
 import (
-	"api/feature/schedule_filter/service"
+	"api/service/service"
+	"encoding/json"
 	"github.com/gofiber/fiber/v2"
+	dtos "github.com/timewise-team/timewise-models/dtos/core_dtos"
 	"io"
 )
 
 type ScheduleFilterHandler struct {
 	service service.ScheduleFilterService
+}
+
+func NewScheduleFilterHandler() *ScheduleFilterHandler {
+	service := service.NewScheduleFilterService()
+	return &ScheduleFilterHandler{
+		service: *service,
+	}
 }
 
 // ScheduleFilter godoc
@@ -17,8 +26,8 @@ type ScheduleFilterHandler struct {
 // @Accept json
 // @Produce json
 // @Param param query string false "Filter parameter"
-// @Success 200 {array} core_dtos.TwScheduleResponse
-// @Router /dbms/v1/schedule [get]
+// @Success 200 {array} dtos.TwScheduleResponse
+// @Router /api/v1/schedule [get]
 func (h *ScheduleFilterHandler) ScheduleFilter(c *fiber.Ctx) error {
 	resp, err := h.service.ScheduleFilter(c)
 	if err != nil {
@@ -32,6 +41,11 @@ func (h *ScheduleFilterHandler) ScheduleFilter(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to read response body",
 		})
+	}
+	var scheduleResponse dtos.TwScheduleResponse
+	err = json.Unmarshal(body, &scheduleResponse)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not marshal response body"})
 	}
 	return c.Status(resp.StatusCode).Send(body)
 }

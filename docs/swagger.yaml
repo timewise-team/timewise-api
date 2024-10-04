@@ -1,4 +1,45 @@
 definitions:
+  core_dtos.TwScheduleResponse:
+    properties:
+      all_day:
+        type: boolean
+      assigned_to:
+        items:
+          type: integer
+        type: array
+      board_column_id:
+        type: integer
+      created_at:
+        type: string
+      created_by:
+        type: integer
+      description:
+        type: string
+      end_time:
+        type: string
+      extra_data:
+        type: string
+      id:
+        type: integer
+      is_deleted:
+        type: boolean
+      location:
+        type: string
+      recurrence_pattern:
+        type: string
+      start_time:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+      visibility:
+        type: string
+      workspace_id:
+        type: integer
+    type: object
   transport.GoogleAuthRequest:
     properties:
       credentials:
@@ -45,4 +86,26 @@ paths:
       summary: Google callback
       tags:
       - auth
+  /api/v1/schedule:
+    get:
+      consumes:
+      - application/json
+      description: Get schedules by filter
+      parameters:
+      - description: Filter parameter
+        in: query
+        name: param
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/core_dtos.TwScheduleResponse'
+            type: array
+      summary: Get schedules by filter
+      tags:
+      - Schedule
 swagger: "2.0"

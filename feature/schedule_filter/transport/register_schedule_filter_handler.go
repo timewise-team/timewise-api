@@ -5,14 +5,16 @@ import (
 )
 
 type ScheduleFilterHandlerRegister struct {
-	Router fiber.Router
+	Router  fiber.Router
+	Handler *ScheduleFilterHandler
 }
 
 func RegisterScheduleFilterHandler(router fiber.Router) {
+	handler := NewScheduleFilterHandler()
 	scheduleFilterHandler := &ScheduleFilterHandlerRegister{
-		Router: router,
+		Handler: handler,
 	}
 
 	// Register all endpoints here
-	router.Get("/schedule", scheduleFilterHandler.ScheduleFilter)
+	router.Get("/schedule", scheduleFilterHandler.Handler.ScheduleFilter)
 }

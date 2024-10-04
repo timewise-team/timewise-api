@@ -6,11 +6,13 @@ import (
 	"net/http"
 )
 
-type ScheduleFilterService interface {
-	ScheduleFilter(c *fiber.Ctx) (*http.Response, error)
+type ScheduleFilterService struct {
 }
 
-func ScheduleFilter(c *fiber.Ctx) (*http.Response, error) {
+func NewScheduleFilterService() *ScheduleFilterService {
+	return &ScheduleFilterService{}
+}
+func (s *ScheduleFilterService) ScheduleFilter(c *fiber.Ctx) (*http.Response, error) {
 	param := c.Params("param")
 	var resp *http.Response
 	var err error
