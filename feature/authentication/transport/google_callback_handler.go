@@ -2,6 +2,7 @@ package transport
 
 import (
 	"api/dms"
+	auth_service "api/service/auth"
 	auth_utils "api/utils/auth"
 	"encoding/json"
 	"github.com/gofiber/fiber/v2"
@@ -86,6 +87,12 @@ func (h *AuthHandler) googleCallback(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not marshal response body"})
 	}
 
+	if userRespDto.IsNewUser {
+		_, err := auth_service.NewAuthService().InitNewUser(userRespDto.User)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not init new user"})
+		}
+	}
 	// Generate JWT token
 	accessToken, expiresIn, err := auth_utils.GenerateJWTToken(userRespDto.User, viper.GetString("JWT_SECRET"))
 	if err != nil {
