@@ -4,9 +4,7 @@ definitions:
       all_day:
         type: boolean
       assigned_to:
-        items:
-          type: integer
-        type: array
+        type: integer
       board_column_id:
         type: integer
       created_at:
@@ -39,6 +37,13 @@ definitions:
         type: string
       workspace_id:
         type: integer
+    type: object
+  fiber.Error:
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
     type: object
   transport.GoogleAuthRequest:
     properties:
@@ -86,25 +91,69 @@ paths:
       summary: Google callback
       tags:
       - auth
-  /api/v1/schedule:
+  /api/v1/schedule/schedule:
     get:
       consumes:
       - application/json
-      description: Get schedules by filter
+      description: Retrieve a list of schedules based on specified filter parameters.
       parameters:
-      - description: Filter parameter
+      - description: Filter by Workspace ID
         in: query
-        name: param
+        name: workspace_id
+        type: integer
+      - description: Filter by Board Column ID
+        in: query
+        name: board_column_id
+        type: integer
+      - description: Filter by Title (searches with LIKE)
+        in: query
+        name: title
         type: string
+      - description: Filter by Start Time (ISO8601 format)
+        in: query
+        name: start_time
+        type: string
+      - description: Filter by End Time (ISO8601 format)
+        in: query
+        name: end_time
+        type: string
+      - description: Filter by Location (searches with LIKE)
+        in: query
+        name: location
+        type: string
+      - description: Filter by User ID of the creator
+        in: query
+        name: created_by
+        type: integer
+      - description: Filter by Status
+        in: query
+        name: status
+        type: string
+      - description: Filter by Deleted Schedules
+        in: query
+        name: is_deleted
+        type: boolean
+      - description: Filter by User ID assigned to the schedule
+        in: query
+        name: assigned_to
+        type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: List of filtered schedules
           schema:
             items:
               $ref: '#/definitions/core_dtos.TwScheduleResponse'
             type: array
+        "400":
+          description: Invalid query parameters
+          schema:
+            $ref: '#/definitions/fiber.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/fiber.Error'
       summary: Get schedules by filter
       tags:
       - Schedule

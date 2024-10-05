@@ -49,9 +49,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/schedule": {
+        "/api/v1/schedule/schedule": {
             "get": {
-                "description": "Get schedules by filter",
+                "description": "Retrieve a list of schedules based on specified filter parameters.",
                 "consumes": [
                     "application/json"
                 ],
@@ -64,20 +64,86 @@ const docTemplate = `{
                 "summary": "Get schedules by filter",
                 "parameters": [
                     {
+                        "type": "integer",
+                        "description": "Filter by Workspace ID",
+                        "name": "workspace_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filter by Board Column ID",
+                        "name": "board_column_id",
+                        "in": "query"
+                    },
+                    {
                         "type": "string",
-                        "description": "Filter parameter",
-                        "name": "param",
+                        "description": "Filter by Title (searches with LIKE)",
+                        "name": "title",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by Start Time (ISO8601 format)",
+                        "name": "start_time",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by End Time (ISO8601 format)",
+                        "name": "end_time",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by Location (searches with LIKE)",
+                        "name": "location",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filter by User ID of the creator",
+                        "name": "created_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by Status",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by Deleted Schedules",
+                        "name": "is_deleted",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filter by User ID assigned to the schedule",
+                        "name": "assigned_to",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "List of filtered schedules",
                         "schema": {
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/core_dtos.TwScheduleResponse"
                             }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid query parameters",
+                        "schema": {
+                            "$ref": "#/definitions/fiber.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/fiber.Error"
                         }
                     }
                 }
@@ -92,10 +158,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "assigned_to": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
+                    "type": "integer"
                 },
                 "board_column_id": {
                     "type": "integer"
@@ -144,6 +207,17 @@ const docTemplate = `{
                 },
                 "workspace_id": {
                     "type": "integer"
+                }
+            }
+        },
+        "fiber.Error": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
                 }
             }
         },

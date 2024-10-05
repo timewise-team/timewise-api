@@ -8,7 +8,7 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/spf13/viper v1.19.0
 	github.com/swaggo/swag v1.16.3
-	github.com/timewise-team/timewise-models v0.0.0-20241003053051-efa8fcad6f21
+	github.com/timewise-team/timewise-models v0.0.0-20241004160806-8bda49a7ce48
 	golang.org/x/oauth2 v0.23.0
 )
 
