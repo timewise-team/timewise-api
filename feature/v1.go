@@ -3,6 +3,7 @@ package feature
 import (
 	_ "api/docs"
 	authTransport "api/feature/authentication/transport"
+	scheduleFilterTransport "api/feature/schedule_filter/transport"
 	"api/middleware"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -14,6 +15,7 @@ import (
 var whitelistPaths = []string{
 	"/api/v1/swagger",
 	"/api/v1/auth",
+	"/api/v1/schedule",
 }
 
 func isWhitelisted(path string) bool {
@@ -45,5 +47,6 @@ func RegisterHandlerV1() *fiber.App {
 
 	// Register auth routes
 	authTransport.RegisterAuthHandler(v1.Group("/auth"))
+	scheduleFilterTransport.RegisterScheduleFilterHandler(v1.Group("/schedule"))
 	return router
 }
