@@ -88,8 +88,8 @@ func (s *AuthService) CreateWorkspaceUser(userEmail *models.TwUserEmail, workspa
 	WorkspaceUserRequest.WorkspaceId = workspace.ID
 	WorkspaceUserRequest.Workspace = *workspace
 	WorkspaceUserRequest.UserEmail = *userEmail
-	WorkspaceUserRequest.Role = "Owner"
-	WorkspaceUserRequest.Status = "Joined"
+	WorkspaceUserRequest.Role = "owner"
+	WorkspaceUserRequest.Status = "joined"
 	WorkspaceUserRequest.IsActive = true
 	WorkspaceUserRequest.IsVerified = true
 	WorkspaceUserRequest.ExtraData = ""
