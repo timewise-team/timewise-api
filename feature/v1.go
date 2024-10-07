@@ -3,6 +3,7 @@ package feature
 import (
 	_ "api/docs"
 	authTransport "api/feature/authentication/transport"
+	scheduleFilterTransport "api/feature/schedule_filter/transport"
 	workspaceTransport "api/feature/workspace/transport"
 	"api/middleware"
 	"github.com/gofiber/fiber/v2"
@@ -16,6 +17,7 @@ var whitelistPaths = []string{
 	"/api/v1/swagger",
 	"/api/v1/auth",
 	"/api/v1/workspace",
+	"/api/v1/schedule",
 }
 
 func isWhitelisted(path string) bool {
@@ -27,10 +29,6 @@ func isWhitelisted(path string) bool {
 	return false
 }
 
-func TestLocalMiddleware(c *fiber.Ctx) error {
-	c.Locals("userid", "2")
-	return c.Next()
-}
 func RegisterHandlerV1() *fiber.App {
 	router := fiber.New()
 
@@ -45,8 +43,6 @@ func RegisterHandlerV1() *fiber.App {
 	router.Use(skip.New(middleware.AuthMiddleware, func(ctx *fiber.Ctx) bool {
 		return isWhitelisted(ctx.Path())
 	}))
-	router.Use(TestLocalMiddleware)
-
 	// Register API v1 routes
 	v1 := router.Group("/api/v1")
 	v1.Get("/swagger/*", swagger.HandlerDefault)
@@ -54,5 +50,6 @@ func RegisterHandlerV1() *fiber.App {
 	// Register auth routes
 	authTransport.RegisterAuthHandler(v1.Group("/auth"))
 	workspaceTransport.RegisterWorkspaceHandler(v1.Group("/workspace"))
+	scheduleFilterTransport.RegisterScheduleFilterHandler(v1.Group("/schedule"))
 	return router
 }
