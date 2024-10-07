@@ -1,4 +1,119 @@
 definitions:
+  create_workspace_dtos.CreateWorkspaceRequest:
+    properties:
+      description:
+        type: string
+      email:
+        type: string
+      is_deleted:
+        type: boolean
+      key:
+        type: string
+      title:
+        type: string
+      type:
+        type: string
+    type: object
+  create_workspace_dtos.CreateWorkspaceResponse:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      description:
+        type: string
+      extra_data:
+        type: string
+      id:
+        type: integer
+      is_deleted:
+        type: boolean
+      key:
+        type: string
+      title:
+        type: string
+      type:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.TwUser:
+    properties:
+      calendarSettings:
+        type: string
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      email:
+        type: string
+      firstName:
+        type: string
+      googleId:
+        type: string
+      id:
+        type: integer
+      isActive:
+        type: boolean
+      isVerified:
+        type: boolean
+      lastLoginAt:
+        type: string
+      lastName:
+        type: string
+      locale:
+        type: string
+      notificationSettings:
+        type: string
+      profilePicture:
+        type: string
+      role:
+        type: string
+      timezone:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.TwUserEmail:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      updated_at:
+        type: string
+      user:
+        $ref: '#/definitions/models.TwUser'
+      user_id:
+        type: integer
+    type: object
+  models.TwWorkspace:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      description:
+        type: string
+      extra_data:
+        type: string
+      id:
+        type: integer
+      is_deleted:
+        type: boolean
+      key:
+        type: string
+      title:
+        type: string
+      type:
+        type: string
+      updated_at:
+        type: string
+    type: object
   transport.GoogleAuthRequest:
     properties:
       credentials:
@@ -14,6 +129,10 @@ definitions:
         type: string
       is_new_user:
         type: boolean
+      linked_user_emails:
+        items:
+          $ref: '#/definitions/models.TwUserEmail'
+        type: array
       token_type:
         type: string
     type: object
@@ -45,4 +164,48 @@ paths:
       summary: Google callback
       tags:
       - auth
+  /api/v1/workspace/create-workspace:
+    post:
+      consumes:
+      - application/json
+      description: Create a workspace
+      parameters:
+      - description: Create workspace request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/create_workspace_dtos.CreateWorkspaceRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/create_workspace_dtos.CreateWorkspaceResponse'
+      summary: Create a workspace
+      tags:
+      - workspace
+  /api/v1/workspace/get-workspaces-by-email/{email}:
+    get:
+      consumes:
+      - application/json
+      description: Get workspaces by email
+      parameters:
+      - description: Email
+        in: path
+        name: email
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.TwWorkspace'
+            type: array
+      summary: Get workspaces by email
+      tags:
+      - workspace
 swagger: "2.0"
