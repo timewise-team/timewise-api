@@ -7,9 +7,9 @@
         "version": "1.0"
     },
     "paths": {
-        "/api/v1/auth/login": {
+        "/api/v1/auth/callback": {
             "post": {
-                "description": "Login",
+                "description": "Google callback",
                 "consumes": [
                     "application/json"
                 ],
@@ -19,14 +19,15 @@
                 "tags": [
                     "auth"
                 ],
+                "summary": "Google callback",
                 "parameters": [
                     {
-                        "description": "User login request",
+                        "description": "Google auth request",
                         "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/user_login_dtos.UserLoginRequest"
+                            "$ref": "#/definitions/transport.GoogleAuthRequest"
                         }
                     }
                 ],
@@ -34,15 +35,15 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/user_login_dtos.UserLoginResponse"
+                            "$ref": "#/definitions/transport.GoogleAuthResponse"
                         }
                     }
                 }
             }
         },
-        "/api/v1/auth/register": {
-            "post": {
-                "description": "Register",
+        "/api/v1/schedule/schedule": {
+            "get": {
+                "description": "Retrieve a list of schedules based on specified filter parameters.",
                 "consumes": [
                     "application/json"
                 ],
@@ -50,25 +51,91 @@
                     "application/json"
                 ],
                 "tags": [
-                    "auth"
+                    "Schedule"
                 ],
-                "summary": "Register",
+                "summary": "Get schedules by filter",
                 "parameters": [
                     {
-                        "description": "User register request",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/user_register_dto.RegisterRequestDto"
-                        }
+                        "type": "integer",
+                        "description": "Filter by Workspace ID",
+                        "name": "workspace_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filter by Board Column ID",
+                        "name": "board_column_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by Title (searches with LIKE)",
+                        "name": "title",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by Start Time (ISO8601 format)",
+                        "name": "start_time",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by End Time (ISO8601 format)",
+                        "name": "end_time",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by Location (searches with LIKE)",
+                        "name": "location",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filter by User ID of the creator",
+                        "name": "created_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by Status",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by Deleted Schedules",
+                        "name": "is_deleted",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filter by User ID assigned to the schedule",
+                        "name": "assigned_to",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "List of filtered schedules",
                         "schema": {
-                            "$ref": "#/definitions/user_register_dto.RegisterResponseDto"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/core_dtos.TwScheduleResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid query parameters",
+                        "schema": {
+                            "$ref": "#/definitions/fiber.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/fiber.Error"
                         }
                     }
                 }
@@ -76,18 +143,85 @@
         }
     },
     "definitions": {
-        "user_login_dtos.UserLoginRequest": {
+        "core_dtos.TwScheduleResponse": {
             "type": "object",
             "properties": {
-                "password": {
+                "all_day": {
+                    "type": "boolean"
+                },
+                "assigned_to": {
+                    "type": "integer"
+                },
+                "board_column_id": {
+                    "type": "integer"
+                },
+                "created_at": {
                     "type": "string"
                 },
-                "username": {
+                "created_by": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "end_time": {
+                    "type": "string"
+                },
+                "extra_data": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_deleted": {
+                    "type": "boolean"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "recurrence_pattern": {
+                    "type": "string"
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "visibility": {
+                    "type": "string"
+                },
+                "workspace_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "fiber.Error": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "message": {
                     "type": "string"
                 }
             }
         },
-        "user_login_dtos.UserLoginResponse": {
+        "transport.GoogleAuthRequest": {
+            "type": "object",
+            "properties": {
+                "credentials": {
+                    "type": "string"
+                }
+            }
+        },
+        "transport.GoogleAuthResponse": {
             "type": "object",
             "properties": {
                 "access_token": {
@@ -96,47 +230,13 @@
                 "expires_in": {
                     "type": "integer"
                 },
+                "id_token": {
+                    "type": "string"
+                },
+                "is_new_user": {
+                    "type": "boolean"
+                },
                 "token_type": {
-                    "type": "string"
-                }
-            }
-        },
-        "user_register_dto.RegisterRequestDto": {
-            "type": "object",
-            "properties": {
-                "confirm_password": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "full_name": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "user_register_dto.RegisterResponseDto": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "first_name": {
-                    "type": "string"
-                },
-                "hash_password": {
-                    "type": "string"
-                },
-                "last_name": {
-                    "type": "string"
-                },
-                "username": {
                     "type": "string"
                 }
             }
