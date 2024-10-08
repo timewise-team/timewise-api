@@ -10,9 +10,7 @@ import (
 	dtos "github.com/timewise-team/timewise-models/dtos/core_dtos/user_register_dtos"
 	"github.com/timewise-team/timewise-models/models"
 	"io/ioutil"
-	"log"
 	"net/http"
-	"strconv"
 )
 
 type GoogleAuthRequest struct {
@@ -20,12 +18,11 @@ type GoogleAuthRequest struct {
 }
 
 type GoogleAuthResponse struct {
-	AccessToken      string               `json:"access_token"`
-	ExpiresIn        int                  `json:"expires_in"`
-	TokenType        string               `json:"token_type"`
-	IsNewUser        bool                 `json:"is_new_user"`
-	IdToken          string               `json:"id_token"`
-	LinkedUserEmails []models.TwUserEmail `json:"linked_user_emails"`
+	AccessToken string `json:"access_token"`
+	ExpiresIn   int    `json:"expires_in"`
+	TokenType   string `json:"token_type"`
+	IsNewUser   bool   `json:"is_new_user"`
+	IdToken     string `json:"id_token"`
 }
 type GetUserEmailSyncResponse []models.TwUserEmail
 
@@ -102,35 +99,7 @@ func (h *AuthHandler) googleCallback(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not init new user"})
 		}
 	}
-	idStr := strconv.Itoa(userRespDto.User.ID)
-	resp2, err := dms.CallAPI(
-		"GET",
-		"/user_email/user/"+idStr,
-		nil,
-		nil,
-		nil,
-		120,
-	)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
 
-	body2, err := ioutil.ReadAll(resp2.Body)
-	if err != nil || resp.StatusCode != http.StatusOK {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not get or create user"})
-	}
-
-	// marshal response body
-	var userEmailSync GetUserEmailSyncResponse
-	err = json.Unmarshal(body2, &userEmailSync)
-	if err != nil {
-		log.Printf("Error marshaling response: %v", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not marshal response body"})
-	}
-	if len(userEmailSync) == 0 {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "There are no emails linked to this user"})
-	}
 	// Generate JWT token
 	accessToken, expiresIn, err := auth_utils.GenerateJWTToken(userRespDto.User, viper.GetString("JWT_SECRET"))
 	if err != nil {
@@ -139,11 +108,10 @@ func (h *AuthHandler) googleCallback(c *fiber.Ctx) error {
 
 	// Send the token back to the frontend
 	return c.JSON(GoogleAuthResponse{
-		AccessToken:      accessToken,
-		ExpiresIn:        expiresIn,
-		TokenType:        "Bearer",
-		IsNewUser:        userRespDto.IsNewUser,
-		IdToken:          req.Credentials,
-		LinkedUserEmails: userEmailSync,
+		AccessToken: accessToken,
+		ExpiresIn:   expiresIn,
+		TokenType:   "Bearer",
+		IsNewUser:   userRespDto.IsNewUser,
+		IdToken:     req.Credentials,
 	})
 }
