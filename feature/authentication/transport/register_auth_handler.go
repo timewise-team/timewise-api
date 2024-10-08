@@ -15,6 +15,7 @@ func RegisterAuthHandler(router fiber.Router) {
 
 	// Register all endpoints here
 	router.Post("/callback", authHandler.googleCallback)
+	//router.Get("/get-linked-emails", authHandler.getLinkedEmails)
 	//router.Post("/logout", authHandler.logout)
 	//router.Post("/refresh", authHandler.refresh)
 	//router.Post("/forgot-password", authHandler.forgotPassword)

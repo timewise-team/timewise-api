@@ -65,9 +65,10 @@ func AuthMiddleware(c *fiber.Ctx) error {
 				"error": "Invalid token claims",
 			})
 		}
-		if userid, ok := claims["userid"].(string); ok {
+		if userid, ok := claims["userid"].(float64); ok {
+
 			// Store the userid in the request context
-			c.Locals("userid", userid)
+			c.Locals("userid", fmt.Sprintf("%.0f", userid))
 		} else {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"error": "Invalid token claims",
