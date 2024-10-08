@@ -211,6 +211,68 @@
         }
     },
     "definitions": {
+        "core_dtos.TwScheduleResponse": {
+            "type": "object",
+            "properties": {
+                "all_day": {
+                    "type": "boolean"
+                },
+                "assigned_to": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "board_column_id": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "end_time": {
+                    "type": "string"
+                },
+                "extra_data": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_deleted": {
+                    "type": "boolean"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "recurrence_pattern": {
+                    "type": "string"
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "visibility": {
+                    "type": "string"
+                },
+                "workspace_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "create_workspace_dtos.CreateWorkspaceRequest": {
             "type": "object",
             "properties": {
@@ -265,6 +327,17 @@
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "fiber.Error": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "message": {
                     "type": "string"
                 }
             }
@@ -382,76 +455,6 @@
                     "type": "string"
                 },
                 "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
-        "core_dtos.TwScheduleResponse": {
-            "type": "object",
-            "properties": {
-                "all_day": {
-                    "type": "boolean"
-                },
-                "assigned_to": {
-                    "type": "integer"
-                },
-                "board_column_id": {
-                    "type": "integer"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "created_by": {
-                    "type": "integer"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "end_time": {
-                    "type": "string"
-                },
-                "extra_data": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "is_deleted": {
-                    "type": "boolean"
-                },
-                "location": {
-                    "type": "string"
-                },
-                "recurrence_pattern": {
-                    "type": "string"
-                },
-                "start_time": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "visibility": {
-                    "type": "string"
-                },
-                "workspace_id": {
-                    "type": "integer"
-                }
-            }
-        },
-        "fiber.Error": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "integer"
-                },
-                "message": {
                     "type": "string"
                 }
             }
