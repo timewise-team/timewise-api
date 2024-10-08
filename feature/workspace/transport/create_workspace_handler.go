@@ -2,6 +2,7 @@ package transport
 
 import (
 	"api/service/workspace"
+	workspace_utils "api/utils/workspace"
 	"github.com/gofiber/fiber/v2"
 	dtos "github.com/timewise-team/timewise-models/dtos/core_dtos/create_workspace_dtos"
 )
@@ -23,6 +24,11 @@ func (h *WorkspaceHandler) createWorkspace(c *fiber.Ctx) error {
 			"message": err.Error(),
 		})
 	}
+	if err := workspace_utils.ValidateWorkspace(createWorkspaceRequest); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
 
 	// Create the workspace
 	workspace, err := workspace.NewCreateWorkspaceService().InitWorkspace(createWorkspaceRequest)
@@ -31,7 +37,11 @@ func (h *WorkspaceHandler) createWorkspace(c *fiber.Ctx) error {
 			"message": err.Error(),
 		})
 	}
-
+	if workspace == nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to create workspace",
+		})
+	}
 	// Return the response
 	return c.JSON(workspace)
 }

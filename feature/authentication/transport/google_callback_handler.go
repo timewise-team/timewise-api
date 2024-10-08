@@ -44,7 +44,11 @@ func (h *AuthHandler) googleCallback(c *fiber.Ctx) error {
 			"error": "Cannot parse request",
 		})
 	}
-
+	if req.Credentials == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Credentials is required",
+		})
+	}
 	// decode credentials
 	decodedCredentials, err := auth_utils.VerifyGoogleToken(req.Credentials)
 	var oauthData auth_utils.GoogleOauthData
@@ -123,6 +127,9 @@ func (h *AuthHandler) googleCallback(c *fiber.Ctx) error {
 	if err != nil {
 		log.Printf("Error marshaling response: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not marshal response body"})
+	}
+	if len(userEmailSync) == 0 {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "There are no emails linked to this user"})
 	}
 	// Generate JWT token
 	accessToken, expiresIn, err := auth_utils.GenerateJWTToken(userRespDto.User, viper.GetString("JWT_SECRET"))

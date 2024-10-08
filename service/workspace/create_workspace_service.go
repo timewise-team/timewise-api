@@ -3,7 +3,6 @@ package workspace
 import (
 	"api/dms"
 	"encoding/json"
-	"fmt"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos/create_workspace_dtos"
 	"github.com/timewise-team/timewise-models/models"
 	"io/ioutil"
@@ -30,9 +29,16 @@ func (s *CreateWorkspaceService) InitWorkspace(workspaceRequest create_workspace
 	if err != nil {
 		return nil, err
 	}
-
+	if workspaceResult == nil {
+		return nil, err
+	}
 	userEmail, err := s.GetUserEmailByEmail(workspaceRequest.Email)
-	fmt.Printf("userEmail: %v", userEmail)
+	if err != nil {
+		return nil, err
+	}
+	if userEmail == nil {
+		return nil, err
+	}
 	var workspaceUser = models.TwWorkspaceUser{
 		WorkspaceId: workspaceResult.ID,
 		Role:        "owner",

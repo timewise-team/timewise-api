@@ -8,6 +8,7 @@ import (
 	"golang.org/x/oauth2/google"
 	"io"
 	"net/http"
+	"regexp"
 	"time"
 )
 
@@ -78,4 +79,9 @@ func GenerateJWTToken(user models.TwUser, secretKey string) (string, int, error)
 
 	// Trả về token, thời gian hết hạn
 	return tokenString, expiresIn, nil
+}
+
+func IsValidEmail(email string) bool {
+	re := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+	return re.MatchString(email)
 }
