@@ -8,6 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/spf13/viper"
 	dtos "github.com/timewise-team/timewise-models/dtos/core_dtos/user_register_dtos"
+	"github.com/timewise-team/timewise-models/models"
 	"io/ioutil"
 	"net/http"
 )
@@ -23,6 +24,7 @@ type GoogleAuthResponse struct {
 	IsNewUser   bool   `json:"is_new_user"`
 	IdToken     string `json:"id_token"`
 }
+type GetUserEmailSyncResponse []models.TwUserEmail
 
 // @Summary Google callback
 // @Description Google callback
@@ -39,7 +41,11 @@ func (h *AuthHandler) googleCallback(c *fiber.Ctx) error {
 			"error": "Cannot parse request",
 		})
 	}
-
+	if req.Credentials == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Credentials is required",
+		})
+	}
 	// decode credentials
 	decodedCredentials, err := auth_utils.VerifyGoogleToken(req.Credentials)
 	var oauthData auth_utils.GoogleOauthData
@@ -93,6 +99,7 @@ func (h *AuthHandler) googleCallback(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not init new user"})
 		}
 	}
+
 	// Generate JWT token
 	accessToken, expiresIn, err := auth_utils.GenerateJWTToken(userRespDto.User, viper.GetString("JWT_SECRET"))
 	if err != nil {

@@ -56,7 +56,7 @@ func (s *ScheduleService) CreateSchedule(c *fiber.Ctx, CreateScheduleDto core_dt
 	}
 
 	if !allowedRoles[strings.ToLower(workspaceUser.Role)] {
-		return errors.New("You have no permission to create schedule")
+		return errors.New("permission denied")
 	}
 
 	newSchedule := models.TwSchedule{
@@ -237,7 +237,7 @@ func (s *ScheduleService) UpdateSchedule(c *fiber.Ctx, UpdateScheduleDto core_dt
 				updateSchedule.Status = *UpdateScheduleDto.Status
 			}
 		default:
-			return c.Status(fiber.StatusForbidden).SendString("Forbidden")
+			return errors.New("permission denied")
 		}
 	}
 

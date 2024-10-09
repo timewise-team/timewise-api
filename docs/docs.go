@@ -148,17 +148,274 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/schedules": {
+            "post": {
+                "description": "Create a new schedule",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "schedule"
+                ],
+                "summary": "Create a new schedule",
+                "parameters": [
+                    {
+                        "description": "Schedule",
+                        "name": "schedule",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/core_dtos.TwCreateScheduleRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/core_dtos.TwCreateShecduleResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/schedules/{schedule_id}": {
+            "put": {
+                "description": "Update an existing schedule",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "schedule"
+                ],
+                "summary": "Update an existing schedule",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Schedule ID",
+                        "name": "schedule_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Schedule",
+                        "name": "schedule",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/core_dtos.TwUpdateScheduleRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/core_dtos.TwUpdateScheduleResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a schedule",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "schedule"
+                ],
+                "summary": "Delete a schedule",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Schedule ID",
+                        "name": "schedule_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/api/v1/user_emails/get-linked-email": {
+            "get": {
+                "description": "Get linked user email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "linked_emails"
+                ],
+                "summary": "Get linked user email",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.TwUserEmail"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/workspace/create-workspace": {
+            "post": {
+                "description": "Create a workspace",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workspace"
+                ],
+                "summary": "Create a workspace",
+                "parameters": [
+                    {
+                        "description": "Create workspace request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/create_workspace_dtos.CreateWorkspaceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/create_workspace_dtos.CreateWorkspaceResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/workspace/get-workspaces-by-email/{email}": {
+            "get": {
+                "description": "Get workspaces by email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workspace"
+                ],
+                "summary": "Get workspaces by email",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Email",
+                        "name": "email",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.TwWorkspace"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
-        "core_dtos.TwScheduleResponse": {
+        "core_dtos.TwCreateScheduleRequest": {
+            "type": "object",
+            "properties": {
+                "all_day": {
+                    "description": "Nullable field (represented by tinyint in SQL)",
+                    "type": "boolean"
+                },
+                "board_column_id": {
+                    "description": "Nullable field",
+                    "type": "integer"
+                },
+                "created_by": {
+                    "description": "Required field",
+                    "type": "integer"
+                },
+                "description": {
+                    "description": "Nullable field",
+                    "type": "string"
+                },
+                "end_time": {
+                    "description": "Nullable field",
+                    "type": "string"
+                },
+                "extra_data": {
+                    "description": "Nullable field",
+                    "type": "string"
+                },
+                "location": {
+                    "description": "Nullable field",
+                    "type": "string"
+                },
+                "recurrence_pattern": {
+                    "description": "Nullable field",
+                    "type": "string"
+                },
+                "start_time": {
+                    "description": "Nullable field",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "Nullable field",
+                    "type": "string"
+                },
+                "title": {
+                    "description": "Nullable field",
+                    "type": "string"
+                },
+                "video_transcript": {
+                    "description": "Nullable field",
+                    "type": "string"
+                },
+                "visibility": {
+                    "description": "Nullable field",
+                    "type": "string"
+                },
+                "workspace_id": {
+                    "description": "Nullable field",
+                    "type": "integer"
+                },
+                "workspace_user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "core_dtos.TwCreateShecduleResponse": {
             "type": "object",
             "properties": {
                 "all_day": {
                     "type": "boolean"
-                },
-                "assigned_to": {
-                    "type": "integer"
                 },
                 "board_column_id": {
                     "type": "integer"
@@ -202,11 +459,240 @@ const docTemplate = `{
                 "updated_at": {
                     "type": "string"
                 },
+                "video_transcript": {
+                    "type": "string"
+                },
                 "visibility": {
                     "type": "string"
                 },
                 "workspace_id": {
                     "type": "integer"
+                }
+            }
+        },
+        "core_dtos.TwScheduleResponse": {
+            "type": "object",
+            "properties": {
+                "all_day": {
+                    "type": "boolean"
+                },
+                "board_column_id": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "end_time": {
+                    "type": "string"
+                },
+                "extra_data": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_deleted": {
+                    "type": "boolean"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "recurrence_pattern": {
+                    "type": "string"
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "video_transcript": {
+                    "type": "string"
+                },
+                "visibility": {
+                    "type": "string"
+                },
+                "workspace_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "core_dtos.TwUpdateScheduleRequest": {
+            "type": "object",
+            "properties": {
+                "all_day": {
+                    "type": "boolean"
+                },
+                "board_column_id": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "end_time": {
+                    "type": "string"
+                },
+                "extra_data": {
+                    "type": "string"
+                },
+                "is_deleted": {
+                    "type": "boolean"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "recurrence_pattern": {
+                    "type": "string"
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "video_transcript": {
+                    "type": "string"
+                },
+                "visibility": {
+                    "type": "string"
+                },
+                "workspace_id": {
+                    "type": "integer"
+                },
+                "workspace_user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "core_dtos.TwUpdateScheduleResponse": {
+            "type": "object",
+            "properties": {
+                "all_day": {
+                    "type": "boolean"
+                },
+                "board_column_id": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "end_time": {
+                    "type": "string"
+                },
+                "extra_data": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_deleted": {
+                    "type": "boolean"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "recurrence_pattern": {
+                    "type": "string"
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "video_transcript": {
+                    "type": "string"
+                },
+                "visibility": {
+                    "type": "string"
+                },
+                "workspace_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "create_workspace_dtos.CreateWorkspaceRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "is_deleted": {
+                    "type": "boolean"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "create_workspace_dtos.CreateWorkspaceResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "extra_data": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_deleted": {
+                    "type": "boolean"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
                 }
             }
         },
@@ -217,6 +703,123 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.TwUser": {
+            "type": "object",
+            "properties": {
+                "calendarSettings": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "googleId": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "isVerified": {
+                    "type": "boolean"
+                },
+                "lastLoginAt": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "locale": {
+                    "type": "string"
+                },
+                "notificationSettings": {
+                    "type": "string"
+                },
+                "profilePicture": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "timezone": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.TwUserEmail": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/models.TwUser"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.TwWorkspace": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "extra_data": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_deleted": {
+                    "type": "boolean"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updated_at": {
                     "type": "string"
                 }
             }

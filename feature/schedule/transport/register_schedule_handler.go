@@ -14,7 +14,7 @@ func RegisterScheduleHandler(router fiber.Router) {
 	}
 
 	// Register all endpoints here
-	router.Post("/create_schedule", scheduleHandler.Handler.CreateSchedule)
+	router.Post("/", scheduleHandler.Handler.CreateSchedule)
 	router.Put("/:scheduleId", scheduleHandler.Handler.UpdateSchedule)
 	router.Delete("/:scheduleId", scheduleHandler.Handler.DeleteSchedule)
 }
