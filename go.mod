@@ -8,7 +8,8 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/spf13/viper v1.19.0
 	github.com/swaggo/swag v1.16.3
-	github.com/timewise-team/timewise-models v0.0.0-20241004160806-8bda49a7ce48
+	github.com/timewise-team/timewise-models v0.0.0-20241009020855-90eadd90cbbd
+	golang.org/x/crypto v0.24.0
 	golang.org/x/oauth2 v0.23.0
 )
 
@@ -23,6 +24,8 @@ require (
 	github.com/go-openapi/swag v0.23.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
+	github.com/jinzhu/gorm v1.9.16 // indirect
+	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect

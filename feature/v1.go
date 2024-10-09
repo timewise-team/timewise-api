@@ -3,6 +3,7 @@ package feature
 import (
 	_ "api/docs"
 	authTransport "api/feature/authentication/transport"
+	"api/feature/schedule/transport"
 	scheduleFilterTransport "api/feature/schedule_filter/transport"
 	"api/middleware"
 	"github.com/gofiber/fiber/v2"
@@ -48,5 +49,6 @@ func RegisterHandlerV1() *fiber.App {
 	// Register auth routes
 	authTransport.RegisterAuthHandler(v1.Group("/auth"))
 	scheduleFilterTransport.RegisterScheduleFilterHandler(v1.Group("/schedule"))
+	transport.RegisterScheduleHandler(v1.Group("/schedules"))
 	return router
 }
