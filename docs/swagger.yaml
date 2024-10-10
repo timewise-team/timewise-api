@@ -1,12 +1,55 @@
 definitions:
-  core_dtos.TwScheduleResponse:
+  core_dtos.TwCreateScheduleRequest:
+    properties:
+      all_day:
+        description: Nullable field (represented by tinyint in SQL)
+        type: boolean
+      board_column_id:
+        description: Nullable field
+        type: integer
+      created_by:
+        description: Required field
+        type: integer
+      description:
+        description: Nullable field
+        type: string
+      end_time:
+        description: Nullable field
+        type: string
+      extra_data:
+        description: Nullable field
+        type: string
+      location:
+        description: Nullable field
+        type: string
+      recurrence_pattern:
+        description: Nullable field
+        type: string
+      start_time:
+        description: Nullable field
+        type: string
+      status:
+        description: Nullable field
+        type: string
+      title:
+        description: Nullable field
+        type: string
+      video_transcript:
+        description: Nullable field
+        type: string
+      visibility:
+        description: Nullable field
+        type: string
+      workspace_id:
+        description: Nullable field
+        type: integer
+      workspace_user_id:
+        type: integer
+    type: object
+  core_dtos.TwCreateShecduleResponse:
     properties:
       all_day:
         type: boolean
-      assigned_to:
-        items:
-          type: integer
-        type: array
       board_column_id:
         type: integer
       created_at:
@@ -34,6 +77,119 @@ definitions:
       title:
         type: string
       updated_at:
+        type: string
+      video_transcript:
+        type: string
+      visibility:
+        type: string
+      workspace_id:
+        type: integer
+    type: object
+  core_dtos.TwScheduleResponse:
+    properties:
+      all_day:
+        type: boolean
+      board_column_id:
+        type: integer
+      created_at:
+        type: string
+      created_by:
+        type: integer
+      description:
+        type: string
+      end_time:
+        type: string
+      extra_data:
+        type: string
+      id:
+        type: integer
+      is_deleted:
+        type: boolean
+      location:
+        type: string
+      recurrence_pattern:
+        type: string
+      start_time:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+      video_transcript:
+        type: string
+      visibility:
+        type: string
+      workspace_id:
+        type: integer
+    type: object
+  core_dtos.TwUpdateScheduleRequest:
+    properties:
+      all_day:
+        type: boolean
+      board_column_id:
+        type: integer
+      description:
+        type: string
+      end_time:
+        type: string
+      extra_data:
+        type: string
+      is_deleted:
+        type: boolean
+      location:
+        type: string
+      recurrence_pattern:
+        type: string
+      start_time:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      video_transcript:
+        type: string
+      visibility:
+        type: string
+      workspace_id:
+        type: integer
+      workspace_user_id:
+        type: integer
+    type: object
+  core_dtos.TwUpdateScheduleResponse:
+    properties:
+      all_day:
+        type: boolean
+      board_column_id:
+        type: integer
+      created_at:
+        type: string
+      created_by:
+        type: integer
+      description:
+        type: string
+      end_time:
+        type: string
+      extra_data:
+        type: string
+      id:
+        type: integer
+      is_deleted:
+        type: boolean
+      location:
+        type: string
+      recurrence_pattern:
+        type: string
+      start_time:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+      video_transcript:
         type: string
       visibility:
         type: string
@@ -274,6 +430,73 @@ paths:
       summary: Get schedules by filter
       tags:
       - Schedule
+  /api/v1/schedules:
+    post:
+      consumes:
+      - application/json
+      description: Create a new schedule
+      parameters:
+      - description: Schedule
+        in: body
+        name: schedule
+        required: true
+        schema:
+          $ref: '#/definitions/core_dtos.TwCreateScheduleRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/core_dtos.TwCreateShecduleResponse'
+      summary: Create a new schedule
+      tags:
+      - schedule
+  /api/v1/schedules/{schedule_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a schedule
+      parameters:
+      - description: Schedule ID
+        in: path
+        name: schedule_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      summary: Delete a schedule
+      tags:
+      - schedule
+    put:
+      consumes:
+      - application/json
+      description: Update an existing schedule
+      parameters:
+      - description: Schedule ID
+        in: path
+        name: schedule_id
+        required: true
+        type: integer
+      - description: Schedule
+        in: body
+        name: schedule
+        required: true
+        schema:
+          $ref: '#/definitions/core_dtos.TwUpdateScheduleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/core_dtos.TwUpdateScheduleResponse'
+      summary: Update an existing schedule
+      tags:
+      - schedule
   /api/v1/user_emails/get-linked-email:
     get:
       consumes:
