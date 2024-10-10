@@ -202,13 +202,7 @@ definitions:
         type: string
       email:
         type: string
-      is_deleted:
-        type: boolean
-      key:
-        type: string
       title:
-        type: string
-      type:
         type: string
     type: object
   create_workspace_dtos.CreateWorkspaceResponse:
