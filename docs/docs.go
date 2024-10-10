@@ -647,16 +647,7 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
-                "is_deleted": {
-                    "type": "boolean"
-                },
-                "key": {
-                    "type": "string"
-                },
                 "title": {
-                    "type": "string"
-                },
-                "type": {
                     "type": "string"
                 }
             }
