@@ -3,6 +3,7 @@ package feature
 import (
 	_ "api/docs"
 	authTransport "api/feature/authentication/transport"
+	boardColumnsTransport "api/feature/board_columns/transport"
 	linkedEmailsTransport "api/feature/linked_emails/transport"
 	"api/feature/schedule/transport"
 	scheduleFilterTransport "api/feature/schedule_filter/transport"
@@ -54,5 +55,6 @@ func RegisterHandlerV1() *fiber.App {
 	scheduleFilterTransport.RegisterScheduleFilterHandler(v1.Group("/schedule"))
 	linkedEmailsTransport.RegisterLinkedEmailsHandler(v1.Group("/user_emails"))
 	transport.RegisterScheduleHandler(v1.Group("/schedules"))
+	boardColumnsTransport.RegisterBoardColumnsHandler(v1.Group("/board_columns"))
 	return router
 }
