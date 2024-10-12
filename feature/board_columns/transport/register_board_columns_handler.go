@@ -15,7 +15,7 @@ func RegisterBoardColumnsHandler(router fiber.Router) {
 	}
 
 	// Register all endpoints here
-	router.Get("/workspace/:workspace_id", boardColumnsHandler.getBoardColumnsByWorkspace)
+	router.Get("/workspace/:workspace_id", middleware.CheckWorkspaceRole([]string{"owner", "admin", "member"}), boardColumnsHandler.getBoardColumnsByWorkspace)
 	router.Post("", middleware.CheckWorkspaceRole([]string{"owner", "admin"}), boardColumnsHandler.createBoardColumn)
 	router.Delete("/:board_column_id", middleware.CheckWorkspaceRole([]string{"owner", "admin"}), boardColumnsHandler.deleteBoardColumn)
 	router.Put("/:board_column_id", middleware.CheckWorkspaceRole([]string{"owner", "admin"}), boardColumnsHandler.updateBoardColumn)
