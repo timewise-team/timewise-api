@@ -49,6 +49,146 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/board_columns": {
+            "post": {
+                "description": "Create a board column (X-User-Email required, X-Workspace-Id required)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "board_columns"
+                ],
+                "summary": "Create a board column (X-User-Email required, X-Workspace-Id required)",
+                "parameters": [
+                    {
+                        "description": "Create board column request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/board_columns_dtos.BoardColumnsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.TwBoardColumn"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/board_columns/workspace/{workspace_id}": {
+            "get": {
+                "description": "Get board columns by workspace (X-User-Email required, X-Workspace-Id required)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "board_columns"
+                ],
+                "summary": "Get board columns by workspace (X-User-Email required, X-Workspace-Id required)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.TwBoardColumn"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/board_columns/{board_column_id}": {
+            "put": {
+                "description": "Update a board column (X-User-Email required, X-Workspace-Id required)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "board_columns"
+                ],
+                "summary": "Update a board column (X-User-Email required, X-Workspace-Id required)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Board column ID",
+                        "name": "board_column_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update board column request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/board_columns_dtos.BoardColumnsRequest"
+                        }
+                    }
+                ],
+                "responses": {}
+            },
+            "delete": {
+                "description": "Delete a board column (X-User-Email required, X-Workspace-Id required)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "board_columns"
+                ],
+                "summary": "Delete a board column (X-User-Email required, X-Workspace-Id required)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Board column ID",
+                        "name": "board_column_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User email",
+                        "name": "email",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/v1/schedule/schedule": {
             "get": {
                 "description": "Retrieve a list of schedules based on specified filter parameters.",
@@ -344,9 +484,58 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/workspace_user/get-workspace_user/email/{email}/workspace_id/{workspace_id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkspaceUser"
+                ],
+                "summary": "Get workspace user by email and workspace",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Email",
+                        "name": "email",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TwWorkspaceUser"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "board_columns_dtos.BoardColumnsRequest": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "integer"
+                },
+                "workspace_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "core_dtos.TwCreateScheduleRequest": {
             "type": "object",
             "properties": {
@@ -698,6 +887,35 @@ const docTemplate = `{
                 }
             }
         },
+        "models.TwBoardColumn": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "workspace": {
+                    "$ref": "#/definitions/models.TwWorkspace"
+                },
+                "workspace_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "models.TwUser": {
             "type": "object",
             "properties": {
@@ -811,6 +1029,53 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.TwWorkspaceUser": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "extra_data": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "is_verified": {
+                    "type": "boolean"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "userEmail": {
+                    "$ref": "#/definitions/models.TwUserEmail"
+                },
+                "user_email_id": {
+                    "type": "integer"
+                },
+                "workspace": {
+                    "$ref": "#/definitions/models.TwWorkspace"
+                },
+                "workspace_id": {
+                    "type": "integer"
+                },
+                "workspace_key": {
                     "type": "string"
                 }
             }

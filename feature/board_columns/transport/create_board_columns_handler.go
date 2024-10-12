@@ -7,6 +7,15 @@ import (
 	dtos "github.com/timewise-team/timewise-models/dtos/core_dtos/board_columns_dtos"
 )
 
+// createBoardColumn godoc
+// @Summary Create a board column (X-User-Email required, X-Workspace-Id required)
+// @Description Create a board column (X-User-Email required, X-Workspace-Id required)
+// @Tags board_columns
+// @Accept json
+// @Produce json
+// @Param body body dtos.BoardColumnsRequest true "Create board column request"
+// @Success 201 {object} models.TwBoardColumn
+// @Router /api/v1/board_columns [post]
 func (h *BoardColumnsHandler) createBoardColumn(c *fiber.Ctx) error {
 	// Parse the request
 	var createBoardColumnRequest dtos.BoardColumnsRequest

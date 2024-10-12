@@ -5,8 +5,11 @@ import (
 	"encoding/json"
 	"github.com/timewise-team/timewise-models/models"
 	"io/ioutil"
+	"log"
 	"net/http"
 )
+
+type GetUserEmailSyncResponse []models.TwUserEmail
 
 type AuthService struct {
 	// Thêm các dependencies cần thiết nếu có (ví dụ: database, API client, v.v.)
@@ -142,6 +145,37 @@ func (s *AuthService) InitNewUser(user models.TwUser) (bool, error) {
 	// Create workspace user
 
 	return true, nil // Success
+}
+
+func (s *AuthService) CheckEmailInList(userId string, email string) (bool, error) {
+	resp, err := dms.CallAPI(
+		"GET",
+		"/user_email/user/"+userId,
+		nil,
+		nil,
+		nil,
+		120,
+	)
+	if err != nil {
+		return false, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	log.Println(resp.StatusCode)
+	if err != nil || resp.StatusCode != http.StatusOK {
+		return false, err
+	}
+	var userEmailSync GetUserEmailSyncResponse
+	err = json.Unmarshal(body, &userEmailSync)
+	if err != nil {
+		return false, err
+	}
+	for _, userEmail := range userEmailSync {
+		if userEmail.Email == email {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 //func (s *AuthService) CreateNotificationSetting(user models.TwUser) *models.TwNotificationSettings {
