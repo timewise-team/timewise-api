@@ -55,7 +55,7 @@ func (s *BoardColumnsService) GetBoardColumnsByWorkspace(workspaceID string) ([]
 	// Call API
 	resp, err := dms.CallAPI(
 		"GET",
-		"/workspace/"+workspaceID+"/board_columns",
+		"/board_columns/workspace/"+workspaceID,
 		nil,
 		nil,
 		nil,
@@ -65,7 +65,6 @@ func (s *BoardColumnsService) GetBoardColumnsByWorkspace(workspaceID string) ([]
 		return nil, fmt.Errorf("server error: %v", err)
 	}
 	defer resp.Body.Close()
-
 	// Kiểm tra mã trạng thái HTTP
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
