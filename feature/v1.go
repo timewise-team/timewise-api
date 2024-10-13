@@ -36,7 +36,7 @@ func RegisterHandlerV1() *fiber.App {
 
 	// Setting CORS
 	router.Use(cors.New(cors.Config{
-		AllowHeaders: "Origin,Content-Type,Accept,Content-Length,Accept-Language,Accept-Encoding,Connection,Access-Control-Allow-Origin,Authorization",
+		AllowHeaders: "Origin,Content-Type,Accept,Content-Length,Accept-Language,Accept-Encoding,Connection,Access-Control-Allow-Origin,Authorization,X-User-Email,X-Workspace-ID",
 		AllowOrigins: "*",
 		AllowMethods: "GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS",
 	}))
