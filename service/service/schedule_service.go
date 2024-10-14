@@ -291,3 +291,31 @@ func (s *ScheduleService) DeleteSchedule(c *fiber.Ctx) error {
 
 	return nil
 }
+
+func (h *ScheduleService) GetSchedulesByBoardColumn(workspaceID string, boardColumnId int) ([]models.TwSchedule, error) {
+	// Call API
+	resp, err := dms.CallAPI(
+		"GET",
+		"/schedule/workspace/"+workspaceID+"/board_column/"+strconv.Itoa(boardColumnId),
+		nil,
+		nil,
+		nil,
+		120,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("server error: %v", err)
+	}
+	defer resp.Body.Close()
+	// Kiểm tra mã trạng thái HTTP
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	// Parse response
+	var schedules []models.TwSchedule
+	if err := json.NewDecoder(resp.Body).Decode(&schedules); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %v", err)
+	}
+
+	return schedules, nil
+}
