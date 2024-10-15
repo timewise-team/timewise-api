@@ -1,7 +1,7 @@
 package transport
 
 import (
-	"api/service/service"
+	"api/service/schedule"
 	"encoding/json"
 	"github.com/gofiber/fiber/v2"
 	dtos "github.com/timewise-team/timewise-models/dtos/core_dtos"
@@ -9,11 +9,11 @@ import (
 )
 
 type ScheduleFilterHandler struct {
-	service service.ScheduleFilterService
+	service schedule.ScheduleFilterService
 }
 
 func NewScheduleFilterHandler() *ScheduleFilterHandler {
-	service := service.NewScheduleFilterService()
+	service := schedule.NewScheduleFilterService()
 	return &ScheduleFilterHandler{
 		service: *service,
 	}
