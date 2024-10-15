@@ -4,8 +4,8 @@ import (
 	"api/service/board_columns"
 	"api/service/comment"
 	"api/service/document"
+	"api/service/schedule"
 	"api/service/schedule_participant"
-	"api/service/service"
 	"github.com/gofiber/fiber/v2"
 	schedule_dtos "github.com/timewise-team/timewise-models/dtos/core_dtos"
 	dtos "github.com/timewise-team/timewise-models/dtos/core_dtos/board_columns_dtos"
@@ -64,7 +64,7 @@ func (h *BoardColumnsHandler) getBoardColumnsByWorkspace(c *fiber.Ctx) error {
 		boardColumnsResponse.UpdatedAt = boardColumn.UpdatedAt
 		boardColumnsResponse.DeletedAt = boardColumn.DeletedAt
 
-		schedules, err := service.NewScheduleService().GetSchedulesByBoardColumn(workspaceID, boardColumn.ID)
+		schedules, err := schedule.NewScheduleService().GetSchedulesByBoardColumn(workspaceID, boardColumn.ID)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"message": "The server failed to respond",
