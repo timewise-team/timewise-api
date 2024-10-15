@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	auth_service "api/service/auth"
 	"api/service/workspace_user"
 	"strings"
 
@@ -25,28 +24,28 @@ func CheckWorkspaceRole(requiredRoles []string) fiber.Handler {
 			})
 		}
 		//Check email in email list
-		var userId = c.Locals("userid")
-		if userId == nil {
-			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-				"message": "Access denied",
-			})
-		}
-		if userId == "" {
-			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-				"message": "Access denied",
-			})
-		}
-		checkEmail, err := auth_service.NewAuthService().CheckEmailInList(userId.(string), email)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": "Internal server error",
-			})
-		}
-		if !checkEmail {
-			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-				"message": "Access denied",
-			})
-		}
+		//var userId = c.Locals("userid")
+		//if userId == nil {
+		//	return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+		//		"message": "Access denied",
+		//	})
+		//}
+		//if userId == "" {
+		//	return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+		//		"message": "Access denied",
+		//	})
+		//}
+		//checkEmail, err := auth_service.NewAuthService().CheckEmailInList(userId.(string), email)
+		//if err != nil {
+		//	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		//		"message": "Internal server error",
+		//	})
+		//}
+		//if !checkEmail {
+		//	return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+		//		"message": "Access denied",
+		//	})
+		//}
 		// Lấy vai trò của người dùng trong workspace
 		workspaceUser, err := workspace_user.NewWorkspaceUserService().GetWorkspaceUserByEmailAndWorkspaceID(email, workspaceID)
 		if err != nil {

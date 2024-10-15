@@ -66,7 +66,7 @@ func (h *WorkspaceHandler) getWorkspacesByEmail(c *fiber.Ctx) error {
 	} else {
 		workspaces, err = workspace.NewWorkspaceService().GetWorkspacesByEmail(emailFix)
 	}
-	// Call service
+	// Call schedule
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),

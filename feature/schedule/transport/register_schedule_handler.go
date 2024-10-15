@@ -1,6 +1,9 @@
 package transport
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"api/middleware"
+	"github.com/gofiber/fiber/v2"
+)
 
 type ScheduleHandlerRegister struct {
 	Router  fiber.Router
@@ -14,7 +17,15 @@ func RegisterScheduleHandler(router fiber.Router) {
 	}
 
 	// Register all endpoints here
-	router.Post("/", scheduleHandler.Handler.CreateSchedule)
-	router.Put("/:scheduleId", scheduleHandler.Handler.UpdateSchedule)
-	router.Delete("/:scheduleId", scheduleHandler.Handler.DeleteSchedule)
+	router.Post("/",
+		middleware.CheckWorkspaceRole([]string{"owner", "admin", "member"}),
+		scheduleHandler.Handler.CreateSchedule)
+	router.Put("/:scheduleId",
+		middleware.CheckWorkspaceRole([]string{"owner", "admin", "member"}),
+		middleware.CheckScheduleStatus([]string{"creator", "assign to"}),
+		scheduleHandler.Handler.UpdateSchedule)
+	router.Delete("/:scheduleId",
+		middleware.CheckWorkspaceRole([]string{"owner", "admin"}),
+		middleware.CheckScheduleStatus([]string{"creator"}),
+		scheduleHandler.Handler.DeleteSchedule)
 }

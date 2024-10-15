@@ -1,4 +1,4 @@
-package service
+package schedule
 
 import (
 	"api/dms"
@@ -11,7 +11,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
-	"strings"
 )
 
 type ScheduleService struct {
@@ -23,55 +22,60 @@ func NewScheduleService() *ScheduleService {
 
 func (s *ScheduleService) CreateSchedule(c *fiber.Ctx, CreateScheduleDto core_dtos.TwCreateScheduleRequest) error {
 
-	workspaceUserIdStr := strconv.Itoa(*CreateScheduleDto.WorkspaceUserID)
-
-	resp, err := dms.CallAPI(
-		"GET",
-		"/workspace_user/"+workspaceUserIdStr,
-		nil,
-		nil,
-		nil,
-		120,
-	)
-
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != fiber.StatusOK {
-		body, _ := ioutil.ReadAll(resp.Body)
-		return c.Status(resp.StatusCode).SendString(string(body))
+	workspaceUser, ok := c.Locals("workspace_user").(*models.TwWorkspaceUser)
+	if !ok {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to retrieve schedule participant",
+		})
 	}
 
-	var workspaceUser models.TwWorkspaceUser
-	if err := json.NewDecoder(resp.Body).Decode(&workspaceUser); err != nil {
-		return err
-	}
-
-	allowedRoles := map[string]bool{
-		"admin":  true,
-		"owner":  true,
-		"member": true,
-	}
-
-	if !allowedRoles[strings.ToLower(workspaceUser.Role)] {
-		return errors.New("permission denied")
-	}
+	//resp, err := dms.CallAPI(
+	//	"GET",
+	//	"/workspace_user/"+workspaceUserIdStr,
+	//	nil,
+	//	nil,
+	//	nil,
+	//	120,
+	//)
+	//
+	//if err != nil {
+	//	return err
+	//}
+	//defer resp.Body.Close()
+	//
+	//if resp.StatusCode != fiber.StatusOK {
+	//	body, _ := ioutil.ReadAll(resp.Body)
+	//	return c.Status(resp.StatusCode).SendString(string(body))
+	//}
+	//
+	//var workspaceUser models.TwWorkspaceUser
+	//if err := json.NewDecoder(resp.Body).Decode(&workspaceUser); err != nil {
+	//	return err
+	//}
+	//
+	//allowedRoles := map[string]bool{
+	//	"admin":  true,
+	//	"owner":  true,
+	//	"member": true,
+	//}
+	//
+	//if !allowedRoles[strings.ToLower(workspaceUser.Role)] {
+	//	return errors.New("permission denied")
+	//}
 
 	newSchedule := models.TwSchedule{
-		WorkspaceId:       *CreateScheduleDto.WorkspaceID,
-		BoardColumnId:     *CreateScheduleDto.BoardColumnID,
-		Title:             *CreateScheduleDto.Title,
-		Description:       *CreateScheduleDto.Description,
-		StartTime:         *CreateScheduleDto.StartTime,
-		EndTime:           *CreateScheduleDto.EndTime,
-		Location:          *CreateScheduleDto.Location,
-		CreatedBy:         *CreateScheduleDto.WorkspaceUserID,
-		AllDay:            *CreateScheduleDto.AllDay,
-		Status:            *CreateScheduleDto.Status,
-		RecurrencePattern: *CreateScheduleDto.RecurrencePattern,
-		Visibility:        *CreateScheduleDto.Visibility,
+		WorkspaceId:   *CreateScheduleDto.WorkspaceID,
+		BoardColumnId: *CreateScheduleDto.BoardColumnID,
+		Title:         *CreateScheduleDto.Title,
+		//Description:       *CreateScheduleDto.Description,
+		//StartTime:         *CreateScheduleDto.StartTime,
+		//EndTime:           *CreateScheduleDto.EndTime,
+		//Location:          *CreateScheduleDto.Location,
+		CreatedBy: workspaceUser.ID,
+		//AllDay:            *CreateScheduleDto.AllDay,
+		//Status:            *CreateScheduleDto.Status,
+		//RecurrencePattern: *CreateScheduleDto.RecurrencePattern,
+		//Visibility:        *CreateScheduleDto.Visibility,
 	}
 
 	resp1, err := dms.CallAPI(
@@ -115,27 +119,7 @@ func fetchSchedule(scheduleID string) (models.TwSchedule, error) {
 	return schedule, nil
 }
 
-func fetchWorkspaceUser(workspaceUserIdStr string) (models.TwWorkspaceUser, error) {
-	resp, err := dms.CallAPI("GET", "/workspace_user/"+workspaceUserIdStr, nil, nil, nil, 120)
-	if err != nil {
-		return models.TwWorkspaceUser{}, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != fiber.StatusOK {
-		body, _ := ioutil.ReadAll(resp.Body)
-		return models.TwWorkspaceUser{}, fmt.Errorf("GET /workspace_user/%s returned status %d: %s", workspaceUserIdStr, resp.StatusCode, string(body))
-	}
-
-	var workspaceUser models.TwWorkspaceUser
-	if err := json.NewDecoder(resp.Body).Decode(&workspaceUser); err != nil {
-		return models.TwWorkspaceUser{}, fmt.Errorf("error decoding workspace_user response: %v", err)
-	}
-
-	return workspaceUser, nil
-}
-
-func fetchScheduleParticipant(workspaceUserIdStr, scheduleID string) (models.TwScheduleParticipant, error) {
+func (s *ScheduleService) FetchScheduleParticipant(workspaceUserIdStr, scheduleID string) (models.TwScheduleParticipant, error) {
 	resp, err := dms.CallAPI("GET", "/schedule_participant/workspace_user/"+workspaceUserIdStr+"/schedule/"+scheduleID, nil, nil, nil, 120)
 	if err != nil {
 		return models.TwScheduleParticipant{}, err
@@ -194,54 +178,50 @@ func applyUpdateFields(baseSchedule, updateSchedule models.TwSchedule, dto core_
 
 func (s *ScheduleService) UpdateSchedule(c *fiber.Ctx, UpdateScheduleDto core_dtos.TwUpdateScheduleRequest) error {
 	scheduleID := c.Params("scheduleId")
-	workspaceUserIdStr := strconv.Itoa(*UpdateScheduleDto.WorkspaceUserID)
 
 	schedule, err := fetchSchedule(scheduleID)
 	if err != nil {
 		return err
 	}
 
-	workspaceUser, err := fetchWorkspaceUser(workspaceUserIdStr)
-	if err != nil {
-		return err
-	}
-
 	updateSchedule := schedule
+	updateSchedule = applyUpdateFields(schedule, updateSchedule, UpdateScheduleDto)
 
-	if schedule.WorkspaceId == workspaceUser.WorkspaceId && (strings.ToLower(workspaceUser.Role) == "admin" || strings.ToLower(workspaceUser.Role) == "owner") {
-		updateSchedule = applyUpdateFields(schedule, updateSchedule, UpdateScheduleDto)
-	} else {
-		scheduleParticipant, err := fetchScheduleParticipant(workspaceUserIdStr, scheduleID)
-		if err != nil {
-			return err
-		}
-
-		switch strings.ToLower(scheduleParticipant.Status) {
-		case "creator":
-			updateSchedule = applyUpdateFields(schedule, updateSchedule, UpdateScheduleDto)
-		case "assign to":
-			updateSchedule.Title = schedule.Title
-			updateSchedule.Description = schedule.Description
-			updateSchedule.Location = schedule.Location
-			updateSchedule.Visibility = schedule.Visibility
-			updateSchedule.VideoTranscript = schedule.VideoTranscript
-			updateSchedule.ExtraData = schedule.ExtraData
-			updateSchedule.RecurrencePattern = schedule.RecurrencePattern
-			updateSchedule.StartTime = schedule.StartTime
-			updateSchedule.EndTime = schedule.EndTime
-
-			if UpdateScheduleDto.BoardColumnID != nil {
-				updateSchedule.BoardColumnId = *UpdateScheduleDto.BoardColumnID
-			}
-			if UpdateScheduleDto.Status != nil {
-				updateSchedule.Status = *UpdateScheduleDto.Status
-			}
-		default:
-			return errors.New("permission denied")
-		}
+	scheduleParticipant, ok := c.Locals("scheduleParticipant").(models.TwScheduleParticipant)
+	if !ok {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to retrieve schedule participant",
+		})
 	}
 
-	resp, err := dms.CallAPI("PUT", "/schedule/"+scheduleID, updateSchedule, nil, nil, 120)
+	workspaceUser, ok := c.Locals("workspace_user").(*models.TwWorkspaceUser)
+	if !ok {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to retrieve schedule participant",
+		})
+	}
+
+	if scheduleParticipant.Status == "assign to" {
+		updateSchedule.Title = schedule.Title
+		updateSchedule.Description = schedule.Description
+		updateSchedule.Location = schedule.Location
+		updateSchedule.Visibility = schedule.Visibility
+		updateSchedule.VideoTranscript = schedule.VideoTranscript
+		updateSchedule.ExtraData = schedule.ExtraData
+		updateSchedule.RecurrencePattern = schedule.RecurrencePattern
+		updateSchedule.StartTime = schedule.StartTime
+		updateSchedule.EndTime = schedule.EndTime
+
+		if UpdateScheduleDto.BoardColumnID != nil {
+			updateSchedule.BoardColumnId = *UpdateScheduleDto.BoardColumnID
+		}
+		if UpdateScheduleDto.Status != nil {
+			updateSchedule.Status = *UpdateScheduleDto.Status
+		}
+
+	}
+
+	resp, err := dms.CallAPI("PUT", "/schedule/"+scheduleID+"/workspace_user/"+strconv.Itoa(workspaceUser.ID), updateSchedule, nil, nil, 120)
 	if err != nil {
 		return err
 	}
@@ -267,10 +247,15 @@ func (s *ScheduleService) UpdateSchedule(c *fiber.Ctx, UpdateScheduleDto core_dt
 func (s *ScheduleService) DeleteSchedule(c *fiber.Ctx) error {
 
 	scheduleID := c.Params("scheduleID")
-
+	workspaceUser, ok := c.Locals("workspace_user").(*models.TwWorkspaceUser)
+	if !ok {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to retrieve schedule participant",
+		})
+	}
 	resp, err := dms.CallAPI(
 		"DELETE",
-		"/schedule/"+scheduleID,
+		"/schedule/"+scheduleID+"/workspace_user/"+strconv.Itoa(workspaceUser.ID),
 		nil,
 		nil,
 		nil,

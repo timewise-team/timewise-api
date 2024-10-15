@@ -1,7 +1,7 @@
 package transport
 
 import (
-	"api/service/service"
+	"api/service/schedule"
 	"encoding/json"
 	"github.com/gofiber/fiber/v2"
 	dtos "github.com/timewise-team/timewise-models/dtos/core_dtos"
@@ -9,11 +9,11 @@ import (
 )
 
 type ScheduleFilterHandler struct {
-	service service.ScheduleFilterService
+	service schedule.ScheduleFilterService
 }
 
 func NewScheduleFilterHandler() *ScheduleFilterHandler {
-	service := service.NewScheduleFilterService()
+	service := schedule.NewScheduleFilterService()
 	return &ScheduleFilterHandler{
 		service: *service,
 	}
@@ -43,7 +43,7 @@ func (h *ScheduleFilterHandler) ScheduleFilter(c *fiber.Ctx) error {
 	resp, err := h.service.ScheduleFilter(c)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error":   "Failed to fetch schedules from service",
+			"error":   "Failed to fetch schedules from schedule",
 			"details": err.Error(),
 		})
 	}
@@ -58,7 +58,7 @@ func (h *ScheduleFilterHandler) ScheduleFilter(c *fiber.Ctx) error {
 
 	if resp.StatusCode >= 400 {
 		return c.Status(resp.StatusCode).JSON(fiber.Map{
-			"error":   "Error from external service",
+			"error":   "Error from external schedule",
 			"details": string(body),
 		})
 	}

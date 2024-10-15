@@ -1,4 +1,4 @@
-package service
+package schedule
 
 import (
 	"api/dms"
