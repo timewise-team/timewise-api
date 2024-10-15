@@ -77,7 +77,7 @@
         },
         "/api/v1/board_columns/workspace/{workspace_id}": {
             "get": {
-                "description": "Get board columns by workspace (X-User-Email required, X-Workspace-Id required)",
+                "description": "Get all board columns by workspace (X-User-Email required, X-Workspace-Id required)",
                 "consumes": [
                     "application/json"
                 ],
@@ -87,7 +87,7 @@
                 "tags": [
                     "board_columns"
                 ],
-                "summary": "Get board columns by workspace (X-User-Email required, X-Workspace-Id required)",
+                "summary": "Get all board columns by workspace (X-User-Email required, X-Workspace-Id required)",
                 "parameters": [
                     {
                         "type": "string",
@@ -103,7 +103,10 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.TwBoardColumn"
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/board_columns_dtos.BoardColumnsResponse"
+                                }
                             }
                         }
                     }
@@ -528,6 +531,38 @@
                 }
             }
         },
+        "board_columns_dtos.BoardColumnsResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "integer"
+                },
+                "schedules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/core_dtos.TwScheduleListInBoardColumnResponse"
+                    }
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "workspace_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "core_dtos.TwCreateScheduleRequest": {
             "type": "object",
             "properties": {
@@ -627,6 +662,77 @@
                 },
                 "recurrence_pattern": {
                     "type": "string"
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "video_transcript": {
+                    "type": "string"
+                },
+                "visibility": {
+                    "type": "string"
+                },
+                "workspace_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "core_dtos.TwScheduleListInBoardColumnResponse": {
+            "type": "object",
+            "properties": {
+                "all_day": {
+                    "type": "boolean"
+                },
+                "board_column_id": {
+                    "type": "integer"
+                },
+                "comments_count": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "documents_count": {
+                    "type": "integer"
+                },
+                "end_time": {
+                    "type": "string"
+                },
+                "extra_data": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_deleted": {
+                    "type": "boolean"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "recurrence_pattern": {
+                    "type": "string"
+                },
+                "schedule_participants": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/schedule_participant_dtos.ScheduleParticipantInfo"
+                    }
                 },
                 "start_time": {
                     "type": "string"
@@ -1069,6 +1175,62 @@
                 },
                 "workspace_key": {
                     "type": "string"
+                }
+            }
+        },
+        "schedule_participant_dtos.ScheduleParticipantInfo": {
+            "type": "object",
+            "properties": {
+                "assign_at": {
+                    "type": "string"
+                },
+                "assign_by": {
+                    "type": "integer"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "invitation_sent_at": {
+                    "type": "string"
+                },
+                "invitation_status": {
+                    "type": "string"
+                },
+                "is_verified": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "profile_picture": {
+                    "type": "string"
+                },
+                "response_time": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "schedule_id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "status_workspace_user": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "workspace_user_id": {
+                    "type": "integer"
                 }
             }
         },

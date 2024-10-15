@@ -43,7 +43,7 @@ func (h *ScheduleFilterHandler) ScheduleFilter(c *fiber.Ctx) error {
 	resp, err := h.service.ScheduleFilter(c)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error":   "Failed to fetch schedules from schedule",
+			"error":   "Failed to fetch schedules from service",
 			"details": err.Error(),
 		})
 	}
@@ -58,7 +58,7 @@ func (h *ScheduleFilterHandler) ScheduleFilter(c *fiber.Ctx) error {
 
 	if resp.StatusCode >= 400 {
 		return c.Status(resp.StatusCode).JSON(fiber.Map{
-			"error":   "Error from external schedule",
+			"error":   "Error from external service",
 			"details": string(body),
 		})
 	}

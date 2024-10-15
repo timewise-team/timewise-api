@@ -8,6 +8,27 @@ definitions:
       workspace_id:
         type: integer
     type: object
+  board_columns_dtos.BoardColumnsResponse:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      position:
+        type: integer
+      schedules:
+        items:
+          $ref: '#/definitions/core_dtos.TwScheduleListInBoardColumnResponse'
+        type: array
+      updated_at:
+        type: string
+      workspace_id:
+        type: integer
+    type: object
   core_dtos.TwCreateScheduleRequest:
     properties:
       all_day:
@@ -79,6 +100,53 @@ definitions:
         type: string
       recurrence_pattern:
         type: string
+      start_time:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+      video_transcript:
+        type: string
+      visibility:
+        type: string
+      workspace_id:
+        type: integer
+    type: object
+  core_dtos.TwScheduleListInBoardColumnResponse:
+    properties:
+      all_day:
+        type: boolean
+      board_column_id:
+        type: integer
+      comments_count:
+        type: integer
+      created_at:
+        type: string
+      created_by:
+        type: integer
+      description:
+        type: string
+      documents_count:
+        type: integer
+      end_time:
+        type: string
+      extra_data:
+        type: string
+      id:
+        type: integer
+      is_deleted:
+        type: boolean
+      location:
+        type: string
+      recurrence_pattern:
+        type: string
+      schedule_participants:
+        items:
+          $ref: '#/definitions/schedule_participant_dtos.ScheduleParticipantInfo'
+        type: array
       start_time:
         type: string
       status:
@@ -371,6 +439,43 @@ definitions:
       workspace_key:
         type: string
     type: object
+  schedule_participant_dtos.ScheduleParticipantInfo:
+    properties:
+      assign_at:
+        type: string
+      assign_by:
+        type: integer
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      invitation_sent_at:
+        type: string
+      invitation_status:
+        type: string
+      is_verified:
+        type: boolean
+      last_name:
+        type: string
+      profile_picture:
+        type: string
+      response_time:
+        type: string
+      role:
+        type: string
+      schedule_id:
+        type: integer
+      status:
+        type: string
+      status_workspace_user:
+        type: string
+      user_id:
+        type: integer
+      workspace_user_id:
+        type: integer
+    type: object
   transport.GoogleAuthRequest:
     properties:
       credentials:
@@ -492,7 +597,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Get board columns by workspace (X-User-Email required, X-Workspace-Id
+      description: Get all board columns by workspace (X-User-Email required, X-Workspace-Id
         required)
       parameters:
       - description: Workspace ID
@@ -507,9 +612,11 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/models.TwBoardColumn'
+              items:
+                $ref: '#/definitions/board_columns_dtos.BoardColumnsResponse'
+              type: array
             type: array
-      summary: Get board columns by workspace (X-User-Email required, X-Workspace-Id
+      summary: Get all board columns by workspace (X-User-Email required, X-Workspace-Id
         required)
       tags:
       - board_columns
