@@ -19,7 +19,6 @@ import (
 var whitelistPaths = []string{
 	"/api/v1/swagger",
 	"/api/v1/auth",
-	"/api/v1/schedule",
 }
 
 func isWhitelisted(path string) bool {
