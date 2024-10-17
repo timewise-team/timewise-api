@@ -3,6 +3,7 @@ package workspace_user
 import (
 	"api/dms"
 	"encoding/json"
+	"github.com/timewise-team/timewise-models/dtos/core_dtos/workspace_user_dtos"
 	"github.com/timewise-team/timewise-models/models"
 	"io/ioutil"
 	"net/http"
@@ -80,4 +81,64 @@ func (s *WorkspaceUserService) GetWorkspaceUserByEmailAndWorkspaceID(email strin
 	}
 
 	return &workspaceUser, nil
+}
+
+func (s *WorkspaceUserService) GetWorkspaceUserList(workspaceID string) ([]workspace_user_dtos.GetWorkspaceUserListResponse, error) {
+	// Call API
+	resp, err := dms.CallAPI(
+		"GET",
+		"/workspace_user/workspace/"+workspaceID,
+		nil,
+		nil,
+		nil,
+		120,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil || resp.StatusCode != http.StatusOK {
+		return nil, err
+	}
+
+	var workspaceUserList []workspace_user_dtos.GetWorkspaceUserListResponse
+	err = json.Unmarshal(body, &workspaceUserList)
+	if err != nil {
+		return nil, err
+	}
+
+	return workspaceUserList, nil
+}
+
+func (s *WorkspaceUserService) GetWorkspaceUserInvitationList(workspaceID string) ([]workspace_user_dtos.GetWorkspaceUserListResponse, error) {
+	// Call API
+	resp, err := dms.CallAPI(
+		"GET",
+		"/workspace_user/invitation/workspace/"+workspaceID,
+		nil,
+		nil,
+		nil,
+		120,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil || resp.StatusCode != http.StatusOK {
+		return nil, err
+	}
+
+	var workspaceUserList []workspace_user_dtos.GetWorkspaceUserListResponse
+	err = json.Unmarshal(body, &workspaceUserList)
+	if err != nil {
+		return nil, err
+	}
+
+	return workspaceUserList, nil
 }
