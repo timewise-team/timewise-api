@@ -9,7 +9,7 @@ import (
 
 // getWorkspaceUserInvitationList
 // @Summary Get workspace user invitation list (X-User-Email required, X-Workspace-Id required)
-// @Tags WorkspaceUser (X-User-Email required, X-Workspace-Id required)
+// @Tags WorkspaceUser
 // @Produce json
 // @Success 200 {array} workspace_user_dtos.GetWorkspaceUserListResponse
 // @Router /api/v1/workspace_user/workspace_user_invitation_list [get]
