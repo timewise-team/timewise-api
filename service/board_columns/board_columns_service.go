@@ -3,7 +3,6 @@ package board_columns
 import (
 	"api/dms"
 	"encoding/json"
-	"errors"
 	"fmt"
 	dtos "github.com/timewise-team/timewise-models/dtos/core_dtos/board_columns_dtos"
 	"github.com/timewise-team/timewise-models/models"
@@ -73,10 +72,6 @@ func (s *BoardColumnsService) GetBoardColumnsByWorkspace(workspaceID string) ([]
 	var boardColumns []models.TwBoardColumn
 	if err := json.NewDecoder(resp.Body).Decode(&boardColumns); err != nil {
 		return nil, fmt.Errorf("failed to decode response: %v", err)
-	}
-
-	if len(boardColumns) == 0 {
-		return nil, errors.New("no board columns found")
 	}
 
 	return boardColumns, nil

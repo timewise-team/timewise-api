@@ -48,11 +48,6 @@ func (h *BoardColumnsHandler) getBoardColumnsByWorkspace(c *fiber.Ctx) error {
 			"message": "The server failed to respond",
 		})
 	}
-	if len(boardColumns) == 0 {
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"message": "No board columns found",
-		})
-	}
 	var boardColumnsResponseList []dtos.BoardColumnsResponse
 	for _, boardColumn := range boardColumns {
 		var boardColumnsResponse dtos.BoardColumnsResponse
