@@ -80,18 +80,8 @@ func (s *BoardColumnsService) GetBoardColumnsByWorkspace(workspaceID string) ([]
 func (h *BoardColumnsService) InitBoardColumns(workspaceID int) error {
 	var boardColumns = []models.TwBoardColumn{
 		{
-			Name:        "To Do",
+			Name:        "Title",
 			Position:    1,
-			WorkspaceId: workspaceID,
-		},
-		{
-			Name:        "In Progress",
-			Position:    2,
-			WorkspaceId: workspaceID,
-		},
-		{
-			Name:        "Done",
-			Position:    3,
 			WorkspaceId: workspaceID,
 		},
 	}
