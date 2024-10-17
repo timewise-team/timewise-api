@@ -514,6 +514,50 @@
                     }
                 }
             }
+        },
+        "/api/v1/workspace_user/workspace_user_invitation_list": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkspaceUser"
+                ],
+                "summary": "Get workspace user invitation list (X-User-Email required, X-Workspace-Id required)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/workspace_user_dtos.GetWorkspaceUserListResponse"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/workspace_user/workspace_user_list": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkspaceUser"
+                ],
+                "summary": "Get workspace user list (X-User-Email required, X-Workspace-Id required)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/workspace_user_dtos.GetWorkspaceUserListResponse"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1258,6 +1302,59 @@
                     "type": "boolean"
                 },
                 "token_type": {
+                    "type": "string"
+                }
+            }
+        },
+        "workspace_user_dtos.GetWorkspaceUserListResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "extra_data": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "is_verified": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "profile_picture": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_email_id": {
+                    "type": "integer"
+                },
+                "workspace_id": {
+                    "type": "integer"
+                },
+                "workspace_key": {
                     "type": "string"
                 }
             }
