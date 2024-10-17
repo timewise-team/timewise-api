@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"api/service/board_columns"
 	"api/service/workspace"
 	workspace_utils "api/utils/workspace"
 	"github.com/gofiber/fiber/v2"
@@ -43,12 +44,12 @@ func (h *WorkspaceHandler) createWorkspace(c *fiber.Ctx) error {
 		})
 	}
 
-	//err = board_columns.NewBoardColumnsService().InitBoardColumns(workspace.ID)
-	//if err != nil {
-	//	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-	//		"message": err.Error(),
-	//	})
-	//}
+	err = board_columns.NewBoardColumnsService().InitBoardColumns(workspace.ID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
 	// Return the response
 	return c.JSON(workspace)
 }
