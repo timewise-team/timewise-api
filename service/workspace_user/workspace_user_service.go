@@ -83,7 +83,7 @@ func (s *WorkspaceUserService) GetWorkspaceUserByEmailAndWorkspaceID(email strin
 	return &workspaceUser, nil
 }
 
-func (s *WorkspaceUserService) GetWorkspaceUserList(workspaceID string) ([]models.TwWorkspaceUser, error) {
+func (s *WorkspaceUserService) GetWorkspaceUserList(workspaceID string) ([]workspace_user_dtos.GetWorkspaceUserListResponse, error) {
 	// Call API
 	resp, err := dms.CallAPI(
 		"GET",
@@ -104,7 +104,7 @@ func (s *WorkspaceUserService) GetWorkspaceUserList(workspaceID string) ([]model
 		return nil, err
 	}
 
-	var workspaceUserList []models.TwWorkspaceUser
+	var workspaceUserList []workspace_user_dtos.GetWorkspaceUserListResponse
 	err = json.Unmarshal(body, &workspaceUserList)
 	if err != nil {
 		return nil, err

@@ -7,6 +7,12 @@ import (
 	"strconv"
 )
 
+// getWorkspaceUserList
+// @Summary Get workspace user list (X-User-Email required, X-Workspace-Id required)
+// @Tags WorkspaceUser (X-User-Email required, X-Workspace-Id required)
+// @Produce json
+// @Success 200 {array} workspace_user_dtos.GetWorkspaceUserListResponse
+// @Router /api/v1/workspace_user/gworkspace_user_list [get]
 func (h *WorkspaceUserHandler) getWorkspaceUserList(c *fiber.Ctx) error {
 
 	workspaceUserLocal := c.Locals("workspace_user")
