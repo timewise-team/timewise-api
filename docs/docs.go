@@ -394,81 +394,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/update-role": {
-            "put": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Workspace User"
-                ],
-                "summary": "Update role of workspace user (X-User-Email required, X-Workspace-Id required)",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "workspace_user_id",
-                        "name": "workspace_user_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Update role request",
-                        "name": "workspace_user",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/workspace_user_dtos.UpdateWorkspaceUserRoleRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/fiber.Map"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/user_email/search-user_email/{query}": {
-            "get": {
-                "description": "search user email",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User Email"
-                ],
-                "summary": "search user email",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "query",
-                        "name": "query",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/user_email_dtos.SearchUserEmailResponse"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/user_emails/get-linked-email": {
             "get": {
                 "description": "Get linked user email",
@@ -593,50 +518,6 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.TwWorkspaceUser"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/workspace_user/workspace_user_invitation_list": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "WorkspaceUser"
-                ],
-                "summary": "Get workspace user invitation list (X-User-Email required, X-Workspace-Id required)",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/workspace_user_dtos.GetWorkspaceUserListResponse"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/workspace_user/workspace_user_list": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "WorkspaceUser"
-                ],
-                "summary": "Get workspace user list (X-User-Email required, X-Workspace-Id required)",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/workspace_user_dtos.GetWorkspaceUserListResponse"
-                            }
                         }
                     }
                 }
@@ -1112,10 +993,6 @@ const docTemplate = `{
                 }
             }
         },
-        "fiber.Map": {
-            "type": "object",
-            "additionalProperties": true
-        },
         "models.TwBoardColumn": {
             "type": "object",
             "properties": {
@@ -1473,6 +1350,59 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "role": {
+                    "type": "string"
+                }
+            }
+        },
+        "workspace_user_dtos.GetWorkspaceUserListResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "extra_data": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "is_verified": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "profile_picture": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_email_id": {
+                    "type": "integer"
+                },
+                "workspace_id": {
+                    "type": "integer"
+                },
+                "workspace_key": {
                     "type": "string"
                 }
             }
