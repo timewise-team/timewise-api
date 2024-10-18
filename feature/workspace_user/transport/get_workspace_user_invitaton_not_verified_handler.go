@@ -7,14 +7,7 @@ import (
 	"strconv"
 )
 
-// getWorkspaceUserList
-// @Summary Get workspace user list (X-User-Email required, X-Workspace-Id required)
-// @Tags WorkspaceUser
-// @Produce json
-// @Success 200 {array} workspace_user_dtos.GetWorkspaceUserListResponse
-// @Router /api/v1/workspace_user/workspace_user_list [get]
-func (h *WorkspaceUserHandler) getWorkspaceUserList(c *fiber.Ctx) error {
-
+func (h *WorkspaceUserHandler) getWorkspaceUserInvitationNotVerifiedList(c *fiber.Ctx) error {
 	workspaceUserLocal := c.Locals("workspace_user")
 	if workspaceUserLocal == nil {
 		return c.Status(400).JSON(fiber.Map{
@@ -28,10 +21,15 @@ func (h *WorkspaceUserHandler) getWorkspaceUserList(c *fiber.Ctx) error {
 		})
 	}
 	workspaceUserStr := strconv.Itoa(workspaceUser.WorkspaceId)
-	workspaceUserList, err := workspace_user.NewWorkspaceUserService().GetWorkspaceUserList(workspaceUserStr)
+	var workspaceUserList, err = workspace_user.NewWorkspaceUserService().GetWorkspaceUserInvitationNotVerifiedList(workspaceUserStr)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"message": err.Error(),
+		})
+	}
+	if workspaceUserList == nil {
+		return c.Status(500).JSON(fiber.Map{
+			"message": "Failed to get workspace user list",
 		})
 	}
 	return c.JSON(workspaceUserList)

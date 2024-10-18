@@ -20,7 +20,7 @@ func (h *WorkspaceUserHandler) getWorkspaceUserInvitationList(c *fiber.Ctx) erro
 			"message": "Access denied",
 		})
 	}
-	workspaceUser, ok := workspaceUserLocal.(models.TwWorkspaceUser)
+	workspaceUser, ok := workspaceUserLocal.(*models.TwWorkspaceUser)
 	if !ok {
 		return c.Status(400).JSON(fiber.Map{
 			"message": "Access denied",

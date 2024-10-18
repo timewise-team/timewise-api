@@ -141,7 +141,7 @@ func (h *BoardColumnsService) UpdateBoardColumn(boardColumnId string, request dt
 	}
 	resp, err := dms.CallAPI(
 		"PUT",
-		"/board_columns/"+string(boardColumnId),
+		"/board_columns/"+boardColumnId,
 		boardColumnRequest,
 		nil,
 		nil,
