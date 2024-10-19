@@ -25,6 +25,7 @@ func NewScheduleFilterHandler() *ScheduleFilterHandler {
 // @Tags Schedule
 // @Accept json
 // @Produce json
+// @Security bearerToken
 // @Param workspace_id query int false "Filter by Workspace ID"
 // @Param board_column_id query int false "Filter by Board Column ID"
 // @Param title query string false "Filter by Title (searches with LIKE)"

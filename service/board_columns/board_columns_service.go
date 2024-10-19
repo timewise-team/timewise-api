@@ -3,7 +3,6 @@ package board_columns
 import (
 	"api/dms"
 	"encoding/json"
-	"errors"
 	"fmt"
 	dtos "github.com/timewise-team/timewise-models/dtos/core_dtos/board_columns_dtos"
 	"github.com/timewise-team/timewise-models/models"
@@ -75,28 +74,14 @@ func (s *BoardColumnsService) GetBoardColumnsByWorkspace(workspaceID string) ([]
 		return nil, fmt.Errorf("failed to decode response: %v", err)
 	}
 
-	if len(boardColumns) == 0 {
-		return nil, errors.New("no board columns found")
-	}
-
 	return boardColumns, nil
 }
 
 func (h *BoardColumnsService) InitBoardColumns(workspaceID int) error {
 	var boardColumns = []models.TwBoardColumn{
 		{
-			Name:        "To Do",
+			Name:        "Title",
 			Position:    1,
-			WorkspaceId: workspaceID,
-		},
-		{
-			Name:        "In Progress",
-			Position:    2,
-			WorkspaceId: workspaceID,
-		},
-		{
-			Name:        "Done",
-			Position:    3,
 			WorkspaceId: workspaceID,
 		},
 	}
@@ -156,7 +141,7 @@ func (h *BoardColumnsService) UpdateBoardColumn(boardColumnId string, request dt
 	}
 	resp, err := dms.CallAPI(
 		"PUT",
-		"/board_columns/"+string(boardColumnId),
+		"/board_columns/"+boardColumnId,
 		boardColumnRequest,
 		nil,
 		nil,

@@ -312,6 +312,9 @@ definitions:
       message:
         type: string
     type: object
+  fiber.Map:
+    additionalProperties: true
+    type: object
   models.TwBoardColumn:
     properties:
       created_at:
@@ -492,6 +495,61 @@ definitions:
       is_new_user:
         type: boolean
       token_type:
+        type: string
+    type: object
+  user_email_dtos.SearchUserEmailResponse:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      profile_picture:
+        type: string
+    type: object
+  workspace_user_dtos.GetWorkspaceUserListResponse:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      email:
+        type: string
+      extra_data:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      is_verified:
+        type: boolean
+      last_name:
+        type: string
+      profile_picture:
+        type: string
+      role:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+      user_email_id:
+        type: integer
+      workspace_id:
+        type: integer
+      workspace_key:
+        type: string
+    type: object
+  workspace_user_dtos.UpdateWorkspaceUserRoleRequest:
+    properties:
+      email:
+        type: string
+      role:
         type: string
     type: object
 info:
@@ -683,6 +741,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/fiber.Error'
+      security:
+      - bearerToken: []
       summary: Get schedules by filter
       tags:
       - Schedule
@@ -773,6 +833,56 @@ paths:
       summary: Update an existing schedule
       tags:
       - schedule
+  /api/v1/update-role:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: workspace_user_id
+        in: path
+        name: workspace_user_id
+        required: true
+        type: string
+      - description: Update role request
+        in: body
+        name: workspace_user
+        required: true
+        schema:
+          $ref: '#/definitions/workspace_user_dtos.UpdateWorkspaceUserRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/fiber.Map'
+      summary: Update role of workspace user (X-User-Email required, X-Workspace-Id
+        required)
+      tags:
+      - Workspace User
+  /api/v1/user_email/search-user_email/{query}:
+    get:
+      consumes:
+      - application/json
+      description: search user email
+      parameters:
+      - description: query
+        in: path
+        name: query
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/user_email_dtos.SearchUserEmailResponse'
+            type: array
+      summary: search user email
+      tags:
+      - User Email
   /api/v1/user_emails/get-linked-email:
     get:
       consumes:
@@ -857,4 +967,38 @@ paths:
       summary: Get workspace user by email and workspace
       tags:
       - WorkspaceUser
+  /api/v1/workspace_user/workspace_user_invitation_list:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/workspace_user_dtos.GetWorkspaceUserListResponse'
+            type: array
+      summary: Get workspace user invitation list (X-User-Email required, X-Workspace-Id
+        required)
+      tags:
+      - WorkspaceUser
+  /api/v1/workspace_user/workspace_user_list:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/workspace_user_dtos.GetWorkspaceUserListResponse'
+            type: array
+      summary: Get workspace user list (X-User-Email required, X-Workspace-Id required)
+      tags:
+      - WorkspaceUser
+securityDefinitions:
+  bearerToken:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"
