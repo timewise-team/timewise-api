@@ -17,6 +17,8 @@ func RegisterScheduleHandler(router fiber.Router) {
 	}
 
 	// Register all endpoints here
+	router.Get("/:scheduleId",
+		scheduleHandler.Handler.GetScheduleByID)
 	router.Post("/",
 		middleware.CheckWorkspaceRole([]string{"owner", "admin", "member"}),
 		scheduleHandler.Handler.CreateSchedule)

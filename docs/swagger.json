@@ -324,6 +324,36 @@
             }
         },
         "/api/v1/schedules/{schedule_id}": {
+            "get": {
+                "description": "Get schedule by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "schedule"
+                ],
+                "summary": "Get schedule by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Schedule ID",
+                        "name": "schedule_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/core_dtos.TwScheduleResponse"
+                        }
+                    }
+                }
+            },
             "put": {
                 "description": "Update an existing schedule",
                 "consumes": [

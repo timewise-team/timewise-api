@@ -787,6 +787,26 @@ paths:
       summary: Delete a schedule
       tags:
       - schedule
+    get:
+      consumes:
+      - application/json
+      description: Get schedule by ID
+      parameters:
+      - description: Schedule ID
+        in: path
+        name: schedule_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/core_dtos.TwScheduleResponse'
+      summary: Get schedule by ID
+      tags:
+      - schedule
     put:
       consumes:
       - application/json
