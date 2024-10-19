@@ -45,6 +45,26 @@ func (h *ScheduleHandler) CreateSchedule(c *fiber.Ctx) error {
 	})
 }
 
+// GetScheduleById godoc
+// @Summary Get schedule by ID
+// @Description Get schedule by ID
+// @Tags schedule
+// @Accept json
+// @Produce json
+// @Param schedule_id path int true "Schedule ID"
+// @Success 200 {object} core_dtos.TwScheduleResponse
+// @Router /api/v1/schedules/{schedule_id} [get]
+func (h *ScheduleHandler) GetScheduleByID(c *fiber.Ctx) error {
+	schedule, err := h.service.GetScheduleByID(c)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.JSON(schedule)
+}
+
 // UpdateSchedule godoc
 // @Summary Update an existing schedule
 // @Description Update an existing schedule
