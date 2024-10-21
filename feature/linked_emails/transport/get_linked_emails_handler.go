@@ -16,10 +16,11 @@ type GetUserEmailSyncResponse []models.TwUserEmail
 // @Summary Get linked user email
 // @Description Get linked user email
 // @Tags linked_emails
+// @Security bearerToken
 // @Accept json
 // @Produce json
 // @Success 200 {array} models.TwUserEmail
-// @Router /api/v1/user_emails/get-linked-email [get]
+// @Router /api/v1/user-emails/get-linked-email [get]
 func (h *LinkedEmailsHandler) getLinkedUserEmail(c *fiber.Ctx) error {
 	userId := c.Locals("userid")
 	if userId == nil {
@@ -67,4 +68,8 @@ func (h *LinkedEmailsHandler) getLinkedUserEmail(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "There are no emails linked to this user"})
 	}
 	return c.JSON(userEmailSync)
+}
+
+func (h *LinkedEmailsHandler) linkAnEmail(c *fiber.Ctx) error {
+	return nil
 }
