@@ -87,6 +87,10 @@ definitions:
       location:
         description: Nullable field
         type: string
+      position:
+        type: integer
+      priority:
+        type: string
       recurrence_pattern:
         description: Nullable field
         type: string
@@ -113,39 +117,13 @@ definitions:
     type: object
   core_dtos.TwCreateShecduleResponse:
     properties:
-      all_day:
-        type: boolean
       board_column_id:
         type: integer
-      created_at:
-        type: string
-      created_by:
-        type: integer
-      description:
-        type: string
-      end_time:
-        type: string
-      extra_data:
-        type: string
       id:
         type: integer
-      is_deleted:
-        type: boolean
-      location:
-        type: string
-      recurrence_pattern:
-        type: string
-      start_time:
-        type: string
-      status:
-        type: string
+      position:
+        type: integer
       title:
-        type: string
-      updated_at:
-        type: string
-      video_transcript:
-        type: string
-      visibility:
         type: string
       workspace_id:
         type: integer
@@ -219,6 +197,10 @@ definitions:
         type: boolean
       location:
         type: string
+      position:
+        type: integer
+      priority:
+        type: string
       recurrence_pattern:
         type: string
       start_time:
@@ -251,6 +233,10 @@ definitions:
       is_deleted:
         type: boolean
       location:
+        type: string
+      position:
+        type: integer
+      priority:
         type: string
       recurrence_pattern:
         type: string
@@ -290,6 +276,10 @@ definitions:
       is_deleted:
         type: boolean
       location:
+        type: string
+      position:
+        type: integer
+      priority:
         type: string
       recurrence_pattern:
         type: string

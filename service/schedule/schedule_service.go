@@ -20,62 +20,17 @@ func NewScheduleService() *ScheduleService {
 	return &ScheduleService{}
 }
 
-func (s *ScheduleService) CreateSchedule(c *fiber.Ctx, CreateScheduleDto core_dtos.TwCreateScheduleRequest) error {
-
+func (s *ScheduleService) CreateSchedule(c *fiber.Ctx, CreateScheduleDto core_dtos.TwCreateScheduleRequest) (interface{}, int, error) {
 	workspaceUser, ok := c.Locals("workspace_user").(*models.TwWorkspaceUser)
 	if !ok {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to retrieve schedule participant",
-		})
+		return nil, fiber.StatusInternalServerError, errors.New("Failed to retrieve schedule participant")
 	}
-
-	//resp, err := dms.CallAPI(
-	//	"GET",
-	//	"/workspace_user/"+workspaceUserIdStr,
-	//	nil,
-	//	nil,
-	//	nil,
-	//	120,
-	//)
-	//
-	//if err != nil {
-	//	return err
-	//}
-	//defer resp.Body.Close()
-	//
-	//if resp.StatusCode != fiber.StatusOK {
-	//	body, _ := ioutil.ReadAll(resp.Body)
-	//	return c.Status(resp.StatusCode).SendString(string(body))
-	//}
-	//
-	//var workspaceUser models.TwWorkspaceUser
-	//if err := json.NewDecoder(resp.Body).Decode(&workspaceUser); err != nil {
-	//	return err
-	//}
-	//
-	//allowedRoles := map[string]bool{
-	//	"admin":  true,
-	//	"owner":  true,
-	//	"member": true,
-	//}
-	//
-	//if !allowedRoles[strings.ToLower(workspaceUser.Role)] {
-	//	return errors.New("permission denied")
-	//}
 
 	newSchedule := models.TwSchedule{
 		WorkspaceId:   *CreateScheduleDto.WorkspaceID,
 		BoardColumnId: *CreateScheduleDto.BoardColumnID,
 		Title:         *CreateScheduleDto.Title,
-		//Description:       *CreateScheduleDto.Description,
-		//StartTime:         *CreateScheduleDto.StartTime,
-		//EndTime:           *CreateScheduleDto.EndTime,
-		//Location:          *CreateScheduleDto.Location,
-		CreatedBy: workspaceUser.ID,
-		//AllDay:            *CreateScheduleDto.AllDay,
-		//Status:            *CreateScheduleDto.Status,
-		//RecurrencePattern: *CreateScheduleDto.RecurrencePattern,
-		//Visibility:        *CreateScheduleDto.Visibility,
+		CreatedBy:     workspaceUser.ID,
 	}
 
 	resp1, err := dms.CallAPI(
@@ -87,16 +42,16 @@ func (s *ScheduleService) CreateSchedule(c *fiber.Ctx, CreateScheduleDto core_dt
 		120,
 	)
 	if err != nil {
-		return err
+		return nil, fiber.StatusInternalServerError, err
 	}
 	defer resp1.Body.Close()
 
-	body, err := ioutil.ReadAll(resp1.Body)
-	if err != nil {
-		return err
+	var result map[string]interface{}
+	if err := json.NewDecoder(resp1.Body).Decode(&result); err != nil {
+		return nil, fiber.StatusInternalServerError, err
 	}
 
-	return c.Status(resp1.StatusCode).Send(body)
+	return result, resp1.StatusCode, nil
 }
 
 func fetchSchedule(scheduleID string) (models.TwSchedule, error) {
@@ -173,6 +128,12 @@ func applyUpdateFields(baseSchedule, updateSchedule models.TwSchedule, dto core_
 	if dto.RecurrencePattern != nil {
 		updateSchedule.RecurrencePattern = *dto.RecurrencePattern
 	}
+	if dto.Position != nil {
+		updateSchedule.Position = *dto.Position
+	}
+	if dto.Priority != nil {
+		updateSchedule.Priority = *dto.Priority
+	}
 	return updateSchedule
 }
 
@@ -211,6 +172,8 @@ func (s *ScheduleService) UpdateSchedule(c *fiber.Ctx, UpdateScheduleDto core_dt
 		updateSchedule.RecurrencePattern = schedule.RecurrencePattern
 		updateSchedule.StartTime = schedule.StartTime
 		updateSchedule.EndTime = schedule.EndTime
+		updateSchedule.Position = schedule.Position
+		updateSchedule.Priority = schedule.Priority
 
 		if UpdateScheduleDto.BoardColumnID != nil {
 			updateSchedule.BoardColumnId = *UpdateScheduleDto.BoardColumnID

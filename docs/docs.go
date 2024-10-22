@@ -949,6 +949,12 @@ const docTemplate = `{
                     "description": "Nullable field",
                     "type": "string"
                 },
+                "position": {
+                    "type": "integer"
+                },
+                "priority": {
+                    "type": "string"
+                },
                 "recurrence_pattern": {
                     "description": "Nullable field",
                     "type": "string"
@@ -985,55 +991,16 @@ const docTemplate = `{
         "core_dtos.TwCreateShecduleResponse": {
             "type": "object",
             "properties": {
-                "all_day": {
-                    "type": "boolean"
-                },
                 "board_column_id": {
                     "type": "integer"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "created_by": {
-                    "type": "integer"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "end_time": {
-                    "type": "string"
-                },
-                "extra_data": {
-                    "type": "string"
                 },
                 "id": {
                     "type": "integer"
                 },
-                "is_deleted": {
-                    "type": "boolean"
-                },
-                "location": {
-                    "type": "string"
-                },
-                "recurrence_pattern": {
-                    "type": "string"
-                },
-                "start_time": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
+                "position": {
+                    "type": "integer"
                 },
                 "title": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "video_transcript": {
-                    "type": "string"
-                },
-                "visibility": {
                     "type": "string"
                 },
                 "workspace_id": {
@@ -1145,6 +1112,12 @@ const docTemplate = `{
                 "location": {
                     "type": "string"
                 },
+                "position": {
+                    "type": "integer"
+                },
+                "priority": {
+                    "type": "string"
+                },
                 "recurrence_pattern": {
                     "type": "string"
                 },
@@ -1193,6 +1166,12 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "location": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "integer"
+                },
+                "priority": {
                     "type": "string"
                 },
                 "recurrence_pattern": {
@@ -1252,6 +1231,12 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "location": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "integer"
+                },
+                "priority": {
                     "type": "string"
                 },
                 "recurrence_pattern": {

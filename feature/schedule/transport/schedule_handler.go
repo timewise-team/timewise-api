@@ -32,7 +32,7 @@ func (h *ScheduleHandler) CreateSchedule(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	err := h.service.CreateSchedule(c, CreateScheduleDto)
+	result, statusCode, err := h.service.CreateSchedule(c, CreateScheduleDto)
 	if err != nil {
 		if err.Error() == "permission denied" {
 			return c.Status(fiber.StatusForbidden).SendString(err.Error())
@@ -40,9 +40,7 @@ func (h *ScheduleHandler) CreateSchedule(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}
 
-	return c.JSON(fiber.Map{
-		"message": "Create schedule successfully",
-	})
+	return c.Status(statusCode).JSON(result)
 }
 
 // GetScheduleById godoc
