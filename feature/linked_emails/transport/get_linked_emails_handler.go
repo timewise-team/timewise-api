@@ -70,6 +70,67 @@ func (h *LinkedEmailsHandler) getLinkedUserEmail(c *fiber.Ctx) error {
 	return c.JSON(userEmailSync)
 }
 
+// linkAnEmail godoc
+// @Summary Link an email to a user
+// @Description Link an email to a user
+// @Tags linked_emails
+// @Security bearerToken
+// @Accept json
+// @Produce json
+// @Param email path string true "Email"
+// @Success 200 {array} models.TwUserEmail
+// @Router /api/v1/user-emails/link-email/{email} [post]
 func (h *LinkedEmailsHandler) linkAnEmail(c *fiber.Ctx) error {
-	return nil
+	// get email from params
+	email := c.Params("email")
+	if email == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "email is required"})
+	}
+	// check if email is already a user
+	resp, err := dms.CallAPI(
+		"GET",
+		"/users/"+email,
+		nil,
+		nil,
+		nil,
+		120,
+	)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.Body == nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not get user"})
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			var user models.TwUser
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not read response body"})
+			}
+			err = json.Unmarshal(body, &user)
+			if err != nil {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not marshal response body"})
+			}
+			var userEmail models.TwUserEmail
+			userEmail.Email = email
+			userEmail.UserId = user.ID
+			userEmail.User = user
+			// if user exists, link email to user
+			_, err = dms.CallAPI(
+				"POST",
+				"/user-email/",
+				userEmail,
+				nil,
+				nil,
+				120,
+			)
+		} else {
+			// if user does not exist, throw error
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "This email is not a user"})
+		}
+	}
+	allEmails := h.getLinkedUserEmail(c)
+	// return all linked email
+	return c.Status(fiber.StatusOK).JSON(allEmails)
 }
