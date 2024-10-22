@@ -32,7 +32,7 @@ func (h *DocumentHandler) GetDocumentByScheduleID(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid schedule ID")
 	}
-	document, err := h.service.GetDocumentsBySchedule(scheduleID)
+	document, err := h.service.GetDocumentsByScheduleID(scheduleID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),

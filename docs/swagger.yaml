@@ -29,6 +29,41 @@ definitions:
       workspace_id:
         type: integer
     type: object
+  comment_dtos.TwCommentResponse:
+    properties:
+      commenter:
+        type: string
+      content:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      is_deleted:
+        type: boolean
+      is_verified:
+        type: boolean
+      last_name:
+        type: string
+      profile_picture:
+        type: string
+      role:
+        type: string
+      schedule_id:
+        type: integer
+      status_workspace_user:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+      workspace_user_id:
+        type: integer
+    type: object
   core_dtos.TwCreateScheduleRequest:
     properties:
       all_day:
@@ -487,6 +522,45 @@ definitions:
       workspace_key:
         type: string
     type: object
+  schedule_log_dtos.TwScheduleLogResponse:
+    properties:
+      action:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      email:
+        type: string
+      field_changed:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      is_verified:
+        type: boolean
+      last_name:
+        type: string
+      new_value:
+        type: string
+      old_value:
+        type: string
+      profile_picture:
+        type: string
+      role:
+        type: string
+      schedule_id:
+        type: integer
+      status_workspace_user:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+      workspace_user_id:
+        type: integer
+    type: object
   schedule_participant_dtos.ScheduleParticipantInfo:
     properties:
       assign_at:
@@ -723,6 +797,29 @@ paths:
         required)
       tags:
       - board_columns
+  /api/v1/comment/schedule/{schedule_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get comments by schedule
+      parameters:
+      - description: Schedule ID
+        in: path
+        name: schedule_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/comment_dtos.TwCommentResponse'
+            type: array
+      summary: Get comments by schedule
+      tags:
+      - comment
   /api/v1/document/schedule/{schedule_id}:
     get:
       consumes:
@@ -814,6 +911,52 @@ paths:
       summary: Get schedules by filter
       tags:
       - Schedule
+  /api/v1/schedule_log/schedule/{scheduleId}:
+    get:
+      consumes:
+      - application/json
+      description: Get schedule logs by schedule ID
+      parameters:
+      - description: Schedule ID
+        in: path
+        name: scheduleId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/schedule_log_dtos.TwScheduleLogResponse'
+            type: array
+      summary: Get schedule logs by schedule ID
+      tags:
+      - schedule_log
+  /api/v1/schedule_participant/schedule/{scheduleId}:
+    get:
+      consumes:
+      - application/json
+      description: Get schedule participants by schedule ID
+      parameters:
+      - description: Schedule ID
+        in: path
+        name: scheduleId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/schedule_participant_dtos.ScheduleParticipantInfo'
+            type: array
+      summary: Get schedule participants by schedule ID
+      tags:
+      - schedule_participant
   /api/v1/schedules:
     post:
       consumes:
