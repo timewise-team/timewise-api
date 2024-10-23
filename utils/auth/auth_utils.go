@@ -56,7 +56,7 @@ func VerifyGoogleToken(code string) ([]byte, error) {
 
 func GenerateJWTToken(user models.TwUser, secretKey string) (string, int, error) {
 	// Định nghĩa thời gian hết hạn cho token (ví dụ: 2 giờ)
-	expirationTime := time.Now().Add(2 * time.Hour).Unix()
+	expirationTime := time.Now().Add(168 * time.Hour).Unix()
 
 	// Tạo claims cho JWT
 	claims := jwt.MapClaims{
