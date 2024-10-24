@@ -9,7 +9,7 @@ import (
 
 // updateRole
 // @Summary Update role of workspace user (X-User-Email required, X-Workspace-Id required)
-// @Tags Workspace User
+// @Tags WorkspaceUser
 // @Accept json
 // @Produce json
 // @Param workspace_user_id path string true "workspace_user_id"

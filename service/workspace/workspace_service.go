@@ -75,3 +75,33 @@ func (s *WorkspaceService) GetWorkspacesByUserId(userId string) ([]models.TwWork
 
 	return workspaces, nil
 }
+
+func (s *WorkspaceService) GetWorkspaceById(workspaceId string) *models.TwWorkspace {
+	// Call API
+	resp, err := dms.CallAPI(
+		"GET",
+		"/workspace/"+workspaceId,
+		nil,
+		nil,
+		nil,
+		120,
+	)
+	if err != nil {
+		return nil
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil || resp.StatusCode != http.StatusOK {
+		return nil
+	}
+
+	var workspace models.TwWorkspace
+	err = json.Unmarshal(body, &workspace)
+	if err != nil {
+		return nil
+	}
+
+	return &workspace
+}

@@ -7,16 +7,16 @@ import (
 	"net/url"
 )
 
-// verifyMemberInvitationRequest godoc
-// @Summary Verify member's request invitation (X-User-Email required, X-Workspace-Id required)
-// @Description Verify member's request invitation (X-User-Email required, X-Workspace-Id required)
+// disproveMemberInvitationRequest godoc
+// @Summary Disprove member's request invitation (X-User-Email required, X-Workspace-Id required)
+// @Description Disprove member's request invitation (X-User-Email required, X-Workspace-Id required)
 // @Tags WorkspaceUser
 // @Accept json
 // @Produce json
 // @Param email path string true "Email"
 // @Success 200 {object} models.TwWorkspaceUser
-// @Router /api/v1/workspace_user/verify-invitation/email/{email} [put]
-func (h *WorkspaceUserHandler) verifyMemberInvitationRequest(c *fiber.Ctx) error {
+// @Router /api/v1/workspace_user/disprove-invitation/email/{email} [put]
+func (h *WorkspaceUserHandler) disproveMemberInvitationRequest(c *fiber.Ctx) error {
 	email := c.Params("email")
 	if email == "" {
 		return c.Status(400).JSON(fiber.Map{
@@ -41,7 +41,7 @@ func (h *WorkspaceUserHandler) verifyMemberInvitationRequest(c *fiber.Ctx) error
 			"message": "Access denied",
 		})
 	}
-	var err = workspace_user.NewWorkspaceUserService().VerifyWorkspaceUserInvitation(workspaceUser, emailFix)
+	var err = workspace_user.NewWorkspaceUserService().DisproveWorkspaceUserInvitation(workspaceUser, emailFix)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"message": err.Error(),
