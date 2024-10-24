@@ -192,6 +192,34 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/v1/delete-workspace_user/workspace_user_id/{workspace_user_id}": {
+            "put": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkspaceUser"
+                ],
+                "summary": "Delete workspace user (X-User-Email required, X-Workspace-Id required)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "workspace_user_id",
+                        "name": "workspace_user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/fiber.Map"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/comment/schedule/{schedule_id}": {
             "get": {
                 "description": "Get comments by schedule",
@@ -578,6 +606,81 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
+                    "WorkspaceUser"
+                ],
+                "summary": "Update role of workspace user (X-User-Email required, X-Workspace-Id required)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "workspace_user_id",
+                        "name": "workspace_user_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update role request",
+                        "name": "workspace_user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/workspace_user_dtos.UpdateWorkspaceUserRoleRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/fiber.Map"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/user_email/search-user_email/{query}": {
+            "get": {
+                "description": "search user email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User Email"
+                ],
+                "summary": "search user email",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "query",
+                        "name": "query",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/user_email_dtos.SearchUserEmailResponse"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/update-role": {
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
                     "Workspace User"
                 ],
                 "summary": "Update role of workspace user (X-User-Email required, X-Workspace-Id required)",
@@ -738,6 +841,146 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/workspace_user/accept-invitation-via-email/token/{token}": {
+            "get": {
+                "description": "Accept invitation via email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkspaceUser"
+                ],
+                "summary": "Accept invitation via email",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Token",
+                        "name": "token",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Workspace invitation accepted successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Token expired or invalid",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Workspace user not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/workspace_user/decline-invitation-via-email/token/{token}": {
+            "get": {
+                "description": "Decline invitation via email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkspaceUser"
+                ],
+                "summary": "Decline invitation via email",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Token",
+                        "name": "token",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Invitation declined successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid or expired token",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Workspace user not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/workspace_user/disprove-invitation/email/{email}": {
+            "put": {
+                "description": "Disprove member's request invitation (X-User-Email required, X-Workspace-Id required)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkspaceUser"
+                ],
+                "summary": "Disprove member's request invitation (X-User-Email required, X-Workspace-Id required)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Email",
+                        "name": "email",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TwWorkspaceUser"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/workspace_user/get-workspace_user/email/{email}/workspace_id/{workspace_id}": {
             "get": {
                 "produces": [
@@ -768,6 +1011,116 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.TwWorkspaceUser"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/workspace_user/send_invitation": {
+            "post": {
+                "description": "Send invitation to user (X-User-Email required, X-Workspace-Id required)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkspaceUser"
+                ],
+                "summary": "Send invitation to user (X-User-Email required, X-Workspace-Id required)",
+                "parameters": [
+                    {
+                        "description": "Workspace user object",
+                        "name": "workspace_user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/workspace_user_dtos.UpdateWorkspaceUserRoleRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TwWorkspaceUser"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/workspace_user/verify-invitation/email/{email}": {
+            "put": {
+                "description": "Verify member's request invitation (X-User-Email required, X-Workspace-Id required)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkspaceUser"
+                ],
+                "summary": "Verify member's request invitation (X-User-Email required, X-Workspace-Id required)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Email",
+                        "name": "email",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TwWorkspaceUser"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/workspace_user/workspace_user_invitation_list": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkspaceUser"
+                ],
+                "summary": "Get workspace user invitation list (X-User-Email required, X-Workspace-Id required)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/workspace_user_dtos.GetWorkspaceUserListResponse"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/workspace_user/workspace_user_list": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkspaceUser"
+                ],
+                "summary": "Get workspace user list (X-User-Email required, X-Workspace-Id required)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/workspace_user_dtos.GetWorkspaceUserListResponse"
+                            }
                         }
                     }
                 }

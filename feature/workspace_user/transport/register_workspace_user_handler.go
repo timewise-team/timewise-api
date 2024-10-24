@@ -27,6 +27,13 @@ func RegisterWorkspaceUserHandler(router fiber.Router) {
 	//update workspace user role
 	router.Put("/update-role", middleware.CheckWorkspaceRole([]string{"owner", "admin"}), workspaceUserHandler.updateRole)
 	//verify member's request invitation
-	router.Put("/verify-invitation", middleware.CheckWorkspaceRole([]string{"owner", "admin"}), workspaceUserHandler.verifyMemberInvitationRequest)
+	router.Put("/verify-invitation/email/:email?", middleware.CheckWorkspaceRole([]string{"owner", "admin"}), workspaceUserHandler.verifyMemberInvitationRequest)
+	//disprove member's request invitation
+	router.Put("/disprove-invitation/email/:email?", middleware.CheckWorkspaceRole([]string{"owner", "admin"}), workspaceUserHandler.disproveMemberInvitationRequest)
+	//accept invitation via email
+	router.Get("/accept-invitation-via-email/token/:token?", workspaceUserHandler.acceptInvitationViaEmail)
+	//decline invitation via email
+	router.Get("/decline-invitation-via-email/token/:token?", workspaceUserHandler.declineInvitationViaEmail)
 
+	router.Delete("/delete-workspace_user/workspace_user_id/:workspace_user_id?", middleware.CheckWorkspaceRole([]string{"owner", "admin"}), workspaceUserHandler.deleteWorkspaceUser)
 }

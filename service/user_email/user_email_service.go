@@ -4,6 +4,8 @@ import (
 	"api/dms"
 	"encoding/json"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos/user_email_dtos"
+	"github.com/timewise-team/timewise-models/models"
+	"log"
 )
 
 type UserEmailService struct {
@@ -31,4 +33,26 @@ func (service *UserEmailService) SearchUserEmail(query string) ([]user_email_dto
 		return nil, err
 	}
 	return userEmails, nil
+}
+
+func (service *UserEmailService) GetUserEmail(email string) (*models.TwUserEmail, error) {
+	log.Println(email)
+	resp, err := dms.CallAPI(
+		"GET",
+		"/user_email/email/"+email,
+		nil,
+		nil,
+		nil,
+		120,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	var userEmail models.TwUserEmail
+	if err := json.NewDecoder(resp.Body).Decode(&userEmail); err != nil {
+		return nil, err
+	}
+	log.Printf("User email: %v", userEmail)
+	return &userEmail, nil
 }

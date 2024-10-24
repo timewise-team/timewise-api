@@ -25,6 +25,8 @@ import (
 var whitelistPaths = []string{
 	"/api/v1/swagger",
 	"/api/v1/auth",
+	"/api/v1/workspace_user/accept-invitation-via-email",
+	"/api/v1/workspace_user/decline-invitation-via-email",
 }
 
 func isWhitelisted(path string) bool {

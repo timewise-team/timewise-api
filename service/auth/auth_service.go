@@ -1,9 +1,14 @@
 package auth
 
 import (
+	"api/config"
 	"api/dms"
+	auth_utils "api/utils/auth"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/timewise-team/timewise-models/models"
+	"gopkg.in/gomail.v2"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -214,3 +219,139 @@ func (s *AuthService) CheckEmailInList(userId string, email string) (bool, error
 //	return &NotificationSettingResponse
 //
 //}
+
+// SendEmail thực hiện gửi email với cấu hình và nội dung đã tạo.
+func SendEmail(dialer *gomail.Dialer, message *gomail.Message) error {
+	if err := dialer.DialAndSend(message); err != nil {
+		log.Printf("Failed to send email: %v", err)
+		return err
+	}
+	log.Println("Email sent successfully")
+	return nil
+}
+
+func ConfigSMTP(cfg *config.Config) *gomail.Dialer {
+	return gomail.NewDialer(cfg.SMPHost, cfg.SMTPPort, cfg.SMTPEmail, cfg.SMTPPassword)
+}
+
+func GenerateInviteLinks(cfg *config.Config, email string, workspaceId int, role string) (string, string, error) {
+	acceptToken, err := auth_utils.GenerateInvitationToken(workspaceId, "accept", cfg.JWT_SECRET, email, role)
+	if err != nil {
+		return "", "", err
+	}
+
+	declineToken, err := auth_utils.GenerateInvitationToken(workspaceId, "decline", cfg.JWT_SECRET, email, role)
+	if err != nil {
+		return "", "", err
+	}
+
+	acceptLink := fmt.Sprintf("%s/workspace_user/accept-invitation-via-email/token/%s", cfg.BaseURL, acceptToken)
+	declineLink := fmt.Sprintf("%s/workspace_user/decline-invitation-via-email/token/%s", cfg.BaseURL, declineToken)
+
+	return acceptLink, declineLink, nil
+}
+func BuildInvitationContent(info *models.TwWorkspace, role, acceptLink, declineLink string) string {
+	return fmt.Sprintf(`
+	<html>
+		<head>
+			<style>
+				body {
+					font-family: 'Arial', sans-serif;
+					background-color: #f5f6fa;
+					color: #333;
+					line-height: 1.6;
+					margin: 0;
+					padding: 20px;
+				}
+				.container {
+					max-width: 600px;
+					margin: 0 auto;
+					background-color: white;
+					box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+					border-radius: 10px;
+					overflow: hidden;
+				}
+				.header {
+					background-color: #4a90e2;
+					color: white;
+					padding: 20px;
+					text-align: center;
+					font-size: 24px;
+					font-weight: bold;
+				}
+				.content {
+					padding: 20px;
+				}
+				.btn {
+					display: inline-block;
+					margin-top: 10px;
+					padding: 12px 30px;
+					border-radius: 5px;
+					text-decoration: none;
+					font-weight: bold;
+					color: white;
+					transition: background-color 0.3s ease;
+				}
+				.btn-accept {
+					background-color: #28a745;
+				}
+				.btn-accept:hover {
+					background-color: #218838;
+				}
+				.btn-decline {
+					background-color: #dc3545;
+					margin-left: 10px;
+				}
+				.btn-decline:hover {
+					background-color: #c82333;
+				}
+				.footer {
+					margin-top: 20px;
+					font-size: 14px;
+					color: #999;
+					text-align: center;
+				}
+			</style>
+		</head>
+		<body>
+			<div class="container">
+				<div class="header">Workspace Invitation</div>
+				<div class="content">
+					<p>Hello,</p>
+					<p>You have been invited to join the workspace: <b>%s</b>.</p>
+					<p>Your role: <b>%s</b></p>
+					<a href="%s" class="btn btn-accept">Accept Invitation</a>
+					<a href="%s" class="btn btn-decline">Decline Invitation</a>
+				</div>
+				<div class="footer">
+					<p>If you have any questions, feel free to contact our support team.</p>
+				</div>
+			</div>
+		</body>
+	</html>
+	`, info.Title, role, acceptLink, declineLink)
+}
+
+func SendInvitationEmail(cfg *config.Config, email string, content string, subject string) error {
+	// Cấu hình SMTP
+	dialer := ConfigSMTP(cfg)
+	if dialer == nil {
+		return errors.New("failed to configure SMTP dialer")
+	}
+
+	// Tạo message mới
+	message := gomail.NewMessage()
+	message.SetHeader("From", cfg.SMTPEmail)
+	message.SetHeader("To", email)
+	message.SetHeader("Subject", subject)
+	message.SetBody("text/html", content)
+
+	// Gửi email
+	if err := dialer.DialAndSend(message); err != nil {
+		log.Printf("Failed to send email: %v", err)
+		return fmt.Errorf("failed to send invitation email: %v", err)
+	}
+
+	log.Println("Invitation email sent successfully")
+	return nil
+}
