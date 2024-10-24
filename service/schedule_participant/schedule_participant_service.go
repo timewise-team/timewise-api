@@ -43,3 +43,30 @@ func (h *ScheduleParticipantService) GetScheduleParticipantsBySchedule(scheduleI
 	return scheduleParticipants, nil
 
 }
+
+func (h *ScheduleParticipantService) GetScheduleParticipantsByScheduleID(scheduleId int) ([]schedule_participant_dtos.ScheduleParticipantInfo, error) {
+	scheduleIdStr := strconv.Itoa(scheduleId)
+	if scheduleIdStr == "" {
+		return nil, nil
+	}
+	resp, err := dms.CallAPI(
+		"GET",
+		"/schedule_participant/schedule/"+scheduleIdStr,
+		nil,
+		nil,
+		nil,
+		120,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var scheduleParticipants []schedule_participant_dtos.ScheduleParticipantInfo
+	if err := json.NewDecoder(resp.Body).Decode(&scheduleParticipants); err != nil {
+		return nil, err
+	}
+
+	return scheduleParticipants, nil
+
+}

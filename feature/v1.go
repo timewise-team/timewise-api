@@ -4,9 +4,13 @@ import (
 	_ "api/docs"
 	authTransport "api/feature/authentication/transport"
 	boardColumnsTransport "api/feature/board_columns/transport"
+	commentsTransport "api/feature/comment/transport"
+	documentTransport "api/feature/document/transport"
 	linkedEmailsTransport "api/feature/linked_emails/transport"
 	"api/feature/schedule/transport"
 	scheduleFilterTransport "api/feature/schedule_filter/transport"
+	scheduleLog "api/feature/schedule_log/transport"
+	scheduleParticipant "api/feature/schedule_participant/transport"
 	userEmailTransport "api/feature/user_email/transport"
 	workspaceTransport "api/feature/workspace/transport"
 	workspaceUserTransport "api/feature/workspace_user/transport"
@@ -21,6 +25,8 @@ import (
 var whitelistPaths = []string{
 	"/api/v1/swagger",
 	"/api/v1/auth",
+	"/api/v1/workspace_user/accept-invitation-via-email",
+	"/api/v1/workspace_user/decline-invitation-via-email",
 }
 
 func isWhitelisted(path string) bool {
@@ -59,5 +65,9 @@ func RegisterHandlerV1() *fiber.App {
 	boardColumnsTransport.RegisterBoardColumnsHandler(v1.Group("/board_columns"))
 	userEmailTransport.RegisterUserEmailHandler(v1.Group("/user_email"))
 	workspaceUserTransport.RegisterWorkspaceUserHandler(v1.Group("/workspace_user"))
+	documentTransport.RegisterDocumentHandler(v1.Group("/document"))
+	scheduleParticipant.RegisterScheduleParticipantHandler(v1.Group("/schedule_participant"))
+	scheduleLog.RegisterScheduleLogHandler(v1.Group("/schedule_log"))
+	commentsTransport.RegisterCommentHandler(v1.Group("/comment"))
 	return router
 }

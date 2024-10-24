@@ -56,7 +56,7 @@ func VerifyGoogleToken(code string) ([]byte, error) {
 
 func GenerateJWTToken(user models.TwUser, secretKey string) (string, int, error) {
 	// Định nghĩa thời gian hết hạn cho token (ví dụ: 2 giờ)
-	expirationTime := time.Now().Add(2 * time.Hour).Unix()
+	expirationTime := time.Now().Add(168 * time.Hour).Unix()
 
 	// Tạo claims cho JWT
 	claims := jwt.MapClaims{
@@ -84,4 +84,31 @@ func GenerateJWTToken(user models.TwUser, secretKey string) (string, int, error)
 func IsValidEmail(email string) bool {
 	re := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 	return re.MatchString(email)
+}
+
+func GenerateInvitationToken(workspaceId int, action string, secretKey string, email string, role string) (string, error) {
+	claims := jwt.MapClaims{
+		"email":        email,
+		"workspace_id": workspaceId,
+		"role":         role,
+		"action":       action,                                // accept hoặc decline
+		"exp":          time.Now().Add(24 * time.Hour).Unix(), // Token có thời hạn 24h
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString([]byte(secretKey))
+	if err != nil {
+		return "", err
+	}
+	return tokenString, nil
+}
+
+func ParseInvitationToken(tokenString string, secretKey string) (jwt.MapClaims, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return []byte(secretKey), nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return token.Claims.(jwt.MapClaims), nil
 }

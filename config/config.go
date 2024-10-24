@@ -12,10 +12,15 @@ type GoogleOauthConfig struct {
 }
 
 type Config struct {
-	ServerPort  string
-	BaseURL     string
-	JWT_SECRET  string
-	GoogleOauth GoogleOauthConfig
+	ServerPort   string
+	BaseURL      string
+	JWT_SECRET   string
+	GoogleOauth  GoogleOauthConfig
+	SMPHost      string
+	SMTPPort     int
+	SMTPEmail    string
+	SMTPPassword string
+	BASEURL      string
 }
 
 func LoadConfig() (*Config, error) {
@@ -47,6 +52,11 @@ func LoadConfig() (*Config, error) {
 			ClientID:     viper.GetString("GOOGLE_CLIENT_ID"),
 			ClientSecret: viper.GetString("GOOGLE_CLIENT_SECRET"),
 		},
+		SMPHost:      viper.GetString("SMTP_HOST"),
+		SMTPPort:     viper.GetInt("SMTP_PORT"),
+		SMTPEmail:    viper.GetString("SMTP_EMAIL"),
+		SMTPPassword: viper.GetString("SMTP_PASSWORD"),
+		BASEURL:      viper.GetString("BASE_URL"),
 	}
 	return config, nil
 }
