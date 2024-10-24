@@ -3,6 +3,7 @@ package middleware
 import (
 	"api/service/schedule"
 	"github.com/gofiber/fiber/v2"
+	"github.com/timewise-team/timewise-models/dtos/core_dtos/schedule_participant_dtos"
 	"github.com/timewise-team/timewise-models/models"
 	"strconv"
 	"strings"
@@ -13,9 +14,14 @@ func CheckScheduleStatus(requiredRoles []string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		scheduleID := c.Params("scheduleId")
 		if scheduleID == "" {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"message": "Schedule ID is required",
-			})
+			var dto schedule_participant_dtos.InviteToScheduleRequest
+
+			if err := c.BodyParser(&dto); err != nil {
+				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+					"message": "Invalid request body",
+				})
+			}
+			scheduleID = strconv.Itoa(dto.ScheduleId)
 		}
 
 		workspaceUser, ok := c.Locals("workspace_user").(*models.TwWorkspaceUser)
