@@ -14,6 +14,7 @@ func RegisterLinkedEmailsHandler(router fiber.Router) {
 	}
 
 	// Register all endpoints here
-	router.Get("/get-linked-email", linkedEmailsHandler.getLinkedUserEmail)
+	router.Get("/", linkedEmailsHandler.getLinkedUserEmail)
+	router.Post("/", linkedEmailsHandler.linkAnEmail)
 
 }

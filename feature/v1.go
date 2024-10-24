@@ -60,7 +60,7 @@ func RegisterHandlerV1() *fiber.App {
 	authTransport.RegisterAuthHandler(v1.Group("/auth"))
 	workspaceTransport.RegisterWorkspaceHandler(v1.Group("/workspace"))
 	scheduleFilterTransport.RegisterScheduleFilterHandler(v1.Group("/schedule"))
-	linkedEmailsTransport.RegisterLinkedEmailsHandler(v1.Group("/user_emails"))
+	linkedEmailsTransport.RegisterLinkedEmailsHandler(v1.Group("/linked_emails"))
 	transport.RegisterScheduleHandler(v1.Group("/schedules"))
 	boardColumnsTransport.RegisterBoardColumnsHandler(v1.Group("/board_columns"))
 	userEmailTransport.RegisterUserEmailHandler(v1.Group("/user_email"))

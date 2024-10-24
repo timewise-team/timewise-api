@@ -4,10 +4,12 @@ import (
 	"api/dms"
 	"encoding/json"
 	"github.com/gofiber/fiber/v2"
+	"github.com/timewise-team/timewise-models/dtos/core_dtos"
 	"github.com/timewise-team/timewise-models/models"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 )
 
 type GetUserEmailSyncResponse []models.TwUserEmail
@@ -20,7 +22,7 @@ type GetUserEmailSyncResponse []models.TwUserEmail
 // @Accept json
 // @Produce json
 // @Success 200 {array} models.TwUserEmail
-// @Router /api/v1/user-emails/get-linked-email [get]
+// @Router /api/v1/linked_emails/ [get]
 func (h *LinkedEmailsHandler) getLinkedUserEmail(c *fiber.Ctx) error {
 	userId := c.Locals("userid")
 	if userId == nil {
@@ -77,22 +79,26 @@ func (h *LinkedEmailsHandler) getLinkedUserEmail(c *fiber.Ctx) error {
 // @Security bearerToken
 // @Accept json
 // @Produce json
-// @Param email path string true "Email"
+// @Param email query string true "Email"
 // @Success 200 {array} models.TwUserEmail
-// @Router /api/v1/user-emails/link-email/{email} [post]
+// @Router /api/v1/linked_emails/ [post]
 func (h *LinkedEmailsHandler) linkAnEmail(c *fiber.Ctx) error {
 	// get email from params
-	email := c.Params("email")
-	if email == "" {
+	encodedEmail := c.Query("email")
+	if encodedEmail == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "email is required"})
+	}
+	email, err := url.QueryUnescape(encodedEmail)
+	queryParam := map[string]string{
+		"email": email,
 	}
 	// check if email is already a user
 	resp, err := dms.CallAPI(
 		"GET",
-		"/users/"+email,
+		"/user/",
 		nil,
 		nil,
-		nil,
+		queryParam,
 		120,
 	)
 	if err != nil {
@@ -112,19 +118,39 @@ func (h *LinkedEmailsHandler) linkAnEmail(c *fiber.Ctx) error {
 			if err != nil {
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not marshal response body"})
 			}
-			var userEmail models.TwUserEmail
-			userEmail.Email = email
-			userEmail.UserId = user.ID
-			userEmail.User = user
-			// if user exists, link email to user
+			userId := c.Locals("userid")
+			if userId == nil {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"error": "user not found",
+				})
+			}
+			if userId == "" {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"error": "user not found",
+				})
+			}
+			userIdStr, ok := userId.(string)
+			if !ok {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"error": "error parsing user id",
+				})
+			}
+			var resquestDto = core_dtos.LinkEmailRequestDto{
+				UserId: userIdStr,
+				Email:  email,
+			}
+			// if user exists, link email to user (by change user_id in user_email table)
 			_, err = dms.CallAPI(
 				"POST",
-				"/user-email/",
-				userEmail,
+				"/link-email/",
+				resquestDto,
 				nil,
 				nil,
 				120,
 			)
+			if err != nil {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+			}
 		} else {
 			// if user does not exist, throw error
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "This email is not a user"})

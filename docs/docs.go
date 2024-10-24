@@ -192,34 +192,6 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/api/v1/delete-workspace_user/workspace_user_id/{workspace_user_id}": {
-            "put": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "WorkspaceUser"
-                ],
-                "summary": "Delete workspace user (X-User-Email required, X-Workspace-Id required)",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "workspace_user_id",
-                        "name": "workspace_user_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/fiber.Map"
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/comment/schedule/{schedule_id}": {
             "get": {
                 "description": "Get comments by schedule",
@@ -255,6 +227,34 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/delete-workspace_user/workspace_user_id/{workspace_user_id}": {
+            "put": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkspaceUser"
+                ],
+                "summary": "Delete workspace user (X-User-Email required, X-Workspace-Id required)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "workspace_user_id",
+                        "name": "workspace_user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/fiber.Map"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/document/schedule/{schedule_id}": {
             "get": {
                 "description": "Get documents by schedule",
@@ -284,6 +284,75 @@ const docTemplate = `{
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/document_dtos.TwDocumentResponse"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/linked_emails/": {
+            "get": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Get linked user email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "linked_emails"
+                ],
+                "summary": "Get linked user email",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.TwUserEmail"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Link an email to a user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "linked_emails"
+                ],
+                "summary": "Link an email to a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Email",
+                        "name": "email",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.TwUserEmail"
                             }
                         }
                     }
@@ -672,152 +741,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/update-role": {
-            "put": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Workspace User"
-                ],
-                "summary": "Update role of workspace user (X-User-Email required, X-Workspace-Id required)",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "workspace_user_id",
-                        "name": "workspace_user_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Update role request",
-                        "name": "workspace_user",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/workspace_user_dtos.UpdateWorkspaceUserRoleRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/fiber.Map"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/user-emails/get-linked-email": {
-            "get": {
-                "security": [
-                    {
-                        "bearerToken": []
-                    }
-                ],
-                "description": "Get linked user email",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "linked_emails"
-                ],
-                "summary": "Get linked user email",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.TwUserEmail"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/user-emails/link-email/{email}": {
-            "post": {
-                "security": [
-                    {
-                        "bearerToken": []
-                    }
-                ],
-                "description": "Link an email to a user",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "linked_emails"
-                ],
-                "summary": "Link an email to a user",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Email",
-                        "name": "email",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.TwUserEmail"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/user_email/search-user_email/{query}": {
-            "get": {
-                "description": "search user email",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User Email"
-                ],
-                "summary": "search user email",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "query",
-                        "name": "query",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/user_email_dtos.SearchUserEmailResponse"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/workspace/create-workspace": {
             "post": {
                 "description": "Create a workspace",
@@ -1122,50 +1045,6 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.TwWorkspaceUser"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/workspace_user/workspace_user_invitation_list": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "WorkspaceUser"
-                ],
-                "summary": "Get workspace user invitation list (X-User-Email required, X-Workspace-Id required)",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/workspace_user_dtos.GetWorkspaceUserListResponse"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/workspace_user/workspace_user_list": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "WorkspaceUser"
-                ],
-                "summary": "Get workspace user list (X-User-Email required, X-Workspace-Id required)",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/workspace_user_dtos.GetWorkspaceUserListResponse"
-                            }
                         }
                     }
                 }
