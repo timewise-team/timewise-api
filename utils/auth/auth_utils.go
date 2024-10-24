@@ -85,3 +85,30 @@ func IsValidEmail(email string) bool {
 	re := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 	return re.MatchString(email)
 }
+
+func GenerateInvitationToken(workspaceId int, action string, secretKey string, email string, role string) (string, error) {
+	claims := jwt.MapClaims{
+		"email":        email,
+		"workspace_id": workspaceId,
+		"role":         role,
+		"action":       action,                                // accept hoặc decline
+		"exp":          time.Now().Add(24 * time.Hour).Unix(), // Token có thời hạn 24h
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString([]byte(secretKey))
+	if err != nil {
+		return "", err
+	}
+	return tokenString, nil
+}
+
+func ParseInvitationToken(tokenString string, secretKey string) (jwt.MapClaims, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return []byte(secretKey), nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return token.Claims.(jwt.MapClaims), nil
+}
