@@ -787,24 +787,6 @@ paths:
         required)
       tags:
       - board_columns
-  /api/v1/delete-workspace_user/workspace_user_id/{workspace_user_id}:
-    put:
-      parameters:
-      - description: workspace_user_id
-        in: path
-        name: workspace_user_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/fiber.Map'
-      summary: Delete workspace user (X-User-Email required, X-Workspace-Id required)
-      tags:
-      - WorkspaceUser
   /api/v1/comment/schedule/{schedule_id}:
     get:
       consumes:
@@ -828,6 +810,24 @@ paths:
       summary: Get comments by schedule
       tags:
       - comment
+  /api/v1/delete-workspace_user/workspace_user_id/{workspace_user_id}:
+    put:
+      parameters:
+      - description: workspace_user_id
+        in: path
+        name: workspace_user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/fiber.Map'
+      summary: Delete workspace user (X-User-Email required, X-Workspace-Id required)
+      tags:
+      - WorkspaceUser
   /api/v1/document/schedule/{schedule_id}:
     get:
       consumes:
@@ -1078,7 +1078,7 @@ paths:
       summary: Update role of workspace user (X-User-Email required, X-Workspace-Id
         required)
       tags:
-      - Workspace User
+      - WorkspaceUser
   /api/v1/user_email/search-user_email/{query}:
     get:
       consumes:

@@ -21,7 +21,7 @@ import (
 // @Produce json
 // @Param workspace_user body workspace_user_dtos.UpdateWorkspaceUserRoleRequest true "Workspace user object"
 // @Success 200 {object} models.TwWorkspaceUser
-// @Router /api/v1/workspace_user/send_invitation [post]
+// @Router /api/v1/workspace_user/send-invitation [post]
 func (s *WorkspaceUserHandler) sendInvitation(c *fiber.Ctx) error {
 	cfg, err1 := config.LoadConfig()
 	if err1 != nil {
