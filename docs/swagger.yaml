@@ -810,24 +810,6 @@ paths:
       summary: Get comments by schedule
       tags:
       - comment
-  /api/v1/delete-workspace_user/workspace_user_id/{workspace_user_id}:
-    put:
-      parameters:
-      - description: workspace_user_id
-        in: path
-        name: workspace_user_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/fiber.Map'
-      summary: Delete workspace user (X-User-Email required, X-Workspace-Id required)
-      tags:
-      - WorkspaceUser
   /api/v1/document/schedule/{schedule_id}:
     get:
       consumes:
@@ -1052,33 +1034,6 @@ paths:
       summary: Update an existing schedule
       tags:
       - schedule
-  /api/v1/update-role:
-    put:
-      consumes:
-      - application/json
-      parameters:
-      - description: workspace_user_id
-        in: path
-        name: workspace_user_id
-        required: true
-        type: string
-      - description: Update role request
-        in: body
-        name: workspace_user
-        required: true
-        schema:
-          $ref: '#/definitions/workspace_user_dtos.UpdateWorkspaceUserRoleRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/fiber.Map'
-      summary: Update role of workspace user (X-User-Email required, X-Workspace-Id
-        required)
-      tags:
-      - Workspace User
   /api/v1/user_email/search-user_email/{query}:
     get:
       consumes:
@@ -1237,6 +1192,24 @@ paths:
       summary: Decline invitation via email
       tags:
       - WorkspaceUser
+  /api/v1/workspace_user/delete-workspace_user/workspace_user_id/{workspace_user_id}:
+    delete:
+      parameters:
+      - description: workspace_user_id
+        in: path
+        name: workspace_user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/fiber.Map'
+      summary: Delete workspace user (X-User-Email required, X-Workspace-Id required)
+      tags:
+      - WorkspaceUser
   /api/v1/workspace_user/disprove-invitation/email/{email}:
     put:
       consumes:
@@ -1255,7 +1228,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.TwWorkspaceUser'
+            $ref: '#/definitions/fiber.Map'
       summary: Disprove member's request invitation (X-User-Email required, X-Workspace-Id
         required)
       tags:
@@ -1283,50 +1256,23 @@ paths:
       summary: Get workspace user by email and workspace
       tags:
       - WorkspaceUser
-  /api/v1/workspace_user/send_invitation:
-    post:
+  /api/v1/workspace_user/get-workspace_user_invitation_not_verified_list:
+    get:
       consumes:
       - application/json
-      description: Send invitation to user (X-User-Email required, X-Workspace-Id
-        required)
-      parameters:
-      - description: Workspace user object
-        in: body
-        name: workspace_user
-        required: true
-        schema:
-          $ref: '#/definitions/workspace_user_dtos.UpdateWorkspaceUserRoleRequest'
+      description: Get workspace user invitation not verified list (X-User-Email required,
+        X-Workspace-Id required)
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.TwWorkspaceUser'
-      summary: Send invitation to user (X-User-Email required, X-Workspace-Id required)
-      tags:
-      - WorkspaceUser
-  /api/v1/workspace_user/verify-invitation/email/{email}:
-    put:
-      consumes:
-      - application/json
-      description: Verify member's request invitation (X-User-Email required, X-Workspace-Id
-        required)
-      parameters:
-      - description: Email
-        in: path
-        name: email
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.TwWorkspaceUser'
-      summary: Verify member's request invitation (X-User-Email required, X-Workspace-Id
-        required)
+            items:
+              $ref: '#/definitions/workspace_user_dtos.GetWorkspaceUserListResponse'
+            type: array
+      summary: Get workspace user invitation not verified list (X-User-Email required,
+        X-Workspace-Id required)
       tags:
       - WorkspaceUser
   /api/v1/workspace_user/send-invitation:
@@ -1350,6 +1296,56 @@ paths:
           schema:
             $ref: '#/definitions/models.TwWorkspaceUser'
       summary: Send invitation to user (X-User-Email required, X-Workspace-Id required)
+      tags:
+      - WorkspaceUser
+  /api/v1/workspace_user/update-role:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: workspace_user_id
+        in: path
+        name: workspace_user_id
+        required: true
+        type: string
+      - description: Update role request
+        in: body
+        name: workspace_user
+        required: true
+        schema:
+          $ref: '#/definitions/workspace_user_dtos.UpdateWorkspaceUserRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/fiber.Map'
+      summary: Update role of workspace user (X-User-Email required, X-Workspace-Id
+        required)
+      tags:
+      - WorkspaceUser
+  /api/v1/workspace_user/verify-invitation/email/{email}:
+    put:
+      consumes:
+      - application/json
+      description: Verify member's request invitation (X-User-Email required, X-Workspace-Id
+        required)
+      parameters:
+      - description: Email
+        in: path
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TwWorkspaceUser'
+      summary: Verify member's request invitation (X-User-Email required, X-Workspace-Id
+        required)
       tags:
       - WorkspaceUser
   /api/v1/workspace_user/workspace_user_invitation_list:
@@ -1381,31 +1377,6 @@ paths:
       summary: Get workspace user list (X-User-Email required, X-Workspace-Id required)
       tags:
       - WorkspaceUser
-  /dbms/v1/workspace_user/get-workspace_user_invitation_not_verified_list/workspace/{workspace_user_id}:
-    get:
-      consumes:
-      - application/json
-      description: Get workspace user invitation not verified list (X-User-Email required,
-        X-Workspace-Id required)
-      parameters:
-      - description: Workspace user ID
-        in: path
-        name: workspace_user_id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/workspace_user_dtos.GetWorkspaceUserListResponse'
-            type: array
-      summary: Get workspace user invitation not verified list (X-User-Email required,
-        X-Workspace-Id required)
-      tags:
-      - workspaceUser
 securityDefinitions:
   bearerToken:
     in: header

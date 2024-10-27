@@ -14,7 +14,7 @@ import (
 // @Accept json
 // @Produce json
 // @Param email path string true "Email"
-// @Success 200 {object} models.TwWorkspaceUser
+// @Success 200 {object} fiber.Map
 // @Router /api/v1/workspace_user/disprove-invitation/email/{email} [put]
 func (h *WorkspaceUserHandler) disproveMemberInvitationRequest(c *fiber.Ctx) error {
 	email := c.Params("email")
@@ -47,11 +47,9 @@ func (h *WorkspaceUserHandler) disproveMemberInvitationRequest(c *fiber.Ctx) err
 			"message": err.Error(),
 		})
 	}
-	if workspaceUser == nil {
-		return c.Status(500).JSON(fiber.Map{
-			"message": "Failed to verify member invitation request",
-		})
-	}
-	return c.JSON(workspaceUser)
+
+	return c.Status(200).JSON(fiber.Map{
+		"message": "Disprove member's request invitation successfully",
+	})
 
 }

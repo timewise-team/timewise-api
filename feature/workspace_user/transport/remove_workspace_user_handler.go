@@ -12,7 +12,7 @@ import (
 // @Produce json
 // @Param workspace_user_id path string true "workspace_user_id"
 // @Success 200 {object} fiber.Map
-// @Router /api/v1/delete-workspace_user/workspace_user_id/{workspace_user_id} [put]
+// @Router /api/v1/workspace_user/delete-workspace_user/workspace_user_id/{workspace_user_id} [delete]
 func (h *WorkspaceUserHandler) deleteWorkspaceUser(c *fiber.Ctx) error {
 	workspaceUserLocal := c.Locals("workspace_user")
 	if workspaceUserLocal == nil {
