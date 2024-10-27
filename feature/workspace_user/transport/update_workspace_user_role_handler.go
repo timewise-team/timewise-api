@@ -15,7 +15,7 @@ import (
 // @Param workspace_user_id path string true "workspace_user_id"
 // @Param workspace_user body workspace_user_dtos.UpdateWorkspaceUserRoleRequest true "Update role request"
 // @Success 200 {object} fiber.Map
-// @Router /api/v1/update-role [put]
+// @Router /api/v1/workspace_user/update-role [put]
 func (s *WorkspaceUserHandler) updateRole(c *fiber.Ctx) error {
 	workspaceUserLocal := c.Locals("workspace_user")
 	if workspaceUserLocal == nil {

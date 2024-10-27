@@ -155,7 +155,7 @@ func (s *WorkspaceUserService) DeleteWorkspaceUser(workspaceUser *models.TwWorks
 
 	// Call API
 	resp, err := dms.CallAPI(
-		"PUT",
+		"DELETE",
 		"/workspace_user/"+workspaceUserMemberId+"/workspace/"+workspaceIDStr,
 		nil,
 		nil,
