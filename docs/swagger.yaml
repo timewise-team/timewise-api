@@ -1078,7 +1078,7 @@ paths:
       summary: Update role of workspace user (X-User-Email required, X-Workspace-Id
         required)
       tags:
-      - WorkspaceUser
+      - Workspace User
   /api/v1/user_email/search-user_email/{query}:
     get:
       consumes:
@@ -1283,7 +1283,7 @@ paths:
       summary: Get workspace user by email and workspace
       tags:
       - WorkspaceUser
-  /api/v1/workspace_user/send-invitation:
+  /api/v1/workspace_user/send_invitation:
     post:
       consumes:
       - application/json
@@ -1327,6 +1327,29 @@ paths:
             $ref: '#/definitions/models.TwWorkspaceUser'
       summary: Verify member's request invitation (X-User-Email required, X-Workspace-Id
         required)
+      tags:
+      - WorkspaceUser
+  /api/v1/workspace_user/send-invitation:
+    post:
+      consumes:
+      - application/json
+      description: Send invitation to user (X-User-Email required, X-Workspace-Id
+        required)
+      parameters:
+      - description: Workspace user object
+        in: body
+        name: workspace_user
+        required: true
+        schema:
+          $ref: '#/definitions/workspace_user_dtos.UpdateWorkspaceUserRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TwWorkspaceUser'
+      summary: Send invitation to user (X-User-Email required, X-Workspace-Id required)
       tags:
       - WorkspaceUser
   /api/v1/workspace_user/workspace_user_invitation_list:
