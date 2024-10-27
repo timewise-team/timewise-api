@@ -941,7 +941,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/workspace_user/send_invitation": {
+        "/api/v1/workspace_user/send-invitation": {
             "post": {
                 "description": "Send invitation to user (X-User-Email required, X-Workspace-Id required)",
                 "consumes": [
@@ -1038,6 +1038,41 @@ const docTemplate = `{
                     "WorkspaceUser"
                 ],
                 "summary": "Get workspace user list (X-User-Email required, X-Workspace-Id required)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/workspace_user_dtos.GetWorkspaceUserListResponse"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dbms/v1/workspace_user/get-workspace_user_invitation_not_verified_list/workspace/{workspace_user_id}": {
+            "get": {
+                "description": "Get workspace user invitation not verified list (X-User-Email required, X-Workspace-Id required)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workspaceUser"
+                ],
+                "summary": "Get workspace user invitation not verified list (X-User-Email required, X-Workspace-Id required)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Workspace user ID",
+                        "name": "workspace_user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
