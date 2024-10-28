@@ -73,12 +73,20 @@ func (h *BoardColumnsHandler) getBoardColumnsByWorkspace(c *fiber.Ctx) error {
 			schedulesList.BoardColumnID = schedule.BoardColumnId
 			schedulesList.Title = schedule.Title
 			schedulesList.Description = schedule.Description
-			schedulesList.StartTime = *schedule.StartTime
-			schedulesList.EndTime = *schedule.EndTime
+			if schedule.StartTime != nil {
+				schedulesList.StartTime = *schedule.StartTime
+			}
+			if schedule.EndTime != nil {
+				schedulesList.EndTime = *schedule.EndTime
+			}
 			schedulesList.Location = schedule.Location
 			schedulesList.CreatedBy = schedule.CreatedBy
-			schedulesList.CreatedAt = *schedule.CreatedAt
-			schedulesList.UpdatedAt = *schedule.UpdatedAt
+			if schedule.CreatedAt != nil {
+				schedulesList.CreatedAt = *schedule.CreatedAt
+			}
+			if schedule.UpdatedAt != nil {
+				schedulesList.UpdatedAt = *schedule.UpdatedAt
+			}
 			schedulesList.Status = schedule.Status
 			schedulesList.AllDay = schedule.AllDay
 			schedulesList.Visibility = schedule.Visibility
