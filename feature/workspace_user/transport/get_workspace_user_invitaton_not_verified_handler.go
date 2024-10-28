@@ -7,6 +7,14 @@ import (
 	"strconv"
 )
 
+// getWorkspaceUserInvitationNotVerifiedList godoc
+// @Summary Get workspace user invitation not verified list (X-User-Email required, X-Workspace-Id required)
+// @Description Get workspace user invitation not verified list (X-User-Email required, X-Workspace-Id required)
+// @Tags WorkspaceUser
+// @Accept json
+// @Produce json
+// @Success 200 {array} workspace_user_dtos.GetWorkspaceUserListResponse
+// @Router /api/v1/workspace_user/get-workspace_user_invitation_not_verified_list [get]
 func (h *WorkspaceUserHandler) getWorkspaceUserInvitationNotVerifiedList(c *fiber.Ctx) error {
 	workspaceUserLocal := c.Locals("workspace_user")
 	if workspaceUserLocal == nil {
@@ -27,10 +35,6 @@ func (h *WorkspaceUserHandler) getWorkspaceUserInvitationNotVerifiedList(c *fibe
 			"message": err.Error(),
 		})
 	}
-	if workspaceUserList == nil {
-		return c.Status(500).JSON(fiber.Map{
-			"message": "Failed to get workspace user list",
-		})
-	}
+
 	return c.JSON(workspaceUserList)
 }
