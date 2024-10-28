@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"api/middleware"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -18,4 +19,10 @@ func RegisterScheduleParticipantHandler(router fiber.Router) {
 	// Register all endpoints here
 	router.Get("schedule/:scheduleId",
 		scheduleParticipantHandler.Handler.GetScheduleParticipantByScheduleID)
+	router.Post("invite",
+		middleware.CheckWorkspaceRole([]string{"owner", "admin"}),
+		middleware.CheckScheduleStatus([]string{"creator"}),
+		scheduleParticipantHandler.Handler.InviteToSchedule)
+	router.Get("/accept-invitation-via-email/token/:token?", scheduleParticipantHandler.Handler.AcceptInvite)
+	router.Get("/decline-invitation-via-email/token/:token?", scheduleParticipantHandler.Handler.DeclineInvite)
 }

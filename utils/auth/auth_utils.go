@@ -103,6 +103,22 @@ func GenerateInvitationToken(workspaceId int, action string, secretKey string, e
 	return tokenString, nil
 }
 
+func GenerateScheduleInvitationToken(workspaceUserId int, action string, secretKey string, scheduleId int) (string, error) {
+	claims := jwt.MapClaims{
+		"schedule_id":       scheduleId,
+		"workspace_user_id": workspaceUserId,
+		"action":            action,                                // accept hoặc decline
+		"exp":               time.Now().Add(24 * time.Hour).Unix(), // Token có thời hạn 24h
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString([]byte(secretKey))
+	if err != nil {
+		return "", err
+	}
+	return tokenString, nil
+}
+
 func ParseInvitationToken(tokenString string, secretKey string) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return []byte(secretKey), nil

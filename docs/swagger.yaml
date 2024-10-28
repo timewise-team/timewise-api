@@ -551,6 +551,13 @@ definitions:
       workspace_user_id:
         type: integer
     type: object
+  schedule_participant_dtos.InviteToScheduleRequest:
+    properties:
+      email:
+        type: string
+      schedule_id:
+        type: integer
+    type: object
   schedule_participant_dtos.ScheduleParticipantInfo:
     properties:
       assign_at:
@@ -585,6 +592,27 @@ definitions:
         type: string
       user_id:
         type: integer
+      workspace_user_id:
+        type: integer
+    type: object
+  schedule_participant_dtos.ScheduleParticipantResponse:
+    properties:
+      assign_at:
+        type: string
+      assign_by:
+        type: integer
+      id:
+        type: integer
+      invitation_sent_at:
+        type: string
+      invitation_status:
+        type: string
+      response_time:
+        type: string
+      schedule_id:
+        type: integer
+      status:
+        type: string
       workspace_user_id:
         type: integer
     type: object
@@ -810,24 +838,6 @@ paths:
       summary: Get comments by schedule
       tags:
       - comment
-  /api/v1/delete-workspace_user/workspace_user_id/{workspace_user_id}:
-    put:
-      parameters:
-      - description: workspace_user_id
-        in: path
-        name: workspace_user_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/fiber.Map'
-      summary: Delete workspace user (X-User-Email required, X-Workspace-Id required)
-      tags:
-      - WorkspaceUser
   /api/v1/document/schedule/{schedule_id}:
     get:
       consumes:
@@ -942,6 +952,103 @@ paths:
       summary: Get schedule logs by schedule ID
       tags:
       - schedule_log
+  /api/v1/schedule_participant/accept-invitation-via-email/token/{token}:
+    get:
+      consumes:
+      - application/json
+      description: Accept invitation via email
+      parameters:
+      - description: Token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Schedule invitation accepted successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Token expired or invalid
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Schedule user not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Accept invitation via email
+      tags:
+      - ScheduleParticipant
+  /api/v1/schedule_participant/decline-invitation-via-email/token/{token}:
+    get:
+      consumes:
+      - application/json
+      description: Decline invitation via email
+      parameters:
+      - description: Token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Invitation declined successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Invalid or expired token
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Schedule user not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Decline invitation via email
+      tags:
+      - ScheduleParticipant
+  /api/v1/schedule_participant/invite:
+    post:
+      consumes:
+      - application/json
+      description: Send invitation to user (X-User-Email required, X-Workspace-Id
+        required)
+      parameters:
+      - description: Request body
+        in: body
+        name: schedule_participant
+        required: true
+        schema:
+          $ref: '#/definitions/schedule_participant_dtos.InviteToScheduleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schedule_participant_dtos.ScheduleParticipantResponse'
+      summary: Send invitation to user
+      tags:
+      - ScheduleParticipant
   /api/v1/schedule_participant/schedule/{scheduleId}:
     get:
       consumes:
@@ -1366,29 +1473,6 @@ paths:
         required)
       tags:
       - WorkspaceUser
-  /api/v1/workspace_user/send-invitation:
-    post:
-      consumes:
-      - application/json
-      description: Send invitation to user (X-User-Email required, X-Workspace-Id
-        required)
-      parameters:
-      - description: Workspace user object
-        in: body
-        name: workspace_user
-        required: true
-        schema:
-          $ref: '#/definitions/workspace_user_dtos.UpdateWorkspaceUserRoleRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.TwWorkspaceUser'
-      summary: Send invitation to user (X-User-Email required, X-Workspace-Id required)
-      tags:
-      - WorkspaceUser
   /api/v1/workspace_user/workspace_user_invitation_list:
     get:
       produces:
@@ -1418,31 +1502,6 @@ paths:
       summary: Get workspace user list (X-User-Email required, X-Workspace-Id required)
       tags:
       - WorkspaceUser
-  /dbms/v1/workspace_user/get-workspace_user_invitation_not_verified_list/workspace/{workspace_user_id}:
-    get:
-      consumes:
-      - application/json
-      description: Get workspace user invitation not verified list (X-User-Email required,
-        X-Workspace-Id required)
-      parameters:
-      - description: Workspace user ID
-        in: path
-        name: workspace_user_id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/workspace_user_dtos.GetWorkspaceUserListResponse'
-            type: array
-      summary: Get workspace user invitation not verified list (X-User-Email required,
-        X-Workspace-Id required)
-      tags:
-      - workspaceUser
 securityDefinitions:
   bearerToken:
     in: header

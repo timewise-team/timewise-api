@@ -394,6 +394,148 @@
                 }
             }
         },
+        "/api/v1/schedule_participant/accept-invitation-via-email/token/{token}": {
+            "get": {
+                "description": "Accept invitation via email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ScheduleParticipant"
+                ],
+                "summary": "Accept invitation via email",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Token",
+                        "name": "token",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Schedule invitation accepted successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Token expired or invalid",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Schedule user not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/schedule_participant/decline-invitation-via-email/token/{token}": {
+            "get": {
+                "description": "Decline invitation via email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ScheduleParticipant"
+                ],
+                "summary": "Decline invitation via email",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Token",
+                        "name": "token",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Invitation declined successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid or expired token",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Schedule user not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/schedule_participant/invite": {
+            "post": {
+                "description": "Send invitation to user (X-User-Email required, X-Workspace-Id required)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ScheduleParticipant"
+                ],
+                "summary": "Send invitation to user",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "schedule_participant",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schedule_participant_dtos.InviteToScheduleRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schedule_participant_dtos.ScheduleParticipantResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/schedule_participant/schedule/{scheduleId}": {
             "get": {
                 "description": "Get schedule participants by schedule ID",
@@ -1901,6 +2043,17 @@
                 }
             }
         },
+        "schedule_participant_dtos.InviteToScheduleRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "schedule_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "schedule_participant_dtos.ScheduleParticipantInfo": {
             "type": "object",
             "properties": {
@@ -1951,6 +2104,38 @@
                 },
                 "user_id": {
                     "type": "integer"
+                },
+                "workspace_user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "schedule_participant_dtos.ScheduleParticipantResponse": {
+            "type": "object",
+            "properties": {
+                "assign_at": {
+                    "type": "string"
+                },
+                "assign_by": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "invitation_sent_at": {
+                    "type": "string"
+                },
+                "invitation_status": {
+                    "type": "string"
+                },
+                "response_time": {
+                    "type": "string"
+                },
+                "schedule_id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
                 },
                 "workspace_user_id": {
                     "type": "integer"
