@@ -51,6 +51,7 @@ jobs:
               --name timewise-api \
               -dp 8080:8080 \
               -e ENV=production \
+              --restart always \
               -v /home/khanhhn.hoang/env_files/.api_env:/.env \
               ${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
           EOF
