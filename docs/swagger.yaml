@@ -551,6 +551,13 @@ definitions:
       workspace_user_id:
         type: integer
     type: object
+  schedule_participant_dtos.InviteToScheduleRequest:
+    properties:
+      email:
+        type: string
+      schedule_id:
+        type: integer
+    type: object
   schedule_participant_dtos.ScheduleParticipantInfo:
     properties:
       assign_at:
@@ -585,6 +592,27 @@ definitions:
         type: string
       user_id:
         type: integer
+      workspace_user_id:
+        type: integer
+    type: object
+  schedule_participant_dtos.ScheduleParticipantResponse:
+    properties:
+      assign_at:
+        type: string
+      assign_by:
+        type: integer
+      id:
+        type: integer
+      invitation_sent_at:
+        type: string
+      invitation_status:
+        type: string
+      response_time:
+        type: string
+      schedule_id:
+        type: integer
+      status:
+        type: string
       workspace_user_id:
         type: integer
     type: object
@@ -787,24 +815,6 @@ paths:
         required)
       tags:
       - board_columns
-  /api/v1/delete-workspace_user/workspace_user_id/{workspace_user_id}:
-    put:
-      parameters:
-      - description: workspace_user_id
-        in: path
-        name: workspace_user_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/fiber.Map'
-      summary: Delete workspace user (X-User-Email required, X-Workspace-Id required)
-      tags:
-      - WorkspaceUser
   /api/v1/comment/schedule/{schedule_id}:
     get:
       consumes:
@@ -828,6 +838,24 @@ paths:
       summary: Get comments by schedule
       tags:
       - comment
+  /api/v1/delete-workspace_user/workspace_user_id/{workspace_user_id}:
+    put:
+      parameters:
+      - description: workspace_user_id
+        in: path
+        name: workspace_user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/fiber.Map'
+      summary: Delete workspace user (X-User-Email required, X-Workspace-Id required)
+      tags:
+      - WorkspaceUser
   /api/v1/document/schedule/{schedule_id}:
     get:
       consumes:
@@ -942,6 +970,103 @@ paths:
       summary: Get schedule logs by schedule ID
       tags:
       - schedule_log
+  /api/v1/schedule_participant/accept-invitation-via-email/token/{token}:
+    get:
+      consumes:
+      - application/json
+      description: Accept invitation via email
+      parameters:
+      - description: Token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Schedule invitation accepted successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Token expired or invalid
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Schedule user not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Accept invitation via email
+      tags:
+      - ScheduleParticipant
+  /api/v1/schedule_participant/decline-invitation-via-email/token/{token}:
+    get:
+      consumes:
+      - application/json
+      description: Decline invitation via email
+      parameters:
+      - description: Token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Invitation declined successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Invalid or expired token
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Schedule user not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Decline invitation via email
+      tags:
+      - ScheduleParticipant
+  /api/v1/schedule_participant/invite:
+    post:
+      consumes:
+      - application/json
+      description: Send invitation to user (X-User-Email required, X-Workspace-Id
+        required)
+      parameters:
+      - description: Request body
+        in: body
+        name: schedule_participant
+        required: true
+        schema:
+          $ref: '#/definitions/schedule_participant_dtos.InviteToScheduleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schedule_participant_dtos.ScheduleParticipantResponse'
+      summary: Send invitation to user
+      tags:
+      - ScheduleParticipant
   /api/v1/schedule_participant/schedule/{scheduleId}:
     get:
       consumes:
@@ -1078,7 +1203,7 @@ paths:
       summary: Update role of workspace user (X-User-Email required, X-Workspace-Id
         required)
       tags:
-      - Workspace User
+      - WorkspaceUser
   /api/v1/user_email/search-user_email/{query}:
     get:
       consumes:

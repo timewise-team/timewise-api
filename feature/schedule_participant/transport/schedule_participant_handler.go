@@ -1,7 +1,9 @@
 package transport
 
 import (
+	"api/config"
 	"api/service/schedule_participant"
+	auth_utils "api/utils/auth"
 	"github.com/gofiber/fiber/v2"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos/schedule_participant_dtos"
 	"strconv"
@@ -43,6 +45,15 @@ func (h *ScheduleParticipantHandler) GetScheduleParticipantByScheduleID(c *fiber
 	return c.JSON(scheduleParticipant)
 }
 
+// sendInvitation godoc
+// @Summary Send invitation to user
+// @Description Send invitation to user (X-User-Email required, X-Workspace-Id required)
+// @Tags ScheduleParticipant
+// @Accept json
+// @Produce json
+// @Param schedule_participant body schedule_participant_dtos.InviteToScheduleRequest true "Request body"
+// @Success 200 {object} schedule_participant_dtos.ScheduleParticipantResponse
+// @Router /api/v1/schedule_participant/invite [post]
 func (h *ScheduleParticipantHandler) InviteToSchedule(c *fiber.Ctx) error {
 	var InviteToScheduleDto schedule_participant_dtos.InviteToScheduleRequest
 	if err := c.BodyParser(&InviteToScheduleDto); err != nil {
@@ -55,5 +66,81 @@ func (h *ScheduleParticipantHandler) InviteToSchedule(c *fiber.Ctx) error {
 		})
 	}
 
+	return c.JSON(scheduleParticipant)
+}
+
+// acceptInvitationViaEmail godoc
+// @Summary Accept invitation via email
+// @Description Accept invitation via email
+// @Tags ScheduleParticipant
+// @Accept json
+// @Produce json
+// @Param token path string true "Token"
+// @Success 200 {object} map[string]interface{} "Schedule invitation accepted successfully"
+// @Failure 404 {object} map[string]interface{} "Schedule user not found"
+// @Failure 401 {object} map[string]interface{} "Token expired or invalid"
+// @Failure 500 {object} map[string]interface{} "Internal Server Error"
+// @Router /api/v1/schedule_participant/accept-invitation-via-email/token/{token} [get]
+func (h *ScheduleParticipantHandler) AcceptInvite(c *fiber.Ctx) error {
+	cfg, err1 := config.LoadConfig()
+	if err1 != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"message": "Failed to load config",
+		})
+	}
+	token := c.Params("token")
+	claims, err2 := auth_utils.ParseInvitationToken(token, cfg.JWT_SECRET)
+	if err2 != nil {
+	}
+	scheduleId := claims["schedule_id"].(float64)
+	workspaceUserId := claims["workspace_user_id"].(float64)
+	scheduleIdStr := strconv.FormatFloat(scheduleId, 'f', -1, 64)
+	workspaceUserIdStr := strconv.FormatFloat(workspaceUserId, 'f', -1, 64)
+
+	// Gọi hàm AcceptInvite với các tham số đã chuyển đổi
+	scheduleParticipant, err := h.service.AcceptInvite(scheduleIdStr, workspaceUserIdStr)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.JSON(scheduleParticipant)
+}
+
+// declineInvitationViaEmail godoc
+// @Summary Decline invitation via email
+// @Description Decline invitation via email
+// @Tags ScheduleParticipant
+// @Accept json
+// @Produce json
+// @Param token path string true "Token"
+// @Success 200 {object} map[string]interface{} "Invitation declined successfully"
+// @Failure 404 {object} map[string]interface{} "Schedule user not found"
+// @Failure 401 {object} map[string]interface{} "Invalid or expired token"
+// @Failure 500 {object} map[string]interface{} "Internal Server Error"
+// @Router /api/v1/schedule_participant/decline-invitation-via-email/token/{token} [get]
+func (h *ScheduleParticipantHandler) DeclineInvite(c *fiber.Ctx) error {
+	cfg, err1 := config.LoadConfig()
+	if err1 != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"message": "Failed to load config",
+		})
+	}
+	token := c.Params("token")
+	claims, err2 := auth_utils.ParseInvitationToken(token, cfg.JWT_SECRET)
+	if err2 != nil {
+	}
+	scheduleId := claims["schedule_id"].(float64)
+	workspaceUserId := claims["workspace_user_id"].(float64)
+	scheduleIdStr := strconv.FormatFloat(scheduleId, 'f', -1, 64)
+	workspaceUserIdStr := strconv.FormatFloat(workspaceUserId, 'f', -1, 64)
+
+	// Gọi hàm AcceptInvite với các tham số đã chuyển đổi
+	scheduleParticipant, err := h.service.DeclineInvite(scheduleIdStr, workspaceUserIdStr)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
 	return c.JSON(scheduleParticipant)
 }

@@ -192,34 +192,6 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/api/v1/delete-workspace_user/workspace_user_id/{workspace_user_id}": {
-            "put": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "WorkspaceUser"
-                ],
-                "summary": "Delete workspace user (X-User-Email required, X-Workspace-Id required)",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "workspace_user_id",
-                        "name": "workspace_user_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/fiber.Map"
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/comment/schedule/{schedule_id}": {
             "get": {
                 "description": "Get comments by schedule",
@@ -250,6 +222,34 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/comment_dtos.TwCommentResponse"
                             }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/delete-workspace_user/workspace_user_id/{workspace_user_id}": {
+            "put": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkspaceUser"
+                ],
+                "summary": "Delete workspace user (X-User-Email required, X-Workspace-Id required)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "workspace_user_id",
+                        "name": "workspace_user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/fiber.Map"
                         }
                     }
                 }
@@ -425,6 +425,148 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/schedule_log_dtos.TwScheduleLogResponse"
                             }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/schedule_participant/accept-invitation-via-email/token/{token}": {
+            "get": {
+                "description": "Accept invitation via email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ScheduleParticipant"
+                ],
+                "summary": "Accept invitation via email",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Token",
+                        "name": "token",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Schedule invitation accepted successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Token expired or invalid",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Schedule user not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/schedule_participant/decline-invitation-via-email/token/{token}": {
+            "get": {
+                "description": "Decline invitation via email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ScheduleParticipant"
+                ],
+                "summary": "Decline invitation via email",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Token",
+                        "name": "token",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Invitation declined successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid or expired token",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Schedule user not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/schedule_participant/invite": {
+            "post": {
+                "description": "Send invitation to user (X-User-Email required, X-Workspace-Id required)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ScheduleParticipant"
+                ],
+                "summary": "Send invitation to user",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "schedule_participant",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schedule_participant_dtos.InviteToScheduleRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schedule_participant_dtos.ScheduleParticipantResponse"
                         }
                     }
                 }
@@ -607,81 +749,6 @@ const docTemplate = `{
                 ],
                 "tags": [
                     "WorkspaceUser"
-                ],
-                "summary": "Update role of workspace user (X-User-Email required, X-Workspace-Id required)",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "workspace_user_id",
-                        "name": "workspace_user_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Update role request",
-                        "name": "workspace_user",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/workspace_user_dtos.UpdateWorkspaceUserRoleRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/fiber.Map"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/user_email/search-user_email/{query}": {
-            "get": {
-                "description": "search user email",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User Email"
-                ],
-                "summary": "search user email",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "query",
-                        "name": "query",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/user_email_dtos.SearchUserEmailResponse"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/update-role": {
-            "put": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Workspace User"
                 ],
                 "summary": "Update role of workspace user (X-User-Email required, X-Workspace-Id required)",
                 "parameters": [
@@ -1077,50 +1144,6 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.TwWorkspaceUser"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/workspace_user/workspace_user_invitation_list": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "WorkspaceUser"
-                ],
-                "summary": "Get workspace user invitation list (X-User-Email required, X-Workspace-Id required)",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/workspace_user_dtos.GetWorkspaceUserListResponse"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/workspace_user/workspace_user_list": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "WorkspaceUser"
-                ],
-                "summary": "Get workspace user list (X-User-Email required, X-Workspace-Id required)",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/workspace_user_dtos.GetWorkspaceUserListResponse"
-                            }
                         }
                     }
                 }
@@ -2002,6 +2025,17 @@ const docTemplate = `{
                 }
             }
         },
+        "schedule_participant_dtos.InviteToScheduleRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "schedule_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "schedule_participant_dtos.ScheduleParticipantInfo": {
             "type": "object",
             "properties": {
@@ -2052,6 +2086,38 @@ const docTemplate = `{
                 },
                 "user_id": {
                     "type": "integer"
+                },
+                "workspace_user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "schedule_participant_dtos.ScheduleParticipantResponse": {
+            "type": "object",
+            "properties": {
+                "assign_at": {
+                    "type": "string"
+                },
+                "assign_by": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "invitation_sent_at": {
+                    "type": "string"
+                },
+                "invitation_status": {
+                    "type": "string"
+                },
+                "response_time": {
+                    "type": "string"
+                },
+                "schedule_id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
                 },
                 "workspace_user_id": {
                     "type": "integer"

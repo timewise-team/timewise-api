@@ -105,10 +105,12 @@ func applyUpdateFields(baseSchedule, updateSchedule models.TwSchedule, dto core_
 		updateSchedule.Description = *dto.Description
 	}
 	if dto.StartTime != nil {
-		updateSchedule.StartTime = *dto.StartTime
+		t := *dto.StartTime
+		updateSchedule.StartTime = &t
 	}
 	if dto.EndTime != nil {
-		updateSchedule.EndTime = *dto.EndTime
+		t := *dto.EndTime
+		updateSchedule.EndTime = &t
 	}
 	if dto.Location != nil {
 		updateSchedule.Location = *dto.Location
