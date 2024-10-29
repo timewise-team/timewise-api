@@ -10,9 +10,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos/schedule_participant_dtos"
 	"github.com/timewise-team/timewise-models/models"
-	"io"
-	"io/ioutil"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -82,204 +79,215 @@ func (h *ScheduleParticipantService) GetScheduleParticipantsByScheduleID(schedul
 
 }
 
-func (h *ScheduleParticipantService) InviteToSchedule(c *fiber.Ctx, InviteToScheduleDto schedule_participant_dtos.InviteToScheduleRequest) (*schedule_participant_dtos.ScheduleParticipantResponse, error) {
+func (h *ScheduleParticipantService) InviteToSchedule(
+	c *fiber.Ctx,
+	InviteToScheduleDto schedule_participant_dtos.InviteToScheduleRequest,
+) (*schedule_participant_dtos.ScheduleParticipantResponse, error) {
 
-	// Lay ra workspaceUser cua thg gui
-	workspaceUserInvite, ok := c.Locals("workspace_user").(*models.TwWorkspaceUser)
-	if !ok {
-		return nil, errors.New("Failed to retrieve schedule participant")
+	workspaceUserInvite, err := h.getWorkspaceUserFromContext(c)
+	if err != nil {
+		return nil, err
 	}
 
-	// Lay ra workspaceUser cua thg dc gui
+	workspaceUserInvited, err := h.getWorkspaceUserByEmail(
+		InviteToScheduleDto.Email, workspaceUserInvite.WorkspaceId,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	scheduleParticipant, err := h.getScheduleParticipantFromContext(c)
+	if err != nil {
+		return nil, err
+	}
+
+	schedule, err := h.getScheduleById(scheduleParticipant.ScheduleId)
+	if err != nil {
+		return nil, err
+	}
+
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		return nil, fiber.NewError(500, "Failed to load config")
+	}
+
+	acceptLink, declineLink, _ := auth.GenerateInviteScheduleLinks(
+		cfg, scheduleParticipant.ScheduleId, workspaceUserInvited.ID,
+	)
+
+	scheduleParticipantResponse, err := h.handleInvitation(
+		cfg, schedule, scheduleParticipant, workspaceUserInvite, workspaceUserInvited,
+		acceptLink, declineLink, InviteToScheduleDto.Email,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return scheduleParticipantResponse, nil
+}
+
+// Hàm hỗ trợ lấy Workspace User từ context
+func (h *ScheduleParticipantService) getWorkspaceUserFromContext(c *fiber.Ctx) (*models.TwWorkspaceUser, error) {
+	workspaceUser, ok := c.Locals("workspace_user").(*models.TwWorkspaceUser)
+	if !ok {
+		return nil, errors.New("Failed to retrieve workspace user from context")
+	}
+	return workspaceUser, nil
+}
+
+// Gọi API để lấy Workspace User theo email
+func (h *ScheduleParticipantService) getWorkspaceUserByEmail(email string, workspaceId int) (*models.TwWorkspaceUser, error) {
 	resp, err := dms.CallAPI(
-		"GET",
-		"/workspace_user/email/"+InviteToScheduleDto.Email+"/workspace/"+strconv.Itoa(workspaceUserInvite.WorkspaceId),
-		nil,
-		nil,
-		nil,
-		120,
+		"GET", fmt.Sprintf("/workspace_user/email/%s/workspace/%d", email, workspaceId),
+		nil, nil, nil, 120,
 	)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
-	var workspaceUserInvited models.TwWorkspaceUser
-	if err := json.NewDecoder(resp.Body).Decode(&workspaceUserInvited); err != nil {
+	var user models.TwWorkspaceUser
+	if err := json.NewDecoder(resp.Body).Decode(&user); err != nil {
 		return nil, err
 	}
+	return &user, nil
+}
 
-	// Lay ra scheduleParticipant cua thg gui
-	scheduleParticipant, ok := c.Locals("scheduleParticipant").(models.TwScheduleParticipant)
+// Lấy Schedule Participant từ context
+func (h *ScheduleParticipantService) getScheduleParticipantFromContext(c *fiber.Ctx) (models.TwScheduleParticipant, error) {
+	participant, ok := c.Locals("scheduleParticipant").(models.TwScheduleParticipant)
 	if !ok {
-		return nil, c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to retrieve schedule participant",
-		})
+		return models.TwScheduleParticipant{}, fiber.NewError(500, "Failed to retrieve schedule participant")
 	}
+	return participant, nil
+}
 
-	resp1, err := dms.CallAPI(
-		"GET",
-		"/schedule/"+strconv.Itoa(scheduleParticipant.ScheduleId),
-		nil,
-		nil,
-		nil,
-		120,
+// Lấy thông tin Schedule qua API
+func (h *ScheduleParticipantService) getScheduleById(scheduleId int) (*models.TwSchedule, error) {
+	resp, err := dms.CallAPI(
+		"GET", fmt.Sprintf("/schedule/%d", scheduleId),
+		nil, nil, nil, 120,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("server error: %v", err)
 	}
-	defer resp1.Body.Close()
+	defer resp.Body.Close()
 
-	if resp1.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp1.StatusCode)
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
-	// Lay schedule
 	var schedule models.TwSchedule
-	if err := json.NewDecoder(resp1.Body).Decode(&schedule); err != nil {
-		return nil, fmt.Errorf("failed to decode response: %v", err)
+	if err := json.NewDecoder(resp.Body).Decode(&schedule); err != nil {
+		return nil, fmt.Errorf("failed to decode schedule: %v", err)
 	}
+	return &schedule, nil
+}
 
-	cfg, err1 := config.LoadConfig()
-	if err1 != nil {
-		return nil, c.Status(500).JSON(fiber.Map{
-			"message": "Failed to load config",
-		})
-	}
-	acceptLink, declineLink, _ := auth.GenerateInviteScheduleLinks(cfg, scheduleParticipant.ScheduleId, workspaceUserInvited.ID)
+// Xử lý lời mời và gửi email
+func (h *ScheduleParticipantService) handleInvitation(
+	cfg *config.Config, schedule *models.TwSchedule, scheduleParticipant models.TwScheduleParticipant,
+	workspaceUserInvite *models.TwWorkspaceUser, workspaceUserInvited *models.TwWorkspaceUser,
+	acceptLink, declineLink, email string,
+) (*schedule_participant_dtos.ScheduleParticipantResponse, error) {
 
-	var scheduleParticipantResponse schedule_participant_dtos.ScheduleParticipantResponse
-	resp3, err := dms.CallAPI(
-		"GET",
-		"/schedule_participant/workspace_user/"+strconv.Itoa(workspaceUserInvited.ID)+
-			"/schedule/"+strconv.Itoa(scheduleParticipant.ScheduleId),
-		nil,
-		nil,
-		nil,
-		120,
+	resp, err := dms.CallAPI(
+		"GET", fmt.Sprintf("/schedule_participant/workspace_user/%d/schedule/%d",
+			workspaceUserInvited.ID, scheduleParticipant.ScheduleId),
+		nil, nil, nil, 120,
 	)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
 
 	now := time.Now()
-
-	if resp3.StatusCode == http.StatusNotFound {
-		newScheduleParticipant := models.TwScheduleParticipant{
-			CreatedAt:        time.Now(),
-			UpdatedAt:        time.Now(),
-			ScheduleId:       scheduleParticipant.ScheduleId,
-			WorkspaceUserId:  workspaceUserInvited.ID,
-			AssignBy:         workspaceUserInvite.ID,
-			InvitationSentAt: &now,
-			InvitationStatus: "pending",
-		}
-
-		resp2, err2 := dms.CallAPI(
-			"POST",
-			"/schedule_participant",
-			newScheduleParticipant,
-			nil,
-			nil,
-			120,
+	if resp.StatusCode == http.StatusNotFound {
+		return h.createAndSendInvitation(
+			cfg, schedule, scheduleParticipant, workspaceUserInvite, workspaceUserInvited,
+			acceptLink, declineLink, email, now,
 		)
-		if err2 != nil {
-			return nil, err2
-		}
-		defer resp2.Body.Close()
-
-		body, err2 := ioutil.ReadAll(resp2.Body)
-		if err2 != nil {
-			return nil, errors.New("cannot read response body")
-		}
-
-		if resp.StatusCode != http.StatusOK {
-			return nil, errors.New(string(body))
-		}
-
-		if errParsing := json.Unmarshal(body, &scheduleParticipantResponse); errParsing != nil {
-			return nil, errors.New("error parsing JSON")
-		}
-
-		subject := fmt.Sprintf("Invitation to join schedule: %s", schedule.Title)
-		content := auth.BuildScheduleInvitationContent(&schedule, acceptLink, declineLink)
-		if err := auth.SendInvitationEmail(cfg, InviteToScheduleDto.Email, content, subject); err != nil {
-			return nil, c.Status(500).JSON(fiber.Map{"message": "Failed to send invitation email"})
-		}
-	} else {
-		if err != nil {
-			log.Printf("Error calling API: %v", err)
-			return nil, err
-		}
-
-		// Kiểm tra mã trạng thái phản hồi
-		if resp3.StatusCode != http.StatusOK {
-			return nil, fmt.Errorf("API returned status code %d", resp3.StatusCode)
-		}
-
-		// Đọc nội dung phản hồi
-		body, err := io.ReadAll(resp3.Body)
-		if err != nil {
-			log.Printf("Error reading response body: %v", err)
-			return nil, err
-		}
-		defer resp3.Body.Close()
-
-		// Giải mã JSON thành struct TwScheduleParticipant
-		var scheduleParticipantInvited models.TwScheduleParticipant
-
-		if err := json.Unmarshal(body, &scheduleParticipantInvited); err != nil {
-			log.Printf("Error unmarshalling response: %v", err)
-			return nil, err
-		}
-
-		switch scheduleParticipantInvited.InvitationStatus {
-		case "joined":
-			return nil, errors.New("User is already in the schedule")
-
-		case "pending":
-			subject := fmt.Sprintf("Reminder: Invitation to join schedule: %s", schedule.Title)
-			content := auth.BuildScheduleInvitationContent(&schedule, acceptLink, declineLink)
-			if err := auth.SendInvitationEmail(cfg, InviteToScheduleDto.Email, content, subject); err != nil {
-				return nil, c.Status(500).JSON(fiber.Map{"message": "Failed to send invitation email"})
-			}
-
-		case "declined", "removed":
-			subject := fmt.Sprintf("Reminder: Invitation to join schedule: %s", schedule.Title)
-			content := auth.BuildScheduleInvitationContent(&schedule, acceptLink, declineLink)
-			if err := auth.SendInvitationEmail(cfg, InviteToScheduleDto.Email, content, subject); err != nil {
-				return nil, c.Status(500).JSON(fiber.Map{"message": "Failed to send invitation email"})
-			}
-			scheduleParticipantInvited.UpdatedAt = time.Now()
-			scheduleParticipantInvited.InvitationStatus = "pending"
-
-			resp4, err4 := dms.CallAPI(
-				"PUT",
-				"/schedule_participant/"+strconv.Itoa(scheduleParticipantInvited.ID),
-				scheduleParticipantInvited,
-				nil,
-				nil,
-				120,
-			)
-
-			if err4 != nil {
-				return nil, err4
-			}
-			defer resp4.Body.Close()
-
-			body, err2 := ioutil.ReadAll(resp4.Body)
-			if err2 != nil {
-				return nil, errors.New("cannot read response body")
-			}
-
-			if resp4.StatusCode != http.StatusOK {
-				return nil, errors.New(string(body))
-			}
-
-			if errParsing := json.Unmarshal(body, &scheduleParticipantResponse); errParsing != nil {
-				return nil, errors.New("error parsing JSON")
-			}
-		}
 	}
 
-	return &scheduleParticipantResponse, nil
+	var existingParticipant models.TwScheduleParticipant
+	if err := json.NewDecoder(resp.Body).Decode(&existingParticipant); err != nil {
+		return nil, err
+	}
+
+	return h.handleExistingInvitation(
+		cfg, schedule, &existingParticipant, acceptLink, declineLink, email,
+	)
+}
+
+// Tạo lời mời mới và gửi email
+func (h *ScheduleParticipantService) createAndSendInvitation(
+	cfg *config.Config, schedule *models.TwSchedule, scheduleParticipant models.TwScheduleParticipant,
+	workspaceUserInvite *models.TwWorkspaceUser, workspaceUserInvited *models.TwWorkspaceUser,
+	acceptLink, declineLink, email string, now time.Time,
+) (*schedule_participant_dtos.ScheduleParticipantResponse, error) {
+
+	newParticipant := models.TwScheduleParticipant{
+		CreatedAt:        now,
+		UpdatedAt:        now,
+		ScheduleId:       scheduleParticipant.ScheduleId,
+		WorkspaceUserId:  workspaceUserInvited.ID,
+		AssignBy:         workspaceUserInvite.ID,
+		InvitationSentAt: &now,
+		InvitationStatus: "pending",
+	}
+
+	resp, err := dms.CallAPI("POST", "/schedule_participant", newParticipant, nil, nil, 120)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var response schedule_participant_dtos.ScheduleParticipantResponse
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return nil, err
+	}
+
+	subject := fmt.Sprintf("Invitation to join schedule: %s", schedule.Title)
+	content := auth.BuildScheduleInvitationContent(schedule, acceptLink, declineLink)
+	if err := auth.SendInvitationEmail(cfg, email, content, subject); err != nil {
+		return nil, fiber.NewError(500, "Failed to send invitation email")
+	}
+
+	return &response, nil
+}
+
+// Xử lý lời mời đã tồn tại
+func (h *ScheduleParticipantService) handleExistingInvitation(
+	cfg *config.Config, schedule *models.TwSchedule, participant *models.TwScheduleParticipant,
+	acceptLink, declineLink, email string,
+) (*schedule_participant_dtos.ScheduleParticipantResponse, error) {
+
+	if participant.InvitationStatus == "joined" {
+		return nil, errors.New("User is already in the schedule")
+	}
+
+	subject := fmt.Sprintf("Reminder: Invitation to join schedule: %s", schedule.Title)
+	content := auth.BuildScheduleInvitationContent(schedule, acceptLink, declineLink)
+	if err := auth.SendInvitationEmail(cfg, email, content, subject); err != nil {
+		return nil, fiber.NewError(500, "Failed to send reminder email")
+	}
+
+	if participant.InvitationStatus == "declined" || participant.InvitationStatus == "removed" {
+		participant.InvitationStatus = "pending"
+		participant.UpdatedAt = time.Now()
+
+		resp, err := dms.CallAPI(
+			"PUT", fmt.Sprintf("/schedule_participant/%d", participant.ID),
+			participant, nil, nil, 120,
+		)
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+	}
+
+	return &schedule_participant_dtos.ScheduleParticipantResponse{}, nil
 }
 
 func (h *ScheduleParticipantService) AcceptInvite(scheduleId, workspaceUserId string) (*schedule_participant_dtos.ScheduleParticipantResponse, error) {

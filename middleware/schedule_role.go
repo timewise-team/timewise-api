@@ -35,9 +35,7 @@ func CheckScheduleStatus(requiredRoles []string) fiber.Handler {
 
 		scheduleParticipant, err := schedule.NewScheduleService().FetchScheduleParticipant(workspaceUserIDStr, scheduleID)
 		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": "Internal server error",
-			})
+			return c.Next()
 		}
 
 		if workspaceUser.Role == "admin" || workspaceUser.Role == "owner" {
