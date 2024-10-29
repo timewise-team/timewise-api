@@ -73,3 +73,27 @@ func (h *AccountHandler) updateUserInfo(c *fiber.Ctx) error {
 	}
 	return c.Status(fiber.StatusOK).JSON(userResp)
 }
+
+// getLinkedUserEmails godoc
+// @Summary Get linked user emails
+// @Description Get linked user emails
+// @Tags account
+// @Security bearerToken
+// @Accept json
+// @Produce json
+// @Success 200 {array} string
+// @Router /api/v1/account/user/emails [get]
+func (h *AccountHandler) getLinkedUserEmails(c *fiber.Ctx) error {
+	// get userId from context
+	userId := c.Locals("userid")
+	if userId == nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid userId"})
+	}
+	// call service to query database
+	userEmails, err := h.service.GetLinkedUserEmails(userId.(string))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+	// return user info
+	return c.Status(fiber.StatusOK).JSON(userEmails)
+}

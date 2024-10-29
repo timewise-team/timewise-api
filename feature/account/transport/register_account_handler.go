@@ -16,4 +16,5 @@ func RegisterAccountHandler(router fiber.Router) {
 	// Register all endpoints here
 	router.Get("/user", accountHandler.Handler.getUserInfo)
 	router.Patch("/user", accountHandler.Handler.updateUserInfo)
+	router.Get("/user/emails", accountHandler.Handler.getLinkedUserEmails)
 }

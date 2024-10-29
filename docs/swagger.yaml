@@ -787,6 +787,25 @@ paths:
       summary: Update user info
       tags:
       - account
+  /api/v1/account/user/emails:
+    get:
+      consumes:
+      - application/json
+      description: Get linked user emails
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+      security:
+      - bearerToken: []
+      summary: Get linked user emails
+      tags:
+      - account
   /api/v1/auth/callback:
     post:
       consumes:

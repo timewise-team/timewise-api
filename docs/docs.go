@@ -80,6 +80,37 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/account/user/emails": {
+            "get": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Get linked user emails",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "Get linked user emails",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/auth/callback": {
             "post": {
                 "description": "Google callback",
