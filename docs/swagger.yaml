@@ -337,6 +337,19 @@ definitions:
       workspace_id:
         type: integer
     type: object
+  core_dtos.UpdateProfileRequestDto:
+    properties:
+      calendar_settings:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      notification_settings:
+        type: string
+      profile_picture:
+        type: string
+    type: object
   create_workspace_dtos.CreateWorkspaceRequest:
     properties:
       description:
@@ -749,6 +762,29 @@ paths:
       security:
       - bearerToken: []
       summary: Get user info
+      tags:
+      - account
+    patch:
+      consumes:
+      - application/json
+      description: Update user info
+      parameters:
+      - description: Update user info request
+        in: body
+        name: updateUserInfoRequest
+        required: true
+        schema:
+          $ref: '#/definitions/core_dtos.UpdateProfileRequestDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/core_dtos.GetUserResponseDto'
+      security:
+      - bearerToken: []
+      summary: Update user info
       tags:
       - account
   /api/v1/auth/callback:
