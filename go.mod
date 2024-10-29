@@ -8,8 +8,10 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/spf13/viper v1.19.0
 	github.com/swaggo/swag v1.16.3
-	github.com/timewise-team/timewise-models v0.0.0-20241028013822-deefa01a9ea4
+	github.com/timewise-team/timewise-models v0.0.0-20241028160416-84e63a56bb0e
 	golang.org/x/oauth2 v0.23.0
+	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
+	gorm.io/gorm v1.25.12
 )
 
 require (
@@ -23,6 +25,8 @@ require (
 	github.com/go-openapi/swag v0.23.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
+	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
@@ -51,7 +55,6 @@ require (
 	golang.org/x/text v0.18.0 // indirect
 	golang.org/x/tools v0.25.0 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
-	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

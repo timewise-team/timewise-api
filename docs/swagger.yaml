@@ -64,6 +64,45 @@ definitions:
       workspace_user_id:
         type: integer
     type: object
+  core_dtos.GetUserResponseDto:
+    properties:
+      calendar_settings:
+        type: string
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      email:
+        items:
+          type: string
+        type: array
+      first_name:
+        type: string
+      google_id:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      is_verified:
+        type: boolean
+      last_login_at:
+        type: string
+      last_name:
+        type: string
+      locale:
+        type: string
+      notification_settings:
+        type: string
+      profile_picture:
+        type: string
+      role:
+        type: string
+      timezone:
+        type: string
+      updated_at:
+        type: string
+    type: object
   core_dtos.TwCreateScheduleRequest:
     properties:
       all_day:
@@ -695,6 +734,23 @@ info:
   title: timewise-api
   version: "1.0"
 paths:
+  /api/v1/account/user:
+    get:
+      consumes:
+      - application/json
+      description: Get user info
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/core_dtos.GetUserResponseDto'
+      security:
+      - bearerToken: []
+      summary: Get user info
+      tags:
+      - account
   /api/v1/auth/callback:
     post:
       consumes:
