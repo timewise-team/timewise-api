@@ -33,6 +33,43 @@
                         }
                     }
                 }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Update user info",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "Update user info",
+                "parameters": [
+                    {
+                        "description": "Update user info request",
+                        "name": "updateUserInfoRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/core_dtos.UpdateProfileRequestDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/core_dtos.GetUserResponseDto"
+                        }
+                    }
+                }
             }
         },
         "/api/v1/auth/callback": {
@@ -1743,6 +1780,26 @@
                 },
                 "workspace_id": {
                     "type": "integer"
+                }
+            }
+        },
+        "core_dtos.UpdateProfileRequestDto": {
+            "type": "object",
+            "properties": {
+                "calendar_settings": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "notification_settings": {
+                    "type": "string"
+                },
+                "profile_picture": {
+                    "type": "string"
                 }
             }
         },
