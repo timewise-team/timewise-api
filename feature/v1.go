@@ -2,6 +2,7 @@ package feature
 
 import (
 	_ "api/docs"
+	accountTransport "api/feature/account/transport"
 	authTransport "api/feature/authentication/transport"
 	boardColumnsTransport "api/feature/board_columns/transport"
 	commentsTransport "api/feature/comment/transport"
@@ -69,5 +70,6 @@ func RegisterHandlerV1() *fiber.App {
 	scheduleParticipant.RegisterScheduleParticipantHandler(v1.Group("/schedule_participant"))
 	scheduleLog.RegisterScheduleLogHandler(v1.Group("/schedule_log"))
 	commentsTransport.RegisterCommentHandler(v1.Group("/comment"))
+	accountTransport.RegisterAccountHandler(v1.Group("/account"))
 	return router
 }
