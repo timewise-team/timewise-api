@@ -3,6 +3,7 @@ package account
 import (
 	"api/dms"
 	"encoding/json"
+	"errors"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos"
 	"github.com/timewise-team/timewise-models/models"
 	"io/ioutil"
@@ -141,4 +142,54 @@ func (h *AccountService) UpdateUserInfo(userId string, request core_dtos.UpdateP
 	}
 	userDto.Email = emailSlice
 	return userDto, nil
+}
+
+func (h *AccountService) GetLinkedUserEmails(userId string) ([]string, error) {
+	resp, err := dms.CallAPI("GET", "/user_email/user/"+userId, nil, nil, nil, 120)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil || resp.StatusCode != http.StatusOK {
+		return nil, err
+	}
+	// marshal response body
+	var userEmailResp []models.TwUserEmail
+	err = json.Unmarshal(body, &userEmailResp)
+	if err != nil {
+		return nil, err
+	}
+	// parse userEmailResp to []string
+	emailSlice := make([]string, 0)
+	for _, email := range userEmailResp {
+		emailSlice = append(emailSlice, email.Email)
+	}
+	return emailSlice, nil
+}
+
+// check if this email already is an user
+func (h *AccountService) LinkAnEmail(email string) (core_dtos.GetUserResponseDto, error) {
+	// call dms to verify email
+	resp, err := dms.CallAPI("POST", "/user", nil, nil, map[string]string{"email": email}, 120)
+	if err != nil {
+		return core_dtos.GetUserResponseDto{}, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil || resp.StatusCode != http.StatusOK {
+		return core_dtos.GetUserResponseDto{}, err
+	}
+	// marshal response body
+	var userResp models.TwUser
+	err = json.Unmarshal(body, &userResp)
+	if err != nil {
+		return core_dtos.GetUserResponseDto{}, err
+	}
+	if userResp.Email == "" {
+		return core_dtos.GetUserResponseDto{}, errors.New("Email is not an user")
+	}
+	// send notification to target email
+	// call dms to send notification
+	return core_dtos.GetUserResponseDto{}, nil
 }
