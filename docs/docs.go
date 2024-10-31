@@ -80,6 +80,74 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/account/user/emails": {
+            "get": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Get linked user emails",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "Get linked user emails",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Link an email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "Link an email",
+                "parameters": [
+                    {
+                        "description": "Link an email request",
+                        "name": "linkAnEmailRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/core_dtos.GoogleAuthRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/core_dtos.GetUserResponseDto"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/auth/callback": {
             "post": {
                 "description": "Google callback",
@@ -100,7 +168,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/transport.GoogleAuthRequest"
+                            "$ref": "#/definitions/core_dtos.GoogleAuthRequest"
                         }
                     }
                 ],
@@ -108,7 +176,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/transport.GoogleAuthResponse"
+                            "$ref": "#/definitions/core_dtos.GoogleAuthResponse"
                         }
                     }
                 }
@@ -1448,6 +1516,34 @@ const docTemplate = `{
                 }
             }
         },
+        "core_dtos.GoogleAuthRequest": {
+            "type": "object",
+            "properties": {
+                "credentials": {
+                    "type": "string"
+                }
+            }
+        },
+        "core_dtos.GoogleAuthResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "expires_in": {
+                    "type": "integer"
+                },
+                "id_token": {
+                    "type": "string"
+                },
+                "is_new_user": {
+                    "type": "boolean"
+                },
+                "token_type": {
+                    "type": "string"
+                }
+            }
+        },
         "core_dtos.TwCreateScheduleRequest": {
             "type": "object",
             "properties": {
@@ -2295,34 +2391,6 @@ const docTemplate = `{
                 },
                 "workspace_user_id": {
                     "type": "integer"
-                }
-            }
-        },
-        "transport.GoogleAuthRequest": {
-            "type": "object",
-            "properties": {
-                "credentials": {
-                    "type": "string"
-                }
-            }
-        },
-        "transport.GoogleAuthResponse": {
-            "type": "object",
-            "properties": {
-                "access_token": {
-                    "type": "string"
-                },
-                "expires_in": {
-                    "type": "integer"
-                },
-                "id_token": {
-                    "type": "string"
-                },
-                "is_new_user": {
-                    "type": "boolean"
-                },
-                "token_type": {
-                    "type": "string"
                 }
             }
         },
