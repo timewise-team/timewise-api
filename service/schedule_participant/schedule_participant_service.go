@@ -4,6 +4,8 @@ import (
 	"api/config"
 	"api/dms"
 	"api/service/auth"
+	"api/service/user_email"
+	"api/service/workspace_user"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -89,19 +91,19 @@ func (h *ScheduleParticipantService) InviteToSchedule(
 		return nil, err
 	}
 
-	workspaceUserInvited, err := h.getWorkspaceUserByEmail(
+	workspaceUserInvited, err := h.GetWorkspaceUserByEmail(
 		InviteToScheduleDto.Email, workspaceUserInvite.WorkspaceId,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	scheduleParticipant, err := h.getScheduleParticipantFromContext(c)
-	if err != nil {
-		return nil, err
-	}
+	//scheduleParticipant, err := h.getScheduleParticipantFromContext(c)
+	//if err != nil {
+	//	return nil, err
+	//}
 
-	schedule, err := h.getScheduleById(scheduleParticipant.ScheduleId)
+	schedule, err := h.getScheduleById(InviteToScheduleDto.ScheduleId)
 	if err != nil {
 		return nil, err
 	}
@@ -112,11 +114,11 @@ func (h *ScheduleParticipantService) InviteToSchedule(
 	}
 
 	acceptLink, declineLink, _ := auth.GenerateInviteScheduleLinks(
-		cfg, scheduleParticipant.ScheduleId, workspaceUserInvited.ID,
+		cfg, InviteToScheduleDto.ScheduleId, workspaceUserInvited.ID,
 	)
 
 	scheduleParticipantResponse, err := h.handleInvitation(
-		cfg, schedule, scheduleParticipant, workspaceUserInvite, workspaceUserInvited,
+		cfg, schedule, InviteToScheduleDto.ScheduleId, workspaceUserInvite, workspaceUserInvited,
 		acceptLink, declineLink, InviteToScheduleDto.Email,
 	)
 
@@ -137,7 +139,7 @@ func (h *ScheduleParticipantService) getWorkspaceUserFromContext(c *fiber.Ctx) (
 }
 
 // Gọi API để lấy Workspace User theo email
-func (h *ScheduleParticipantService) getWorkspaceUserByEmail(email string, workspaceId int) (*models.TwWorkspaceUser, error) {
+func (h *ScheduleParticipantService) GetWorkspaceUserByEmail(email string, workspaceId int) (*models.TwWorkspaceUser, error) {
 	resp, err := dms.CallAPI(
 		"GET", fmt.Sprintf("/workspace_user/email/%s/workspace/%d", email, workspaceId),
 		nil, nil, nil, 120,
@@ -187,14 +189,14 @@ func (h *ScheduleParticipantService) getScheduleById(scheduleId int) (*models.Tw
 
 // Xử lý lời mời và gửi email
 func (h *ScheduleParticipantService) handleInvitation(
-	cfg *config.Config, schedule *models.TwSchedule, scheduleParticipant models.TwScheduleParticipant,
+	cfg *config.Config, schedule *models.TwSchedule, scheduleId int,
 	workspaceUserInvite *models.TwWorkspaceUser, workspaceUserInvited *models.TwWorkspaceUser,
 	acceptLink, declineLink, email string,
 ) (*schedule_participant_dtos.ScheduleParticipantResponse, error) {
 
 	resp, err := dms.CallAPI(
 		"GET", fmt.Sprintf("/schedule_participant/workspace_user/%d/schedule/%d",
-			workspaceUserInvited.ID, scheduleParticipant.ScheduleId),
+			workspaceUserInvited.ID, scheduleId),
 		nil, nil, nil, 120,
 	)
 	if err != nil {
@@ -205,7 +207,7 @@ func (h *ScheduleParticipantService) handleInvitation(
 	now := time.Now()
 	if resp.StatusCode == http.StatusNotFound {
 		return h.createAndSendInvitation(
-			cfg, schedule, scheduleParticipant, workspaceUserInvite, workspaceUserInvited,
+			cfg, schedule, scheduleId, workspaceUserInvite, workspaceUserInvited,
 			acceptLink, declineLink, email, now,
 		)
 	}
@@ -222,7 +224,7 @@ func (h *ScheduleParticipantService) handleInvitation(
 
 // Tạo lời mời mới và gửi email
 func (h *ScheduleParticipantService) createAndSendInvitation(
-	cfg *config.Config, schedule *models.TwSchedule, scheduleParticipant models.TwScheduleParticipant,
+	cfg *config.Config, schedule *models.TwSchedule, scheduleId int,
 	workspaceUserInvite *models.TwWorkspaceUser, workspaceUserInvited *models.TwWorkspaceUser,
 	acceptLink, declineLink, email string, now time.Time,
 ) (*schedule_participant_dtos.ScheduleParticipantResponse, error) {
@@ -230,7 +232,7 @@ func (h *ScheduleParticipantService) createAndSendInvitation(
 	newParticipant := models.TwScheduleParticipant{
 		CreatedAt:        now,
 		UpdatedAt:        now,
-		ScheduleId:       scheduleParticipant.ScheduleId,
+		ScheduleId:       scheduleId,
 		WorkspaceUserId:  workspaceUserInvited.ID,
 		AssignBy:         workspaceUserInvite.ID,
 		InvitationSentAt: &now,
@@ -290,6 +292,62 @@ func (h *ScheduleParticipantService) handleExistingInvitation(
 	return &schedule_participant_dtos.ScheduleParticipantResponse{}, nil
 }
 
+func (h *ScheduleParticipantService) InviteOutsideWorkspace(
+	c *fiber.Ctx,
+	workspaceUserInvite models.TwWorkspaceUser,
+	scheduleParticipantInvite models.TwScheduleParticipant,
+	InviteToScheduleDto schedule_participant_dtos.InviteToScheduleRequest,
+) (*models.TwWorkspaceUser, *schedule_participant_dtos.ScheduleParticipantResponse, error) {
+
+	// Lấy thông tin email của người dùng
+	userEmail, errs := user_email.NewUserEmailService().GetUserEmail(InviteToScheduleDto.Email)
+	if userEmail == nil {
+		return nil, nil, c.Status(500).JSON(fiber.Map{
+			"message": "This email is not registered",
+		})
+	}
+	if errs != nil {
+		return nil, nil, c.Status(500).JSON(fiber.Map{
+			"message": "Internal server error",
+		})
+	}
+
+	var workspaceUserResponse *models.TwWorkspaceUser
+	var scheduleParticipant *schedule_participant_dtos.ScheduleParticipantResponse
+	var err error
+
+	// Kiểm tra vai trò của người dùng và thêm vào workspace
+	if workspaceUserInvite.Role == "admin" || workspaceUserInvite.Role == "owner" {
+		var temp models.TwWorkspaceUser
+		temp, err = workspace_user.NewWorkspaceUserService().
+			AddWorkspaceUserViaScheduleInvitation(userEmail, workspaceUserInvite.WorkspaceId, true)
+		workspaceUserResponse = &temp
+
+		// Mời người dùng tham gia lịch trình
+		scheduleParticipant, err = h.InviteToSchedule(c, InviteToScheduleDto)
+		if err != nil {
+			return nil, nil, c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+	} else if workspaceUserInvite.Role == "member" && scheduleParticipantInvite.Status == "creator" {
+		var temp models.TwWorkspaceUser
+		temp, err = workspace_user.NewWorkspaceUserService().
+			AddWorkspaceUserViaScheduleInvitation(userEmail, workspaceUserInvite.WorkspaceId, false)
+		workspaceUserResponse = &temp
+
+		// Bạn có thể thêm logic xử lý cho scheduleParticipant nếu cần
+	}
+
+	if err != nil {
+		return nil, nil, c.Status(500).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	return workspaceUserResponse, scheduleParticipant, nil
+}
+
 func (h *ScheduleParticipantService) AcceptInvite(scheduleId, workspaceUserId string) (*schedule_participant_dtos.ScheduleParticipantResponse, error) {
 
 	resp, err := dms.CallAPI(
@@ -310,10 +368,32 @@ func (h *ScheduleParticipantService) AcceptInvite(scheduleId, workspaceUserId st
 		return nil, err
 	}
 
+	resp2, err2 := dms.CallAPI(
+		"GET",
+		"/workspace_user/"+workspaceUserId,
+		nil,
+		nil,
+		nil,
+		120,
+	)
+	if err2 != nil {
+		return nil, err2
+	}
+	defer resp2.Body.Close()
+
+	var workspaceUser models.TwWorkspaceUser
+	if errParsing := json.NewDecoder(resp2.Body).Decode(&workspaceUser); errParsing != nil {
+		return nil, errParsing
+	}
+
 	now := time.Now()
 	scheduleParticipants.Status = "participant"
 	scheduleParticipants.ResponseTime = &now
 	scheduleParticipants.InvitationStatus = "joined"
+
+	workspaceUser.Status = "joined"
+	workspaceUser.IsActive = true
+	workspaceUser.IsVerified = true
 
 	resp1, err := dms.CallAPI(
 		"PUT",
@@ -333,6 +413,20 @@ func (h *ScheduleParticipantService) AcceptInvite(scheduleId, workspaceUserId st
 	if err := json.NewDecoder(resp1.Body).Decode(&updateScheduleParticipants); err != nil {
 		return nil, err
 	}
+
+	resp3, err3 := dms.CallAPI(
+		"PUT",
+		"/workspace_user/"+strconv.Itoa(workspaceUser.ID),
+		workspaceUser,
+		nil,
+		nil,
+		120,
+	)
+
+	if err3 != nil {
+		return nil, err3
+	}
+	defer resp3.Body.Close()
 
 	return &updateScheduleParticipants, nil
 
@@ -358,9 +452,31 @@ func (h *ScheduleParticipantService) DeclineInvite(scheduleId, workspaceUserId s
 		return nil, err
 	}
 
+	resp2, err2 := dms.CallAPI(
+		"GET",
+		"/workspace_user/"+workspaceUserId,
+		nil,
+		nil,
+		nil,
+		120,
+	)
+	if err2 != nil {
+		return nil, err2
+	}
+	defer resp2.Body.Close()
+
+	var workspaceUser models.TwWorkspaceUser
+	if errParsing := json.NewDecoder(resp2.Body).Decode(&workspaceUser); errParsing != nil {
+		return nil, errParsing
+	}
+
 	now := time.Now()
 	scheduleParticipants.ResponseTime = &now
 	scheduleParticipants.InvitationStatus = "declined"
+
+	workspaceUser.Status = "declined"
+	workspaceUser.IsActive = false
+	workspaceUser.IsVerified = true
 
 	resp1, err := dms.CallAPI(
 		"PUT",
@@ -380,6 +496,20 @@ func (h *ScheduleParticipantService) DeclineInvite(scheduleId, workspaceUserId s
 	if err := json.NewDecoder(resp1.Body).Decode(&updateScheduleParticipants); err != nil {
 		return nil, err
 	}
+
+	resp3, err3 := dms.CallAPI(
+		"PUT",
+		"/workspace_user/"+strconv.Itoa(workspaceUser.ID),
+		workspaceUser,
+		nil,
+		nil,
+		120,
+	)
+
+	if err3 != nil {
+		return nil, err3
+	}
+	defer resp3.Body.Close()
 
 	return &updateScheduleParticipants, nil
 

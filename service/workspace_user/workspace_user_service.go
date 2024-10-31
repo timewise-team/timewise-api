@@ -377,6 +377,51 @@ func (s *WorkspaceUserService) AddWorkspaceUserInvitation(userEmail *models.TwUs
 	return workspaceUserResponse, nil
 }
 
+func (s *WorkspaceUserService) AddWorkspaceUserViaScheduleInvitation(userEmail *models.TwUserEmail, workspaceID int, isVerified bool) (models.TwWorkspaceUser, error) {
+	var workspaceUser = models.TwWorkspaceUser{
+		UserEmailId: userEmail.ID,
+		WorkspaceId: workspaceID,
+		Role:        "guest",
+		Status:      "pending",
+		IsActive:    false,
+		IsVerified:  isVerified,
+	}
+	workspaceIDStr := strconv.Itoa(workspaceID)
+	if workspaceIDStr == "" {
+		return models.TwWorkspaceUser{}, errors.New("workspace id not found")
+	}
+	// Call API
+	resp, err := dms.CallAPI(
+		"POST",
+		"/workspace_user",
+		workspaceUser,
+		nil,
+		nil,
+		120,
+	)
+	if err != nil {
+		return models.TwWorkspaceUser{}, err
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil || resp.StatusCode != http.StatusOK {
+		return models.TwWorkspaceUser{}, err
+	}
+	if len(body) == 0 || string(body) == "null" {
+		return models.TwWorkspaceUser{}, errors.New("response is null or empty")
+	}
+
+	var workspaceUserResponse models.TwWorkspaceUser
+	err = json.Unmarshal(body, &workspaceUserResponse)
+	if err != nil {
+		return models.TwWorkspaceUser{}, err
+	}
+
+	return workspaceUserResponse, nil
+}
+
 func (s *WorkspaceUserService) UpdateWorkspaceUserStatus(check *models.TwWorkspaceUser) (*models.TwWorkspaceUser, error) {
 	// Call API
 	resp, err := dms.CallAPI(
