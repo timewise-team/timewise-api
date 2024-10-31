@@ -2,6 +2,8 @@ package transport
 
 import (
 	"api/service/account"
+	auth_utils "api/utils/auth"
+	"encoding/json"
 	"github.com/gofiber/fiber/v2"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos"
 )
@@ -98,16 +100,46 @@ func (h *AccountHandler) getLinkedUserEmails(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(userEmails)
 }
 
-// Send notifications to target email
+// linkAnEmail godoc
+// @Summary Link an email
+// @Description Link an email
+// @Tags account
+// @Security bearerToken
+// @Accept json
+// @Produce json
+// @Param linkAnEmailRequest body core_dtos.GoogleAuthRequest true "Link an email request"
+// @Success 200 {object} core_dtos.GetUserResponseDto
+// @Router /api/v1/account/user/emails [post]
 func (h *AccountHandler) linkAnEmail(c *fiber.Ctx) error {
 	// get userId from context
 	userId := c.Locals("userid")
 	if userId == nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid userId"})
 	}
-	// get emails from query
-	email := c.Query("email")
-	// call service to query database
-
-	return nil
+	var req core_dtos.GoogleAuthRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Cannot parse request",
+		})
+	}
+	if req.Credentials == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Credentials is required",
+		})
+	}
+	// decode credentials
+	decodedCredentials, err := auth_utils.VerifyGoogleToken(req.Credentials)
+	var oauthData auth_utils.GoogleOauthData
+	err = json.Unmarshal(decodedCredentials, &oauthData)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Could not decode credentials",
+		})
+	}
+	// call service
+	userResp, err := h.service.LinkAnEmail(userId.(string), oauthData)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Status(fiber.StatusOK).JSON(userResp)
 }

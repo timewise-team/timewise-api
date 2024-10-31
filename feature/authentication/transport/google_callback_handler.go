@@ -7,23 +7,13 @@ import (
 	"encoding/json"
 	"github.com/gofiber/fiber/v2"
 	"github.com/spf13/viper"
+	"github.com/timewise-team/timewise-models/dtos/core_dtos"
 	dtos "github.com/timewise-team/timewise-models/dtos/core_dtos/user_register_dtos"
 	"github.com/timewise-team/timewise-models/models"
 	"io/ioutil"
 	"net/http"
 )
 
-type GoogleAuthRequest struct {
-	Credentials string `json:"credentials"`
-}
-
-type GoogleAuthResponse struct {
-	AccessToken string `json:"access_token"`
-	ExpiresIn   int    `json:"expires_in"`
-	TokenType   string `json:"token_type"`
-	IsNewUser   bool   `json:"is_new_user"`
-	IdToken     string `json:"id_token"`
-}
 type GetUserEmailSyncResponse []models.TwUserEmail
 
 // @Summary Google callback
@@ -31,11 +21,11 @@ type GetUserEmailSyncResponse []models.TwUserEmail
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param body body GoogleAuthRequest true "Google auth request"
-// @Success 200 {object} GoogleAuthResponse
+// @Param body body core_dtos.GoogleAuthRequest true "Google auth request"
+// @Success 200 {object} core_dtos.GoogleAuthResponse
 // @Router /api/v1/auth/callback [post]
 func (h *AuthHandler) googleCallback(c *fiber.Ctx) error {
-	var req GoogleAuthRequest
+	var req core_dtos.GoogleAuthRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Cannot parse request",
@@ -107,7 +97,7 @@ func (h *AuthHandler) googleCallback(c *fiber.Ctx) error {
 	}
 
 	// Send the token back to the frontend
-	return c.JSON(GoogleAuthResponse{
+	return c.JSON(core_dtos.GoogleAuthResponse{
 		AccessToken: accessToken,
 		ExpiresIn:   expiresIn,
 		TokenType:   "Bearer",
