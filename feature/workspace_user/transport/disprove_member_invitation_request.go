@@ -3,8 +3,8 @@ package transport
 import (
 	"api/service/workspace_user"
 	"github.com/gofiber/fiber/v2"
+	"github.com/timewise-team/timewise-models/dtos/core_dtos/schedule_participant_dtos"
 	"github.com/timewise-team/timewise-models/models"
-	"net/url"
 )
 
 // disproveMemberInvitationRequest godoc
@@ -13,22 +13,15 @@ import (
 // @Tags WorkspaceUser
 // @Accept json
 // @Produce json
-// @Param email path string true "Email"
-// @Success 200 {object} fiber.Map
-// @Router /api/v1/workspace_user/disprove-invitation/email/{email} [put]
+// @Param schedule_participant body schedule_participant_dtos.InviteToScheduleRequest true "Request body"
+// @Success 200 {object} schedule_participant_dtos.ScheduleParticipantResponse
+// @Router /api/v1/workspace_user/disprove-invitation [put]
 func (h *WorkspaceUserHandler) disproveMemberInvitationRequest(c *fiber.Ctx) error {
-	email := c.Params("email")
-	if email == "" {
-		return c.Status(400).JSON(fiber.Map{
-			"message": "email is required",
-		})
+	var InviteToScheduleDto schedule_participant_dtos.InviteToScheduleRequest
+	if err := c.BodyParser(&InviteToScheduleDto); err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
-	emailFix, err1 := url.QueryUnescape(email)
-	if err1 != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"message": err1.Error(),
-		})
-	}
+
 	workspaceUserLocal := c.Locals("workspace_user")
 	if workspaceUserLocal == nil {
 		return c.Status(400).JSON(fiber.Map{
@@ -41,7 +34,7 @@ func (h *WorkspaceUserHandler) disproveMemberInvitationRequest(c *fiber.Ctx) err
 			"message": "Access denied",
 		})
 	}
-	var err = workspace_user.NewWorkspaceUserService().DisproveWorkspaceUserInvitation(workspaceUser, emailFix)
+	var err = workspace_user.NewWorkspaceUserService().DisproveWorkspaceUserInvitation(workspaceUser, InviteToScheduleDto.Email)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"message": err.Error(),

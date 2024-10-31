@@ -4,8 +4,10 @@ import (
 	"api/config"
 	"api/service/schedule_participant"
 	auth_utils "api/utils/auth"
+	"errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos/schedule_participant_dtos"
+	"github.com/timewise-team/timewise-models/models"
 	"strconv"
 )
 
@@ -59,14 +61,45 @@ func (h *ScheduleParticipantHandler) InviteToSchedule(c *fiber.Ctx) error {
 	if err := c.BodyParser(&InviteToScheduleDto); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
-	scheduleParticipant, err := h.service.InviteToSchedule(c, InviteToScheduleDto)
+	workspaceUser, ok := c.Locals("workspace_user").(*models.TwWorkspaceUser)
+	if !ok {
+		return errors.New("Failed to retrieve workspace user from context")
+	}
+
+	participant, ok := c.Locals("scheduleParticipant").(models.TwScheduleParticipant)
+	if !ok {
+		return fiber.NewError(500, "Failed to retrieve schedule participant")
+	}
+
+	workspaceUserInvited, err := schedule_participant.NewScheduleParticipantService().GetWorkspaceUserByEmail(
+		InviteToScheduleDto.Email, workspaceUser.WorkspaceId,
+	)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
+		return err
+	}
+
+	if workspaceUserInvited.ID != 0 {
+		scheduleParticipant, err1 := h.service.InviteToSchedule(c, InviteToScheduleDto)
+		if err1 != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": err1.Error(),
+			})
+		}
+		return c.JSON(scheduleParticipant)
+	} else {
+		workspaceUserInvitedToSchedule, scheduleParticipantInvitedToSchedule, err1 := h.service.InviteOutsideWorkspace(c, *workspaceUser, participant, InviteToScheduleDto)
+		if err1 != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": err1.Error(),
+			})
+		}
+		return c.JSON(fiber.Map{
+			"workspaceUser":       workspaceUserInvitedToSchedule,
+			"scheduleParticipant": scheduleParticipantInvitedToSchedule,
 		})
 	}
 
-	return c.JSON(scheduleParticipant)
+	return c.JSON("invite sucessfully")
 }
 
 // acceptInvitationViaEmail godoc

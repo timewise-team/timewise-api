@@ -1041,7 +1041,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/workspace_user/disprove-invitation/email/{email}": {
+        "/api/v1/workspace_user/disprove-invitation": {
             "put": {
                 "description": "Disprove member's request invitation (X-User-Email required, X-Workspace-Id required)",
                 "consumes": [
@@ -1056,18 +1056,20 @@ const docTemplate = `{
                 "summary": "Disprove member's request invitation (X-User-Email required, X-Workspace-Id required)",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Email",
-                        "name": "email",
-                        "in": "path",
-                        "required": true
+                        "description": "Request body",
+                        "name": "schedule_participant",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schedule_participant_dtos.InviteToScheduleRequest"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/fiber.Map"
+                            "$ref": "#/definitions/schedule_participant_dtos.ScheduleParticipantResponse"
                         }
                     }
                 }
@@ -1208,7 +1210,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/workspace_user/verify-invitation/email/{email}": {
+        "/api/v1/workspace_user/verify-invitation": {
             "put": {
                 "description": "Verify member's request invitation (X-User-Email required, X-Workspace-Id required)",
                 "consumes": [
@@ -1223,18 +1225,20 @@ const docTemplate = `{
                 "summary": "Verify member's request invitation (X-User-Email required, X-Workspace-Id required)",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Email",
-                        "name": "email",
-                        "in": "path",
-                        "required": true
+                        "description": "Request body",
+                        "name": "schedule_participant",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schedule_participant_dtos.InviteToScheduleRequest"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.TwWorkspaceUser"
+                            "$ref": "#/definitions/schedule_participant_dtos.ScheduleParticipantResponse"
                         }
                     }
                 }

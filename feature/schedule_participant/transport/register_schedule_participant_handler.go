@@ -20,7 +20,7 @@ func RegisterScheduleParticipantHandler(router fiber.Router) {
 	router.Get("schedule/:scheduleId",
 		scheduleParticipantHandler.Handler.GetScheduleParticipantByScheduleID)
 	router.Post("invite",
-		middleware.CheckWorkspaceRole([]string{"owner", "admin"}),
+		middleware.CheckWorkspaceRole([]string{"owner", "admin", "member"}),
 		middleware.CheckScheduleStatus([]string{"creator"}),
 		scheduleParticipantHandler.Handler.InviteToSchedule)
 	router.Get("/accept-invitation-via-email/token/:token?", scheduleParticipantHandler.Handler.AcceptInvite)

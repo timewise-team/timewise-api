@@ -1427,25 +1427,26 @@ paths:
       summary: Delete workspace user (X-User-Email required, X-Workspace-Id required)
       tags:
       - WorkspaceUser
-  /api/v1/workspace_user/disprove-invitation/email/{email}:
+  /api/v1/workspace_user/disprove-invitation:
     put:
       consumes:
       - application/json
       description: Disprove member's request invitation (X-User-Email required, X-Workspace-Id
         required)
       parameters:
-      - description: Email
-        in: path
-        name: email
+      - description: Request body
+        in: body
+        name: schedule_participant
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/schedule_participant_dtos.InviteToScheduleRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/fiber.Map'
+            $ref: '#/definitions/schedule_participant_dtos.ScheduleParticipantResponse'
       summary: Disprove member's request invitation (X-User-Email required, X-Workspace-Id
         required)
       tags:
@@ -1542,25 +1543,26 @@ paths:
         required)
       tags:
       - WorkspaceUser
-  /api/v1/workspace_user/verify-invitation/email/{email}:
+  /api/v1/workspace_user/verify-invitation:
     put:
       consumes:
       - application/json
       description: Verify member's request invitation (X-User-Email required, X-Workspace-Id
         required)
       parameters:
-      - description: Email
-        in: path
-        name: email
+      - description: Request body
+        in: body
+        name: schedule_participant
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/schedule_participant_dtos.InviteToScheduleRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.TwWorkspaceUser'
+            $ref: '#/definitions/schedule_participant_dtos.ScheduleParticipantResponse'
       summary: Verify member's request invitation (X-User-Email required, X-Workspace-Id
         required)
       tags:
