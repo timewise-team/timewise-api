@@ -787,6 +787,31 @@ paths:
       summary: Update user info
       tags:
       - account
+  /api/v1/account/user/deactivate:
+    post:
+      consumes:
+      - application/json
+      description: Deactivate account
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Account deactivated
+          schema:
+            type: string
+        "400":
+          description: Invalid userId
+          schema:
+            $ref: '#/definitions/fiber.Map'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/fiber.Map'
+      security:
+      - bearerToken: []
+      summary: Deactivate account
+      tags:
+      - account
   /api/v1/account/user/emails:
     get:
       consumes:

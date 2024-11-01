@@ -182,3 +182,28 @@ func (h *AccountHandler) unlinkAnEmail(c *fiber.Ctx) error {
 	}
 	return c.Status(fiber.StatusOK).JSON(userResp)
 }
+
+// deactivateAccount godoc
+// @Summary Deactivate account
+// @Description Deactivate account
+// @Tags account
+// @Security bearerToken
+// @Accept json
+// @Produce json
+// @Success 200 {object} string "Account deactivated"
+// @Failure 400 {object} fiber.Map "Invalid userId"
+// @Failure 500 {object} fiber.Map "Internal server error"
+// @Router /api/v1/account/user/deactivate [post]
+func (h *AccountHandler) deactivateAccount(c *fiber.Ctx) error {
+	// get userId from context
+	userId := c.Locals("userid")
+	if userId == nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid userId"})
+	}
+	// call service to deactivate account
+	err := h.service.DeactivateAccount(userId.(string))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Account deactivated"})
+}
