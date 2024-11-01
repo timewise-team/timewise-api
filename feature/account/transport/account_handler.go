@@ -143,3 +143,42 @@ func (h *AccountHandler) linkAnEmail(c *fiber.Ctx) error {
 	}
 	return c.Status(fiber.StatusOK).JSON(userResp)
 }
+
+// unlinkAnEmail godoc
+// @Summary Unlink an email
+// @Description Unlink an email
+// @Tags account
+// @Security bearerToken
+// @Accept json
+// @Produce json
+// @Param unlinkAnEmailRequest body core_dtos.GoogleAuthRequest true "Unlink an email request"
+// @Success 200 {object} core_dtos.GetUserResponseDto
+// @Router /api/v1/account/user/emails/unlink [post]
+func (h *AccountHandler) unlinkAnEmail(c *fiber.Ctx) error {
+	var req core_dtos.GoogleAuthRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Cannot parse request",
+		})
+	}
+	if req.Credentials == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Credentials is required",
+		})
+	}
+	// decode credentials
+	decodedCredentials, err := auth_utils.VerifyGoogleToken(req.Credentials)
+	var oauthData auth_utils.GoogleOauthData
+	err = json.Unmarshal(decodedCredentials, &oauthData)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Could not decode credentials",
+		})
+	}
+	// call service
+	userResp, err := h.service.UnlinkAnEmail(oauthData.Email)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Status(fiber.StatusOK).JSON(userResp)
+}
