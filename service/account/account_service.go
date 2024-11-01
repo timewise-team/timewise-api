@@ -11,6 +11,7 @@ import (
 	"github.com/timewise-team/timewise-models/models"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -278,6 +279,83 @@ func (h *AccountService) LinkAnEmail(userId string, oauthData auth_utils.GoogleO
 		Role:                 userResponse.Role,
 	}
 	userEmailList, err := h.GetLinkedUserEmails(userId)
+	if err != nil {
+		return core_dtos.GetUserResponseDto{}, err
+	}
+	userDto.Email = userEmailList
+	return userDto, nil
+}
+
+func (h *AccountService) UnlinkAnEmail(email string) (core_dtos.GetUserResponseDto, error) {
+	// call dms to get user_id by email in user_email
+	queryParam := map[string]string{
+		"email": email,
+	}
+	resp, err := dms.CallAPI("GET", "/user", nil, nil, queryParam, 120)
+	if err != nil {
+		return core_dtos.GetUserResponseDto{}, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil || resp.StatusCode != http.StatusOK {
+		return core_dtos.GetUserResponseDto{}, err
+	}
+	// marshal response body
+	var userEmailResp []models.TwUser
+	err = json.Unmarshal(body, &userEmailResp)
+	if err != nil {
+		return core_dtos.GetUserResponseDto{}, err
+	}
+	userId := userEmailResp[0].ID
+	userIdStr := strconv.Itoa(userId)
+	// call dms to change current user_id to user_id got from above api in user_email
+	queryParams := map[string]string{
+		"user_id": userIdStr,
+		"email":   email,
+	}
+	_, err = dms.CallAPI("PATCH", "/user_email", nil, nil, queryParams, 120)
+	if err != nil {
+		return core_dtos.GetUserResponseDto{}, err
+	}
+	// return user info
+	resp, err = dms.CallAPI("GET", "/user/"+userIdStr, nil, nil, nil, 120)
+	if err != nil {
+		return core_dtos.GetUserResponseDto{}, err
+	}
+	defer resp.Body.Close()
+	body, err = ioutil.ReadAll(resp.Body)
+	if err != nil || resp.StatusCode != http.StatusOK {
+		return core_dtos.GetUserResponseDto{}, err
+	}
+	// marshal response body
+	var userResponse models.TwUser
+	err = json.Unmarshal(body, &userResponse)
+	if err != nil {
+		return core_dtos.GetUserResponseDto{}, err
+	}
+	if userResponse.DeletedAt == nil {
+		userResponse.DeletedAt = new(time.Time)
+	}
+	// parse userResponse to userDto
+	userDto := core_dtos.GetUserResponseDto{
+		ID:                   userResponse.ID,
+		CreatedAt:            userResponse.CreatedAt,
+		UpdatedAt:            userResponse.UpdatedAt,
+		DeteledAt:            *userResponse.DeletedAt,
+		FirstName:            userResponse.FirstName,
+		LastName:             userResponse.LastName,
+		ProfilePicture:       userResponse.ProfilePicture,
+		Timezone:             userResponse.Timezone,
+		Locale:               userResponse.Locale,
+		GoogleId:             userResponse.GoogleId,
+		IsVerified:           userResponse.IsVerified,
+		IsActive:             userResponse.IsActive,
+		LastLoginAt:          userResponse.LastLoginAt,
+		NotificationSettings: userResponse.NotificationSettings,
+		CalendarSettings:     userResponse.CalendarSettings,
+		Role:                 userResponse.Role,
+	}
+	userEmailList, err := h.GetLinkedUserEmails(userIdStr)
 	if err != nil {
 		return core_dtos.GetUserResponseDto{}, err
 	}

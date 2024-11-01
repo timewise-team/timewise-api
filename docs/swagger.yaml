@@ -829,6 +829,30 @@ paths:
       summary: Link an email
       tags:
       - account
+  /api/v1/account/user/emails/unlink:
+    post:
+      consumes:
+      - application/json
+      description: Unlink an email
+      parameters:
+      - description: Unlink an email request
+        in: body
+        name: unlinkAnEmailRequest
+        required: true
+        schema:
+          $ref: '#/definitions/core_dtos.GoogleAuthRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/core_dtos.GetUserResponseDto'
+      security:
+      - bearerToken: []
+      summary: Unlink an email
+      tags:
+      - account
   /api/v1/auth/callback:
     post:
       consumes:

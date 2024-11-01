@@ -148,6 +148,45 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/account/user/emails/unlink": {
+            "post": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Unlink an email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "Unlink an email",
+                "parameters": [
+                    {
+                        "description": "Unlink an email request",
+                        "name": "unlinkAnEmailRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/core_dtos.GoogleAuthRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/core_dtos.GetUserResponseDto"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/auth/callback": {
             "post": {
                 "description": "Google callback",

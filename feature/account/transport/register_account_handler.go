@@ -18,4 +18,5 @@ func RegisterAccountHandler(router fiber.Router) {
 	router.Get("/user/emails", accountHandler.Handler.getLinkedUserEmails)
 	router.Patch("/user", accountHandler.Handler.updateUserInfo)
 	router.Post("/user/emails", accountHandler.Handler.linkAnEmail)
+	router.Post("/user/emails/unlink", accountHandler.Handler.unlinkAnEmail)
 }
