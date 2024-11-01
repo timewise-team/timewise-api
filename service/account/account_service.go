@@ -22,7 +22,7 @@ func NewAccountService() *AccountService {
 	return &AccountService{}
 }
 
-func (h *AccountService) GetUserInfoByUserId(userId string) (core_dtos.GetUserResponseDto, error) {
+func (s *AccountService) GetUserInfoByUserId(userId string) (core_dtos.GetUserResponseDto, error) {
 	// call dms to query database
 	resp, err := dms.CallAPI("GET", "/user/"+userId, nil, nil, nil, 120)
 	if err != nil {
@@ -85,7 +85,7 @@ func (h *AccountService) GetUserInfoByUserId(userId string) (core_dtos.GetUserRe
 	return userDto, nil
 }
 
-func (h *AccountService) UpdateUserInfo(userId string, request core_dtos.UpdateProfileRequestDto) (core_dtos.GetUserResponseDto, error) {
+func (s *AccountService) UpdateUserInfo(userId string, request core_dtos.UpdateProfileRequestDto) (core_dtos.GetUserResponseDto, error) {
 	// call dms to update user info
 	user := models.TwUser{
 		FirstName:            request.FirstName,
@@ -149,7 +149,7 @@ func (h *AccountService) UpdateUserInfo(userId string, request core_dtos.UpdateP
 	return userDto, nil
 }
 
-func (h *AccountService) GetLinkedUserEmails(userId string) ([]string, error) {
+func (s *AccountService) GetLinkedUserEmails(userId string) ([]string, error) {
 	resp, err := dms.CallAPI("GET", "/user_email/user/"+userId, nil, nil, nil, 120)
 	if err != nil {
 		return nil, err
@@ -173,7 +173,7 @@ func (h *AccountService) GetLinkedUserEmails(userId string) ([]string, error) {
 	return emailSlice, nil
 }
 
-func (h *AccountService) LinkAnEmail(userId string, oauthData auth_utils.GoogleOauthData) (core_dtos.GetUserResponseDto, error) {
+func (s *AccountService) LinkAnEmail(userId string, oauthData auth_utils.GoogleOauthData) (core_dtos.GetUserResponseDto, error) {
 	getOrCreateUserReq := dtos.GetOrCreateUserRequestDto{
 		Email:          oauthData.Email,
 		FullName:       oauthData.Name,
@@ -278,7 +278,7 @@ func (h *AccountService) LinkAnEmail(userId string, oauthData auth_utils.GoogleO
 		CalendarSettings:     userResponse.CalendarSettings,
 		Role:                 userResponse.Role,
 	}
-	userEmailList, err := h.GetLinkedUserEmails(userId)
+	userEmailList, err := s.GetLinkedUserEmails(userId)
 	if err != nil {
 		return core_dtos.GetUserResponseDto{}, err
 	}
@@ -286,7 +286,7 @@ func (h *AccountService) LinkAnEmail(userId string, oauthData auth_utils.GoogleO
 	return userDto, nil
 }
 
-func (h *AccountService) UnlinkAnEmail(email string) (core_dtos.GetUserResponseDto, error) {
+func (s *AccountService) UnlinkAnEmail(email string) (core_dtos.GetUserResponseDto, error) {
 	// call dms to get user_id by email in user_email
 	queryParam := map[string]string{
 		"email": email,
@@ -355,10 +355,23 @@ func (h *AccountService) UnlinkAnEmail(email string) (core_dtos.GetUserResponseD
 		CalendarSettings:     userResponse.CalendarSettings,
 		Role:                 userResponse.Role,
 	}
-	userEmailList, err := h.GetLinkedUserEmails(userIdStr)
+	userEmailList, err := s.GetLinkedUserEmails(userIdStr)
 	if err != nil {
 		return core_dtos.GetUserResponseDto{}, err
 	}
 	userDto.Email = userEmailList
 	return userDto, nil
+}
+
+func (s *AccountService) DeactivateAccount(userId string) error {
+	isActive := false
+	request := core_dtos.UpdateUserRequest{
+		IsActive: &isActive,
+	}
+	// call dms to deactivate account
+	_, err := dms.CallAPI("PUT", "/user/"+userId, request, nil, nil, 120)
+	if err != nil {
+		return err
+	}
+	return nil
 }
