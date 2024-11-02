@@ -94,6 +94,8 @@ func (h *BoardColumnsHandler) getBoardColumnsByWorkspace(c *fiber.Ctx) error {
 			schedulesList.ExtraData = schedule.ExtraData
 			schedulesList.IsDeleted = schedule.IsDeleted
 			schedulesList.RecurrencePattern = schedule.RecurrencePattern
+			schedulesList.Position = schedule.Position
+			schedulesList.Priority = schedule.Priority
 			scheduleParticipants, err := schedule_participant.NewScheduleParticipantService().GetScheduleParticipantsBySchedule(schedule.ID, workspaceID)
 			if err != nil {
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
