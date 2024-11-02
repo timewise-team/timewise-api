@@ -3,6 +3,7 @@ package workspace
 import (
 	"api/dms"
 	"encoding/json"
+	"errors"
 	"github.com/timewise-team/timewise-models/models"
 	"io/ioutil"
 	"net/http"
@@ -104,4 +105,26 @@ func (s *WorkspaceService) GetWorkspaceById(workspaceId string) *models.TwWorksp
 	}
 
 	return &workspace
+}
+
+func (s *WorkspaceService) DeleteWorkspace(id string) error {
+
+	resp, err := dms.CallAPI(
+		"DELETE",
+		"/workspace/"+id,
+		nil,
+		nil,
+		nil,
+		120,
+	)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return errors.New("Failed to delete workspace")
+	}
+	return nil
+
 }

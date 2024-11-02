@@ -1018,6 +1018,153 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/workspace/delete-workspace": {
+            "delete": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    },
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Delete a workspace (X-User-Email required, X-Workspace-Id required)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workspace"
+                ],
+                "summary": "Delete a workspace (X-User-Email required, X-Workspace-Id required)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User Email",
+                        "name": "X-User-Email",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "X-Workspace-Id",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/fiber.Map"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/workspace/filter-workspaces": {
+            "get": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Filter workspaces",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workspace"
+                ],
+                "summary": "Filter workspaces",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Email",
+                        "name": "email",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Role",
+                        "name": "role",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort by",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Order",
+                        "name": "order",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.TwWorkspace"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/workspace/get-workspace-by-id/{workspace_id}": {
+            "get": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Get a workspace by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workspace"
+                ],
+                "summary": "Get a workspace by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TwWorkspace"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/workspace/get-workspaces-by-email/{email}": {
             "get": {
                 "description": "Get workspaces by email",
@@ -1047,6 +1194,59 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/models.TwWorkspace"
                             }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/workspace/update-workspace": {
+            "put": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Update a workspace (X-User-Email required, X-Workspace-Id required)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workspace"
+                ],
+                "summary": "Update a workspace (X-User-Email required, X-Workspace-Id required)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User Email",
+                        "name": "X-User-Email",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "X-Workspace-Id",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Workspace",
+                        "name": "workspace",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/transport.UpdateWorkspace"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TwWorkspace"
                         }
                     }
                 }
@@ -2470,6 +2670,17 @@ const docTemplate = `{
                 },
                 "workspace_user_id": {
                     "type": "integer"
+                }
+            }
+        },
+        "transport.UpdateWorkspace": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
                 }
             }
         },

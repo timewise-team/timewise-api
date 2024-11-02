@@ -686,6 +686,13 @@ definitions:
       workspace_user_id:
         type: integer
     type: object
+  transport.UpdateWorkspace:
+    properties:
+      description:
+        type: string
+      title:
+        type: string
+    type: object
   user_email_dtos.SearchUserEmailResponse:
     properties:
       email:
@@ -1404,6 +1411,98 @@ paths:
       summary: Create a workspace
       tags:
       - workspace
+  /api/v1/workspace/delete-workspace:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a workspace (X-User-Email required, X-Workspace-Id required)
+      parameters:
+      - description: User Email
+        in: header
+        name: X-User-Email
+        required: true
+        type: string
+      - description: Workspace ID
+        in: header
+        name: X-Workspace-Id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/fiber.Map'
+      security:
+      - bearerToken: []
+      - bearerToken: []
+      summary: Delete a workspace (X-User-Email required, X-Workspace-Id required)
+      tags:
+      - workspace
+  /api/v1/workspace/filter-workspaces:
+    get:
+      consumes:
+      - application/json
+      description: Filter workspaces
+      parameters:
+      - description: Email
+        in: query
+        name: email
+        type: string
+      - description: Role
+        in: query
+        name: role
+        type: string
+      - description: Search
+        in: query
+        name: search
+        type: string
+      - description: Sort by
+        in: query
+        name: sortBy
+        type: string
+      - description: Order
+        in: query
+        name: order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.TwWorkspace'
+            type: array
+      security:
+      - bearerToken: []
+      summary: Filter workspaces
+      tags:
+      - workspace
+  /api/v1/workspace/get-workspace-by-id/{workspace_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a workspace by ID
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: workspace_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TwWorkspace'
+      security:
+      - bearerToken: []
+      summary: Get a workspace by ID
+      tags:
+      - workspace
   /api/v1/workspace/get-workspaces-by-email/{email}:
     get:
       consumes:
@@ -1424,6 +1523,40 @@ paths:
               $ref: '#/definitions/models.TwWorkspace'
             type: array
       summary: Get workspaces by email
+      tags:
+      - workspace
+  /api/v1/workspace/update-workspace:
+    put:
+      consumes:
+      - application/json
+      description: Update a workspace (X-User-Email required, X-Workspace-Id required)
+      parameters:
+      - description: User Email
+        in: header
+        name: X-User-Email
+        required: true
+        type: string
+      - description: Workspace ID
+        in: header
+        name: X-Workspace-Id
+        required: true
+        type: string
+      - description: Workspace
+        in: body
+        name: workspace
+        required: true
+        schema:
+          $ref: '#/definitions/transport.UpdateWorkspace'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TwWorkspace'
+      security:
+      - bearerToken: []
+      summary: Update a workspace (X-User-Email required, X-Workspace-Id required)
       tags:
       - workspace
   /api/v1/workspace_user/accept-invitation-via-email/token/{token}:
