@@ -19,6 +19,13 @@ func NewCreateWorkspaceService() *CreateWorkspaceService {
 
 // Main method
 func (s *CreateWorkspaceService) InitWorkspace(workspaceRequest create_workspace_dtos.CreateWorkspaceRequest) (*create_workspace_dtos.CreateWorkspaceResponse, error) {
+	userEmail, err := s.GetUserEmailByEmail(workspaceRequest.Email)
+	if err != nil {
+		return nil, err
+	}
+	if userEmail == nil {
+		return nil, err
+	}
 	var workspace = models.TwWorkspace{
 		Title:       workspaceRequest.Title,
 		Description: workspaceRequest.Description,
@@ -30,13 +37,6 @@ func (s *CreateWorkspaceService) InitWorkspace(workspaceRequest create_workspace
 		return nil, err
 	}
 	if workspaceResult == nil {
-		return nil, err
-	}
-	userEmail, err := s.GetUserEmailByEmail(workspaceRequest.Email)
-	if err != nil {
-		return nil, err
-	}
-	if userEmail == nil {
 		return nil, err
 	}
 	var workspaceUser = models.TwWorkspaceUser{

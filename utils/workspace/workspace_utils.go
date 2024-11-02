@@ -32,3 +32,22 @@ func ValidateWorkspace(workspace dtos.CreateWorkspaceRequest) error {
 	}
 	return nil
 }
+
+func ValidateWorkspaces(title string, description string) error {
+	if title == "" {
+		return errors.New("workspace title is required")
+	}
+	if len(title) > 50 {
+		return errors.New("workspace title must not exceed 100 characters")
+
+	}
+	if description == "" {
+		return errors.New("workspace description is required")
+	}
+	if len(description) > 500 {
+		return errors.New("workspace description must not exceed 500 characters")
+
+	}
+	return nil
+
+}

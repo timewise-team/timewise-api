@@ -2,6 +2,9 @@ package auth_utils
 
 import (
 	"api/config"
+	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/timewise-team/timewise-models/models"
 	"golang.org/x/oauth2"
@@ -36,6 +39,11 @@ var GoogleOauth = oauth2.Config{
 	Endpoint: google.Endpoint,
 }
 
+type TokenInfo struct {
+	ExpiresIn int64 `json:"expires_in"`
+	// other fields as necessary
+}
+
 func VerifyGoogleToken(code string) ([]byte, error) {
 	response, err := http.Get("https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=" + code)
 	if err != nil {
@@ -53,7 +61,29 @@ func VerifyGoogleToken(code string) ([]byte, error) {
 	// returns data of verified google user
 	return data, nil
 }
+func CheckGoogleTokenExpiry(accessToken string) error {
+	response, err := http.Get(fmt.Sprintf("https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s", accessToken))
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
 
+	if response.StatusCode != http.StatusOK {
+		return errors.New("invalid or expired token")
+	}
+
+	var tokenInfo TokenInfo
+	if err := json.NewDecoder(response.Body).Decode(&tokenInfo); err != nil {
+		return err
+	}
+
+	// Check if the token is expired
+	if tokenInfo.ExpiresIn <= 0 {
+		return errors.New("token has expired")
+	}
+
+	return nil
+}
 func GenerateJWTToken(user models.TwUser, secretKey string) (string, int, error) {
 	// Định nghĩa thời gian hết hạn cho token (ví dụ: 2 giờ)
 	expirationTime := time.Now().Add(168 * time.Hour).Unix()
