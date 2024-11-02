@@ -29,6 +29,38 @@ definitions:
       workspace_id:
         type: integer
     type: object
+  comment_dtos.CommentRequestDTO:
+    properties:
+      commenter:
+        type: string
+      content:
+        type: string
+      schedule_id:
+        type: integer
+      workspace_user_id:
+        type: integer
+    type: object
+  comment_dtos.CommentResponseDTO:
+    properties:
+      commenter:
+        type: string
+      content:
+        type: string
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      id:
+        type: integer
+      is_deleted:
+        type: boolean
+      schedule_id:
+        type: integer
+      updated_at:
+        type: string
+      workspace_user_id:
+        type: integer
+    type: object
   comment_dtos.TwCommentResponse:
     properties:
       commenter:
@@ -1005,6 +1037,73 @@ paths:
         required)
       tags:
       - board_columns
+  /api/v1/comment:
+    post:
+      consumes:
+      - application/json
+      description: Create a new comment
+      parameters:
+      - description: Comment
+        in: body
+        name: schedule
+        required: true
+        schema:
+          $ref: '#/definitions/comment_dtos.CommentRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/comment_dtos.CommentResponseDTO'
+      summary: Create a new comment
+      tags:
+      - comment
+  /api/v1/comment/{comment_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a comment
+      parameters:
+      - description: Comment ID
+        in: path
+        name: comment_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      summary: Delete a comment
+      tags:
+      - comment
+    put:
+      consumes:
+      - application/json
+      description: Update an existing comment
+      parameters:
+      - description: Comment ID
+        in: path
+        name: comment_id
+        required: true
+        type: integer
+      - description: Comment
+        in: body
+        name: schedule
+        required: true
+        schema:
+          $ref: '#/definitions/comment_dtos.CommentRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/comment_dtos.CommentResponseDTO'
+      summary: Update an existing comment
+      tags:
+      - comment
   /api/v1/comment/schedule/{schedule_id}:
     get:
       consumes:
