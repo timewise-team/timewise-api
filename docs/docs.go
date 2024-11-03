@@ -2103,6 +2103,12 @@ const docTemplate = `{
                 "location": {
                     "type": "string"
                 },
+                "position": {
+                    "type": "integer"
+                },
+                "priority": {
+                    "type": "string"
+                },
                 "recurrence_pattern": {
                     "type": "string"
                 },
@@ -2218,9 +2224,6 @@ const docTemplate = `{
                 "extra_data": {
                     "type": "string"
                 },
-                "is_deleted": {
-                    "type": "boolean"
-                },
                 "location": {
                     "type": "string"
                 },
@@ -2249,9 +2252,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "workspace_id": {
-                    "type": "integer"
-                },
-                "workspace_user_id": {
                     "type": "integer"
                 }
             }

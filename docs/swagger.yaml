@@ -243,6 +243,10 @@ definitions:
         type: boolean
       location:
         type: string
+      position:
+        type: integer
+      priority:
+        type: string
       recurrence_pattern:
         type: string
       schedule_participants:
@@ -319,8 +323,6 @@ definitions:
         type: string
       extra_data:
         type: string
-      is_deleted:
-        type: boolean
       location:
         type: string
       position:
@@ -340,8 +342,6 @@ definitions:
       visibility:
         type: string
       workspace_id:
-        type: integer
-      workspace_user_id:
         type: integer
     type: object
   core_dtos.TwUpdateScheduleResponse:
