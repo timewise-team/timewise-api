@@ -72,11 +72,18 @@ func (h *CommentService) GetCommentsByScheduleID(scheduleId int) ([]comment_dtos
 
 func (s *CommentService) CreateComment(c *fiber.Ctx, CommentRequestDto comment_dtos.CommentRequestDTO) (*comment_dtos.CommentResponseDTO, error) {
 
+	workspaceUser, ok := c.Locals("workspace_user").(*models.TwWorkspaceUser)
+	if !ok {
+		return nil, c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to retrieve schedule participant",
+		})
+	}
+
 	newComment := models.TwComment{
 		CreatedAt:       time.Now(),
 		UpdatedAt:       time.Now(),
 		ScheduleId:      *CommentRequestDto.ScheduleId,
-		WorkspaceUserId: *CommentRequestDto.WorkspaceUserId,
+		WorkspaceUserId: workspaceUser.ID,
 		Commenter:       *CommentRequestDto.Commenter,
 		Content:         *CommentRequestDto.Content,
 	}
