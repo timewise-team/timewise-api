@@ -40,6 +40,9 @@ func (s *AccountService) GetUserInfoByUserId(userId string) (core_dtos.GetUserRe
 		return core_dtos.GetUserResponseDto{}, err
 	}
 	// parse userResponse to userDto
+	if userResponse.DeletedAt == nil {
+		userResponse.DeletedAt = new(time.Time)
+	}
 	userDto := core_dtos.GetUserResponseDto{
 		ID:        userResponse.ID,
 		CreatedAt: userResponse.CreatedAt,
