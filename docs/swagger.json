@@ -2095,6 +2095,12 @@
                 "location": {
                     "type": "string"
                 },
+                "position": {
+                    "type": "integer"
+                },
+                "priority": {
+                    "type": "string"
+                },
                 "recurrence_pattern": {
                     "type": "string"
                 },
@@ -2210,9 +2216,6 @@
                 "extra_data": {
                     "type": "string"
                 },
-                "is_deleted": {
-                    "type": "boolean"
-                },
                 "location": {
                     "type": "string"
                 },
@@ -2241,9 +2244,6 @@
                     "type": "string"
                 },
                 "workspace_id": {
-                    "type": "integer"
-                },
-                "workspace_user_id": {
                     "type": "integer"
                 }
             }
