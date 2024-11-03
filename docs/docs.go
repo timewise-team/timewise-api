@@ -1796,9 +1796,6 @@ const docTemplate = `{
                 },
                 "schedule_id": {
                     "type": "integer"
-                },
-                "workspace_user_id": {
-                    "type": "integer"
                 }
             }
         },

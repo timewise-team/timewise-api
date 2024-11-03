@@ -37,8 +37,6 @@ definitions:
         type: string
       schedule_id:
         type: integer
-      workspace_user_id:
-        type: integer
     type: object
   comment_dtos.CommentResponseDTO:
     properties:
