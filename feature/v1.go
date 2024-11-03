@@ -8,6 +8,7 @@ import (
 	commentsTransport "api/feature/comment/transport"
 	documentTransport "api/feature/document/transport"
 	linkedEmailsTransport "api/feature/linked_emails/transport"
+	notificationTransport "api/feature/notification/transport"
 	"api/feature/schedule/transport"
 	scheduleFilterTransport "api/feature/schedule_filter/transport"
 	scheduleLog "api/feature/schedule_log/transport"
@@ -71,5 +72,7 @@ func RegisterHandlerV1() *fiber.App {
 	scheduleLog.RegisterScheduleLogHandler(v1.Group("/schedule_log"))
 	commentsTransport.RegisterCommentHandler(v1.Group("/comment"))
 	accountTransport.RegisterAccountHandler(v1.Group("/account"))
+	notificationTransport.RegisterNotificationHandler(v1.Group("/notification"))
+
 	return router
 }
