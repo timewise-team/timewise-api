@@ -26,6 +26,10 @@ import (
 func (h *WorkspaceHandler) filterWorkspaces(c *fiber.Ctx) error {
 	queryParams := make(map[string]string)
 
+	if c.Locals("userid") == nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid userId"})
+	}
+	queryParams["userid"] = c.Locals("userid").(string)
 	// Filter by email
 	if email := c.Query("email"); email != "" {
 		queryParams["email"] = email
