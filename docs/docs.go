@@ -576,45 +576,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/notification/push": {
-            "post": {
-                "security": [
-                    {
-                        "bearerToken": []
-                    }
-                ],
-                "description": "Push notifications",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "notification"
-                ],
-                "summary": "Push notifications",
-                "parameters": [
-                    {
-                        "description": "Push notification message",
-                        "name": "message",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/core_dtos.PushNotificationDto"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/core_dtos.PushNotificationDto"
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/schedule/schedule": {
             "get": {
                 "security": [
@@ -1093,32 +1054,6 @@ const docTemplate = `{
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/user_email_dtos.SearchUserEmailResponse"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/user_emails/get-linked-email": {
-            "get": {
-                "description": "Get linked user email",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "linked_emails"
-                ],
-                "summary": "Get linked user email",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.TwUserEmail"
                             }
                         }
                     }
@@ -2007,40 +1942,6 @@ const docTemplate = `{
                 },
                 "token_type": {
                     "type": "string"
-                }
-            }
-        },
-        "core_dtos.PushNotificationDto": {
-            "type": "object",
-            "required": [
-                "message",
-                "type",
-                "user_email_id"
-            ],
-            "properties": {
-                "extra_data": {
-                    "description": "Optional: Additional data",
-                    "type": "string"
-                },
-                "message": {
-                    "description": "Required for the notification content",
-                    "type": "string"
-                },
-                "related_item_id": {
-                    "description": "Optional: ID of related item",
-                    "type": "integer"
-                },
-                "related_item_type": {
-                    "description": "Optional: Type of related item",
-                    "type": "string"
-                },
-                "type": {
-                    "description": "Required to specify the notification type",
-                    "type": "string"
-                },
-                "user_email_id": {
-                    "description": "Required to specify the recipient",
-                    "type": "integer"
                 }
             }
         },

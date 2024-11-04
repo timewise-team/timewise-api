@@ -151,31 +151,6 @@ definitions:
       token_type:
         type: string
     type: object
-  core_dtos.PushNotificationDto:
-    properties:
-      extra_data:
-        description: 'Optional: Additional data'
-        type: string
-      message:
-        description: Required for the notification content
-        type: string
-      related_item_id:
-        description: 'Optional: ID of related item'
-        type: integer
-      related_item_type:
-        description: 'Optional: Type of related item'
-        type: string
-      type:
-        description: Required to specify the notification type
-        type: string
-      user_email_id:
-        description: Required to specify the recipient
-        type: integer
-    required:
-    - message
-    - type
-    - user_email_id
-    type: object
   core_dtos.TwCreateScheduleRequest:
     properties:
       all_day:
@@ -1173,30 +1148,6 @@ paths:
       summary: Get documents by schedule
       tags:
       - document
-  /api/v1/notification/push:
-    post:
-      consumes:
-      - application/json
-      description: Push notifications
-      parameters:
-      - description: Push notification message
-        in: body
-        name: message
-        required: true
-        schema:
-          $ref: '#/definitions/core_dtos.PushNotificationDto'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/core_dtos.PushNotificationDto'
-      security:
-      - bearerToken: []
-      summary: Push notifications
-      tags:
-      - notification
   /api/v1/schedule/schedule:
     get:
       consumes:
@@ -1518,23 +1469,6 @@ paths:
       summary: search user email
       tags:
       - User Email
-  /api/v1/user_emails/get-linked-email:
-    get:
-      consumes:
-      - application/json
-      description: Get linked user email
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/models.TwUserEmail'
-            type: array
-      summary: Get linked user email
-      tags:
-      - linked_emails
   /api/v1/workspace/create-workspace:
     post:
       consumes:
