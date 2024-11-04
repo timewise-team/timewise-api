@@ -3,7 +3,6 @@ package account
 import (
 	"api/dms"
 	auth_service "api/service/auth"
-	auth_utils "api/utils/auth"
 	"encoding/json"
 	"errors"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos"
@@ -176,16 +175,30 @@ func (s *AccountService) GetLinkedUserEmails(userId string) ([]string, error) {
 	return emailSlice, nil
 }
 
-func (s *AccountService) LinkAnEmail(userId string, oauthData auth_utils.GoogleOauthData) (core_dtos.GetUserResponseDto, error) {
+func (s *AccountService) sendMailToTargetEmail(email string, subject string, content string) error {
+	// call dms to send email
+	sendMailReq := dtos.SendMailRequestDto{
+		Email:   email,
+		Subject: subject,
+		Content: content,
+	}
+	_, err := dms.CallAPI("POST", "/mail/send", sendMailReq, nil, nil, 120)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *AccountService) LinkAnEmail(userId string, email string) (core_dtos.GetUserResponseDto, error) {
 	getOrCreateUserReq := dtos.GetOrCreateUserRequestDto{
-		Email:          oauthData.Email,
-		FullName:       oauthData.Name,
-		ProfilePicture: oauthData.Picture,
-		VerifiedEmail:  oauthData.VerifiedEmail,
-		GoogleId:       oauthData.Id,
-		GivenName:      oauthData.GivenName,
-		FamilyName:     oauthData.FamilyName,
-		Locale:         oauthData.Locale,
+		Email:          email,
+		FullName:       "",
+		ProfilePicture: "",
+		VerifiedEmail:  true,
+		GoogleId:       "",
+		GivenName:      "",
+		FamilyName:     "",
+		Locale:         "",
 	}
 
 	// Get or Create user
@@ -222,7 +235,7 @@ func (s *AccountService) LinkAnEmail(userId string, oauthData auth_utils.GoogleO
 	}
 	queryParams := map[string]string{
 		"user_id": userId,
-		"email":   oauthData.Email,
+		"email":   email,
 	}
 	// else then update user_id to user_email
 	respEmail, err := dms.CallAPI("PATCH", "/user_email", nil, nil, queryParams, 120)

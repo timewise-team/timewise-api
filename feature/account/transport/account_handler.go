@@ -127,28 +127,13 @@ func (h *AccountHandler) linkAnEmail(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid user ID format")
 	}
-	var req core_dtos.GoogleAuthRequest
-	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Cannot parse request",
-		})
-	}
-	if req.Credentials == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Credentials is required",
-		})
-	}
-	// decode credentials
-	decodedCredentials, err := auth_utils.VerifyGoogleToken(req.Credentials)
-	var oauthData auth_utils.GoogleOauthData
-	err = json.Unmarshal(decodedCredentials, &oauthData)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Could not decode credentials",
-		})
+	// get email from request
+	email := c.Query("email")
+	if email == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Email is required"})
 	}
 	// call service
-	userResp, err := h.service.LinkAnEmail(userIdStr, oauthData)
+	userResp, err := h.service.LinkAnEmail(userIdStr, email)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -156,7 +141,7 @@ func (h *AccountHandler) linkAnEmail(c *fiber.Ctx) error {
 	notificationDto := core_dtos.PushNotificationDto{
 		UserEmailId: userIdInt,
 		Type:        "info",
-		Message:     "Linked to email: " + oauthData.Email + " successfully",
+		Message:     "Linked to email: " + email + " successfully",
 	}
 	err = notification.PushNotifications(notificationDto)
 	if err != nil {
@@ -219,7 +204,7 @@ func (h *AccountHandler) unlinkAnEmail(c *fiber.Ctx) error {
 	notificationDto := core_dtos.PushNotificationDto{
 		UserEmailId: userIdInt,
 		Type:        "info",
-		Message:     "Linked to email: " + oauthData.Email + " successfully",
+		Message:     "Unlink to email: " + oauthData.Email + " successfully",
 	}
 	err = notification.PushNotifications(notificationDto)
 	if err != nil {
