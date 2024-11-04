@@ -1,11 +1,13 @@
 package transport
 
 import (
+	"api/notification"
 	"api/service/account"
 	auth_utils "api/utils/auth"
 	"encoding/json"
 	"github.com/gofiber/fiber/v2"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos"
+	"strconv"
 )
 
 type AccountHandler struct {
@@ -116,6 +118,15 @@ func (h *AccountHandler) linkAnEmail(c *fiber.Ctx) error {
 	if userId == nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid userId"})
 	}
+	userIdStr, ok := userId.(string) // Kiểm tra xem userId có phải là kiểu string không
+	if !ok {
+		return c.Status(fiber.StatusBadRequest).SendString("Invalid user ID type")
+	}
+
+	userIdInt, err := strconv.Atoi(userIdStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString("Invalid user ID format")
+	}
 	var req core_dtos.GoogleAuthRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -137,7 +148,17 @@ func (h *AccountHandler) linkAnEmail(c *fiber.Ctx) error {
 		})
 	}
 	// call service
-	userResp, err := h.service.LinkAnEmail(userId.(string), oauthData)
+	userResp, err := h.service.LinkAnEmail(userIdStr, oauthData)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+	// send notification
+	notificationDto := core_dtos.PushNotificationDto{
+		UserEmailId: userIdInt,
+		Type:        "info",
+		Message:     "Linked to email: " + oauthData.Email + " successfully",
+	}
+	err = notification.PushNotifications(notificationDto)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -177,6 +198,30 @@ func (h *AccountHandler) unlinkAnEmail(c *fiber.Ctx) error {
 	}
 	// call service
 	userResp, err := h.service.UnlinkAnEmail(oauthData.Email)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+	// get userId from context
+	userId := c.Locals("userid")
+	if userId == nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid userId"})
+	}
+	userIdStr, ok := userId.(string) // Kiểm tra xem userId có phải là kiểu string không
+	if !ok {
+		return c.Status(fiber.StatusBadRequest).SendString("Invalid user ID type")
+	}
+
+	userIdInt, err := strconv.Atoi(userIdStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString("Invalid user ID format")
+	}
+	// send notification
+	notificationDto := core_dtos.PushNotificationDto{
+		UserEmailId: userIdInt,
+		Type:        "info",
+		Message:     "Linked to email: " + oauthData.Email + " successfully",
+	}
+	err = notification.PushNotifications(notificationDto)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}

@@ -7,7 +7,6 @@ import (
 	boardColumnsTransport "api/feature/board_columns/transport"
 	commentsTransport "api/feature/comment/transport"
 	documentTransport "api/feature/document/transport"
-	linkedEmailsTransport "api/feature/linked_emails/transport"
 	"api/feature/schedule/transport"
 	scheduleFilterTransport "api/feature/schedule_filter/transport"
 	scheduleLog "api/feature/schedule_log/transport"
@@ -61,7 +60,6 @@ func RegisterHandlerV1() *fiber.App {
 	authTransport.RegisterAuthHandler(v1.Group("/auth"))
 	workspaceTransport.RegisterWorkspaceHandler(v1.Group("/workspace"))
 	scheduleFilterTransport.RegisterScheduleFilterHandler(v1.Group("/schedule"))
-	linkedEmailsTransport.RegisterLinkedEmailsHandler(v1.Group("/user_emails"))
 	transport.RegisterScheduleHandler(v1.Group("/schedules"))
 	boardColumnsTransport.RegisterBoardColumnsHandler(v1.Group("/board_columns"))
 	userEmailTransport.RegisterUserEmailHandler(v1.Group("/user_email"))
@@ -71,5 +69,6 @@ func RegisterHandlerV1() *fiber.App {
 	scheduleLog.RegisterScheduleLogHandler(v1.Group("/schedule_log"))
 	commentsTransport.RegisterCommentHandler(v1.Group("/comment"))
 	accountTransport.RegisterAccountHandler(v1.Group("/account"))
+
 	return router
 }

@@ -1469,23 +1469,6 @@ paths:
       summary: search user email
       tags:
       - User Email
-  /api/v1/user_emails/get-linked-email:
-    get:
-      consumes:
-      - application/json
-      description: Get linked user email
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/models.TwUserEmail'
-            type: array
-      summary: Get linked user email
-      tags:
-      - linked_emails
   /api/v1/workspace/create-workspace:
     post:
       consumes:

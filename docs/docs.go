@@ -1060,32 +1060,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/user_emails/get-linked-email": {
-            "get": {
-                "description": "Get linked user email",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "linked_emails"
-                ],
-                "summary": "Get linked user email",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.TwUserEmail"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/workspace/create-workspace": {
             "post": {
                 "description": "Create a workspace",
