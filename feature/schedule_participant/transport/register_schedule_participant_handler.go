@@ -25,4 +25,8 @@ func RegisterScheduleParticipantHandler(router fiber.Router) {
 		scheduleParticipantHandler.Handler.InviteToSchedule)
 	router.Get("/accept-invitation-via-email/token/:token?", scheduleParticipantHandler.Handler.AcceptInvite)
 	router.Get("/decline-invitation-via-email/token/:token?", scheduleParticipantHandler.Handler.DeclineInvite)
+	router.Put("/assign",
+		middleware.CheckWorkspaceRole([]string{"owner", "admin", "member"}),
+		middleware.CheckScheduleStatus([]string{"creator"}),
+		scheduleParticipantHandler.Handler.AssignMember)
 }
