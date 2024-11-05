@@ -2,11 +2,9 @@ package account
 
 import (
 	"api/dms"
-	auth_service "api/service/auth"
 	"encoding/json"
 	"errors"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos"
-	dtos "github.com/timewise-team/timewise-models/dtos/core_dtos/user_register_dtos"
 	"github.com/timewise-team/timewise-models/models"
 	"io/ioutil"
 	"net/http"
@@ -151,8 +149,11 @@ func (s *AccountService) UpdateUserInfo(userId string, request core_dtos.UpdateP
 	return userDto, nil
 }
 
-func (s *AccountService) GetLinkedUserEmails(userId string) ([]string, error) {
-	resp, err := dms.CallAPI("GET", "/user_email/user/"+userId, nil, nil, nil, 120)
+func (s *AccountService) GetLinkedUserEmails(userId string, status string) ([]string, error) {
+	query := map[string]string{
+		"status": status,
+	}
+	resp, err := dms.CallAPI("GET", "/user_email/user/"+userId, nil, nil, query, 120)
 	if err != nil {
 		return nil, err
 	}
@@ -175,76 +176,58 @@ func (s *AccountService) GetLinkedUserEmails(userId string) ([]string, error) {
 	return emailSlice, nil
 }
 
-func (s *AccountService) sendMailToTargetEmail(email string, subject string, content string) error {
-	// call dms to send email
-	sendMailReq := dtos.SendMailRequestDto{
-		Email:   email,
-		Subject: subject,
-		Content: content,
+func (s *AccountService) SendLinkAnEmailRequest(userId string, email string) error {
+	// check if email is already is a user
+	resp, err := dms.CallAPI("GET", "/user", nil, nil, map[string]string{"email": email}, 120)
+	if err != nil {
+		return err
 	}
-	_, err := dms.CallAPI("POST", "/mail/send", sendMailReq, nil, nil, 120)
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil || resp.StatusCode != http.StatusOK {
+		return err
+	}
+	// marshal response body
+	var userResp models.TwUser
+	err = json.Unmarshal(body, &userResp)
+	if err != nil {
+		return err
+	}
+	// if email is already not a user, return error
+	if userResp.ID == 0 {
+		return errors.New("Email is not already a user. Only existing user can be linked")
+	}
+	// TODO send mail by using cron job
+
+	// call dms to create a new user_email
+	userIdInt, err := strconv.Atoi(userId)
+	if err != nil {
+		return err
+	}
+	userEmail := models.TwUserEmail{
+		UserId: userIdInt,
+		Email:  email,
+	}
+	resp, err = dms.CallAPI("POST", "/user_email", userEmail, nil, nil, 120)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *AccountService) LinkAnEmail(userId string, email string) (core_dtos.GetUserResponseDto, error) {
-	getOrCreateUserReq := dtos.GetOrCreateUserRequestDto{
-		Email:          email,
-		FullName:       "",
-		ProfilePicture: "",
-		VerifiedEmail:  true,
-		GoogleId:       "",
-		GivenName:      "",
-		FamilyName:     "",
-		Locale:         "",
-	}
-
-	// Get or Create user
-	resp, err := dms.CallAPI(
-		"POST",
-		"/user/get-create",
-		getOrCreateUserReq,
-		nil,
-		nil,
-		120,
-	)
-	if err != nil {
-		return core_dtos.GetUserResponseDto{}, errors.New("could not get or create user")
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil || resp.StatusCode != http.StatusOK {
-		return core_dtos.GetUserResponseDto{}, err
-	}
-
-	// marshal response body
-	var userRespDto dtos.GetOrCreateUserResponseDto
-	err = json.Unmarshal(body, &userRespDto)
-	if err != nil {
-		return core_dtos.GetUserResponseDto{}, err
-	}
-
-	if userRespDto.IsNewUser {
-		_, err := auth_service.NewAuthService().InitNewUser(userRespDto.User)
-		if err != nil {
-			return core_dtos.GetUserResponseDto{}, errors.New("could not init new user")
-		}
-	}
+func (s *AccountService) UpdateStatusLinkEmailRequest(userId string, email string, status string) (core_dtos.GetUserResponseDto, error) {
 	queryParams := map[string]string{
 		"user_id": userId,
 		"email":   email,
+		"status":  status,
 	}
-	// else then update user_id to user_email
 	respEmail, err := dms.CallAPI("PATCH", "/user_email", nil, nil, queryParams, 120)
 	if err != nil {
 		return core_dtos.GetUserResponseDto{}, err
 	}
-	defer resp.Body.Close()
+	defer respEmail.Body.Close()
 
-	body, err = ioutil.ReadAll(respEmail.Body)
+	body, err := ioutil.ReadAll(respEmail.Body)
 	if err != nil || respEmail.StatusCode != http.StatusOK {
 		return core_dtos.GetUserResponseDto{}, err
 	}
@@ -257,7 +240,7 @@ func (s *AccountService) LinkAnEmail(userId string, email string) (core_dtos.Get
 	}
 
 	// return user info
-	resp, err = dms.CallAPI("GET", "/user/"+userId, nil, nil, nil, 120)
+	resp, err := dms.CallAPI("GET", "/user/"+userId, nil, nil, nil, 120)
 	if err != nil {
 		return core_dtos.GetUserResponseDto{}, err
 	}
@@ -294,7 +277,7 @@ func (s *AccountService) LinkAnEmail(userId string, email string) (core_dtos.Get
 		CalendarSettings:     userResponse.CalendarSettings,
 		Role:                 userResponse.Role,
 	}
-	userEmailList, err := s.GetLinkedUserEmails(userId)
+	userEmailList, err := s.GetLinkedUserEmails(userId, "")
 	if err != nil {
 		return core_dtos.GetUserResponseDto{}, err
 	}

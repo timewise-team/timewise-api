@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"api/config"
 	"api/notification"
 	"api/service/account"
 	auth_utils "api/utils/auth"
@@ -83,6 +84,7 @@ func (h *AccountHandler) updateUserInfo(c *fiber.Ctx) error {
 // @Description Get linked user emails
 // @Tags account
 // @Security bearerToken
+// @Param status query string false "Status"
 // @Accept json
 // @Produce json
 // @Success 200 {array} string
@@ -93,8 +95,9 @@ func (h *AccountHandler) getLinkedUserEmails(c *fiber.Ctx) error {
 	if userId == nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid userId"})
 	}
+	status := c.Query("status")
 	// call service to query database
-	userEmails, err := h.service.GetLinkedUserEmails(userId.(string))
+	userEmails, err := h.service.GetLinkedUserEmails(userId.(string), status)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -102,17 +105,17 @@ func (h *AccountHandler) getLinkedUserEmails(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(userEmails)
 }
 
-// linkAnEmail godoc
-// @Summary Link an email
-// @Description Link an email
+// sendLinkEmailRequest godoc
+// @Summary Send link an email request
+// @Description Send link an email request
 // @Tags account
 // @Security bearerToken
 // @Accept json
 // @Produce json
-// @Param linkAnEmailRequest body core_dtos.GoogleAuthRequest true "Link an email request"
-// @Success 200 {object} core_dtos.GetUserResponseDto
+// @Param email query string true "Target email"
+// @Success 200 {object} string "Link email request sent"
 // @Router /api/v1/account/user/emails [post]
-func (h *AccountHandler) linkAnEmail(c *fiber.Ctx) error {
+func (h *AccountHandler) sendLinkEmailRequest(c *fiber.Ctx) error {
 	// get userId from context
 	userId := c.Locals("userid")
 	if userId == nil {
@@ -133,7 +136,7 @@ func (h *AccountHandler) linkAnEmail(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Email is required"})
 	}
 	// call service
-	userResp, err := h.service.LinkAnEmail(userIdStr, email)
+	err = h.service.SendLinkAnEmailRequest(userIdStr, email)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -141,13 +144,46 @@ func (h *AccountHandler) linkAnEmail(c *fiber.Ctx) error {
 	notificationDto := core_dtos.PushNotificationDto{
 		UserEmailId: userIdInt,
 		Type:        "info",
-		Message:     "Linked to email: " + email + " successfully",
+		Message:     "Request link to email: " + email + "sent successfully",
 	}
 	err = notification.PushNotifications(notificationDto)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
-	return c.Status(fiber.StatusOK).JSON(userResp)
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Link email request sent"})
+}
+
+// actionEmailLinkRequest godoc
+// @Summary Action email link request
+// @Description Action email link request
+// @Tags account
+// @Accept json
+// @Produce json
+// @Param token path string true "Token"
+// @Success 200 {object} core_dtos.GetUserResponseDto
+// @Router /api/v1/account/user/emails/link/{token} [get]
+func (h *AccountHandler) actionEmailLinkRequest(c *fiber.Ctx) error {
+	cfg, err1 := config.LoadConfig()
+	if err1 != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"message": "Failed to load config",
+		})
+	}
+	token := c.Params("token")
+	claims, err2 := auth_utils.ParseInvitationToken(token, cfg.JWT_SECRET)
+	if err2 != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"message": "Invalid token: " + err2.Error(),
+		})
+	}
+	userId := claims["uid"].(string)
+	email := claims["email"].(string)
+	action := claims["action"].(string)
+	userInfo, err := h.service.UpdateStatusLinkEmailRequest(userId, email, action)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Status(fiber.StatusOK).JSON(userInfo)
 }
 
 // unlinkAnEmail godoc

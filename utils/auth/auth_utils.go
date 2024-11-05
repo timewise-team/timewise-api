@@ -158,3 +158,19 @@ func ParseInvitationToken(tokenString string, secretKey string) (jwt.MapClaims, 
 	}
 	return token.Claims.(jwt.MapClaims), nil
 }
+
+func GenerateLinkEmailToken(currentUid string, email string, action string, secretKey string) (string, error) {
+	claims := jwt.MapClaims{
+		"uid":    currentUid,
+		"email":  email,
+		"action": action,                                // accept hoặc decline
+		"exp":    time.Now().Add(24 * time.Hour).Unix(), // Token có thời hạn 24h
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString([]byte(secretKey))
+	if err != nil {
+		return "", err
+	}
+	return tokenString, nil
+}
