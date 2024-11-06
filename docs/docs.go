@@ -770,6 +770,40 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/schedule_participant/assign": {
+            "put": {
+                "description": "Send invitation to user (X-User-Email required, X-Workspace-Id required)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ScheduleParticipant"
+                ],
+                "summary": "Assign member to schedule",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "schedule_participant",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schedule_participant_dtos.InviteToScheduleRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schedule_participant_dtos.ScheduleParticipantResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/schedule_participant/decline-invitation-via-email/token/{token}": {
             "get": {
                 "description": "Decline invitation via email",

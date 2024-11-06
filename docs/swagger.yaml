@@ -1276,6 +1276,29 @@ paths:
       summary: Accept invitation via email
       tags:
       - ScheduleParticipant
+  /api/v1/schedule_participant/assign:
+    put:
+      consumes:
+      - application/json
+      description: Send invitation to user (X-User-Email required, X-Workspace-Id
+        required)
+      parameters:
+      - description: Request body
+        in: body
+        name: schedule_participant
+        required: true
+        schema:
+          $ref: '#/definitions/schedule_participant_dtos.InviteToScheduleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schedule_participant_dtos.ScheduleParticipantResponse'
+      summary: Assign member to schedule
+      tags:
+      - ScheduleParticipant
   /api/v1/schedule_participant/decline-invitation-via-email/token/{token}:
     get:
       consumes:

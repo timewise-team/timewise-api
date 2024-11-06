@@ -54,6 +54,35 @@ func (h *ScheduleParticipantService) GetScheduleParticipantsBySchedule(scheduleI
 
 }
 
+func (h *ScheduleParticipantService) GetScheduleParticipantsByScheduleAndWorkspaceUser(scheduleId, workspaceId string) (*models.TwScheduleParticipant, error) {
+	if scheduleId == "" {
+		return nil, nil
+	}
+	if workspaceId == "" {
+		return nil, nil
+	}
+	resp, err := dms.CallAPI(
+		"GET",
+		"/schedule_participant/workspace_user/"+workspaceId+"/schedule/"+scheduleId,
+		nil,
+		nil,
+		nil,
+		120,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var scheduleParticipants models.TwScheduleParticipant
+	if err := json.NewDecoder(resp.Body).Decode(&scheduleParticipants); err != nil {
+		return nil, err
+	}
+
+	return &scheduleParticipants, nil
+
+}
+
 func (h *ScheduleParticipantService) GetScheduleParticipantsByScheduleID(scheduleId int) ([]schedule_participant_dtos.ScheduleParticipantInfo, error) {
 	scheduleIdStr := strconv.Itoa(scheduleId)
 	if scheduleIdStr == "" {
@@ -346,6 +375,47 @@ func (h *ScheduleParticipantService) InviteOutsideWorkspace(
 	}
 
 	return workspaceUserResponse, scheduleParticipant, nil
+}
+
+func (h *ScheduleParticipantService) AssignMember(
+	c *fiber.Ctx,
+	memberAssigned *models.TwScheduleParticipant,
+) (*schedule_participant_dtos.ScheduleParticipantResponse, error) {
+
+	workspaceUserInvite, err := h.getWorkspaceUserFromContext(c)
+	if err != nil {
+		return nil, err
+	}
+
+	now := time.Now()
+	updateScheduleParticipant := models.TwScheduleParticipant{
+		CreatedAt:        memberAssigned.CreatedAt,
+		UpdatedAt:        time.Now(),
+		ScheduleId:       memberAssigned.ScheduleId,
+		WorkspaceUserId:  memberAssigned.WorkspaceUserId,
+		Status:           "assign to",
+		AssignAt:         &now,
+		AssignBy:         workspaceUserInvite.ID,
+		ResponseTime:     memberAssigned.ResponseTime,
+		InvitationSentAt: memberAssigned.InvitationSentAt,
+		InvitationStatus: memberAssigned.InvitationStatus,
+	}
+
+	resp, err := dms.CallAPI(
+		"PUT", fmt.Sprintf("/schedule_participant/%d", memberAssigned.ID),
+		updateScheduleParticipant, nil, nil, 120,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var updateScheduleParticipants schedule_participant_dtos.ScheduleParticipantResponse
+	if err := json.NewDecoder(resp.Body).Decode(&updateScheduleParticipants); err != nil {
+		return nil, err
+	}
+
+	return &updateScheduleParticipants, nil
 }
 
 func (h *ScheduleParticipantService) AcceptInvite(scheduleId, workspaceUserId string) (*schedule_participant_dtos.ScheduleParticipantResponse, error) {
