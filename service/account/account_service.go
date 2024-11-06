@@ -230,14 +230,6 @@ func (s *AccountService) UpdateStatusLinkEmailRequest(userId string, email strin
 		"email":   email,
 		"status":  status,
 	}
-	respEmail, err := dms.CallAPI("PATCH", "/user_email", nil, nil, queryParams, 120)
-	if err != nil {
-		return core_dtos.GetUserResponseDto{}, err
-	}
-	defer respEmail.Body.Close()
-	if respEmail.StatusCode != http.StatusOK {
-		return core_dtos.GetUserResponseDto{}, errors.New("cannot update status of email")
-	}
 	// delete pending email if status is rejected or accepted
 	if status == "rejected" || status == "linked" {
 		queryParams := map[string]string{
@@ -245,7 +237,7 @@ func (s *AccountService) UpdateStatusLinkEmailRequest(userId string, email strin
 			"email":   email,
 			"status":  "pending",
 		}
-		respEmail, err = dms.CallAPI("DELETE", "/user_email", nil, nil, queryParams, 120)
+		respEmail, err := dms.CallAPI("DELETE", "/user_email", nil, nil, queryParams, 120)
 		if err != nil {
 			return core_dtos.GetUserResponseDto{}, err
 		}
@@ -253,6 +245,14 @@ func (s *AccountService) UpdateStatusLinkEmailRequest(userId string, email strin
 		if respEmail.StatusCode != http.StatusOK {
 			return core_dtos.GetUserResponseDto{}, errors.New("cannot delete email")
 		}
+	}
+	respEmail, err := dms.CallAPI("PATCH", "/user_email", nil, nil, queryParams, 120)
+	if err != nil {
+		return core_dtos.GetUserResponseDto{}, err
+	}
+	defer respEmail.Body.Close()
+	if respEmail.StatusCode != http.StatusOK {
+		return core_dtos.GetUserResponseDto{}, errors.New("cannot update status of email")
 	}
 	// return user info
 	resp, err := dms.CallAPI("GET", "/user/"+userId, nil, nil, nil, 120)

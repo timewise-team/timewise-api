@@ -2,9 +2,6 @@ package auth_utils
 
 import (
 	"api/config"
-	"bytes"
-	"compress/gzip"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,7 +10,6 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"regexp"
 	"time"
@@ -152,43 +148,6 @@ func GenerateScheduleInvitationToken(workspaceUserId int, action string, secretK
 	}
 	return tokenString, nil
 }
-func compressData(data []byte) (string, error) {
-	var buf bytes.Buffer
-	gz := gzip.NewWriter(&buf)
-	_, err := gz.Write(data)
-	if err != nil {
-		return "", err
-	}
-	err = gz.Close()
-	if err != nil {
-		return "", err
-	}
-
-	// Base64 encode the compressed data for safe transmission
-	return base64.StdEncoding.EncodeToString(buf.Bytes()), nil
-}
-func decompressData(compressedData string) (string, error) {
-	// Decode dữ liệu từ base64
-	data, err := base64.StdEncoding.DecodeString(compressedData)
-	if err != nil {
-		return "", err
-	}
-
-	// Sử dụng gzip để giải nén
-	reader, err := gzip.NewReader(bytes.NewReader(data))
-	if err != nil {
-		return "", err
-	}
-	defer reader.Close()
-
-	// Đọc và trả về dữ liệu đã giải nén
-	decompressedData, err := ioutil.ReadAll(reader)
-	if err != nil {
-		return "", err
-	}
-
-	return string(decompressedData), nil
-}
 func ParseInvitationToken(tokenString string, secretKey string) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return []byte(secretKey), nil
@@ -198,54 +157,12 @@ func ParseInvitationToken(tokenString string, secretKey string) (jwt.MapClaims, 
 	}
 	return token.Claims.(jwt.MapClaims), nil
 }
-func ParseLinkEmailToken(tokenString string, secretKey string) (jwt.MapClaims, error) {
-	// Giải mã token với key bí mật
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return []byte(secretKey), nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	// Lấy claims của token
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		return nil, errors.New("invalid claims")
-	}
-
-	// Lấy dữ liệu đã được nén trong token (trong trường hợp của chúng ta là 'data')
-	compressedData, ok := claims["data"].(string)
-	if !ok {
-		return nil, errors.New("missing or invalid data in token")
-	}
-
-	// Giải nén dữ liệu
-	decompressedData, err := decompressData(compressedData)
-	if err != nil {
-		return nil, err
-	}
-
-	// Sau khi giải nén, bạn cần chuyển lại thành MapClaims (hoặc dữ liệu cần thiết)
-	var decompressedClaims map[string]interface{}
-	err = json.Unmarshal([]byte(decompressedData), &decompressedClaims)
-	if err != nil {
-		return nil, err
-	}
-
-	// Chuyển các dữ liệu đã giải nén thành jwt.MapClaims và trả về
-	return decompressedClaims, nil
-}
 func GenerateLinkEmailToken(currentUid string, email string, action string, secretKey string) (string, error) {
-	// Prepare payload data
-	payload := fmt.Sprintf("{\"uid\":\"%s\",\"email\":\"%s\",\"action\":\"%s\",\"exp\":%d}", currentUid, email, action, time.Now().Add(24*time.Hour).Unix())
-
-	// Compress the payload
-	compressedPayload, err := compressData([]byte(payload))
-	if err != nil {
-		return "", err
-	}
 	claims := jwt.MapClaims{
-		"data": compressedPayload,
+		"user_id": currentUid,
+		"email":   email,
+		"action":  action,                                // accept hoặc decline
+		"exp":     time.Now().Add(24 * time.Hour).Unix(), // Token có thời hạn 24h
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

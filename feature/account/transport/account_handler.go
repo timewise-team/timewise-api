@@ -151,8 +151,8 @@ func (h *AccountHandler) sendLinkEmailRequest(c *fiber.Ctx) error {
 		RelatedItemId:   userEmailResp.ID,
 		RelatedItemType: "user_email",
 	}
-	currentEmail := c.Locals("email")
-	requestEmail, err := generateMessageEmail(userIdStr, currentEmail.(string))
+	//currentEmail := c.Locals("email")
+	requestEmail, err := generateMessageEmail(userIdStr, email)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -224,13 +224,13 @@ func (h *AccountHandler) actionEmailLinkRequest(c *fiber.Ctx) error {
 		})
 	}
 	token := c.Params("token")
-	claims, err2 := auth_utils.ParseLinkEmailToken(token, cfg.JWT_SECRET)
+	claims, err2 := auth_utils.ParseInvitationToken(token, cfg.JWT_SECRET)
 	if err2 != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"message": "Invalid token: " + err2.Error(),
 		})
 	}
-	userId := claims["uid"].(string)
+	userId := claims["user_id"].(string)
 	email := claims["email"].(string)
 	action := claims["action"].(string)
 	// call service to send mail
@@ -267,12 +267,13 @@ func (h *AccountHandler) actionEmailLinkRequest(c *fiber.Ctx) error {
 				<p>Your email registration has been rejected. If this was a mistake, please contact support.</p>`
 	}
 	htmlContent += `
-				<a href="/" class="button">Back to Homepage</a>
+				<a href="/" class="button">You can close this page now.</a>
 			</div>
 		</body>
 		</html>
 	`
 	// Send HTML content as response
+	c.Set("Content-Type", "text/html")
 	return c.SendString(htmlContent)
 }
 
