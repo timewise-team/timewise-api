@@ -4,6 +4,7 @@ import (
 	"api/config"
 	"api/notification"
 	"api/service/account"
+	"api/service/auth"
 	auth_utils "api/utils/auth"
 	"encoding/json"
 	"github.com/gofiber/fiber/v2"
@@ -114,7 +115,7 @@ func (h *AccountHandler) getLinkedUserEmails(c *fiber.Ctx) error {
 // @Produce json
 // @Param email query string true "Target email"
 // @Success 200 {object} string "Link email request sent"
-// @Router /api/v1/account/user/emails [post]
+// @Router /api/v1/account/user/emails/send [post]
 func (h *AccountHandler) sendLinkEmailRequest(c *fiber.Ctx) error {
 	// get userId from context
 	userId := c.Locals("userid")
@@ -136,21 +137,74 @@ func (h *AccountHandler) sendLinkEmailRequest(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Email is required"})
 	}
 	// call service
-	err = h.service.SendLinkAnEmailRequest(userIdStr, email)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	userEmailResp, err2 := h.service.SendLinkAnEmailRequest(userIdStr, email)
+	if err2 != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err2.Error()})
 	}
 	// send notification
 	notificationDto := core_dtos.PushNotificationDto{
 		UserEmailId: userIdInt,
-		Type:        "info",
-		Message:     "Request link to email: " + email + "sent successfully",
+		Type:        "link email",
+		Message: "A confirmation link has been successfully sent to " + email +
+			". Please check your inbox and click the link to confirm your request. " +
+			"If you don’t see the email, check your Spam or Promotions folder.",
+		RelatedItemId:   userEmailResp.ID,
+		RelatedItemType: "user_email",
+	}
+	currentEmail := c.Locals("email")
+	requestEmail, err := generateMessageEmail(userIdStr, currentEmail.(string))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+	err = notification.PushNotifications(notificationDto)
+	notificationDto = core_dtos.PushNotificationDto{
+		UserEmailId:     userEmailResp.UserId,
+		Type:            "link email",
+		Message:         requestEmail,
+		RelatedItemId:   userEmailResp.ID,
+		RelatedItemType: "user_email",
 	}
 	err = notification.PushNotifications(notificationDto)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Link email request sent"})
+}
+
+func generateMessageEmail(userId string, email string) (string, error) {
+	cfg, err1 := config.LoadConfig()
+	if err1 != nil {
+		return "", err1
+	}
+
+	accptLink, err := auth.GenerateLinkEmailLinks(cfg, userId, email, "linked")
+	if err != nil {
+		return "", err
+	}
+
+	rejectLink, err := auth.GenerateLinkEmailLinks(cfg, userId, email, "rejected")
+	if err != nil {
+		return "", err
+	}
+
+	// Nội dung email HTML
+	emailContent := `
+	<!DOCTYPE html>
+	<html>
+		<body>
+			<p>Hello,</p>
+			<p>You have requested to register the email address ` + email + `.</p>
+			<p>Please confirm or decline this request by clicking on one of the links below:</p>
+			<p>
+				<a href="` + accptLink + `">Confirm Registration</a><br>
+				<a href="` + rejectLink + `">Decline Registration</a>
+			</p>
+			<p>If you did not request this registration, please ignore this message.</p>
+			<p>Best regards,<br>Timewise Team</p>
+		</body>
+	</html>
+`
+	return emailContent, nil
 }
 
 // actionEmailLinkRequest godoc
@@ -170,7 +224,7 @@ func (h *AccountHandler) actionEmailLinkRequest(c *fiber.Ctx) error {
 		})
 	}
 	token := c.Params("token")
-	claims, err2 := auth_utils.ParseInvitationToken(token, cfg.JWT_SECRET)
+	claims, err2 := auth_utils.ParseLinkEmailToken(token, cfg.JWT_SECRET)
 	if err2 != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"message": "Invalid token: " + err2.Error(),
@@ -179,11 +233,47 @@ func (h *AccountHandler) actionEmailLinkRequest(c *fiber.Ctx) error {
 	userId := claims["uid"].(string)
 	email := claims["email"].(string)
 	action := claims["action"].(string)
-	userInfo, err := h.service.UpdateStatusLinkEmailRequest(userId, email, action)
+	// call service to send mail
+	_, err := h.service.UpdateStatusLinkEmailRequest(userId, email, action)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
-	return c.Status(fiber.StatusOK).JSON(userInfo)
+	htmlContent := `
+		<!DOCTYPE html>
+		<html lang="en">
+		<head>
+			<meta charset="UTF-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<title>Email ` + action + ` Success</title>
+			<style>
+				body { font-family: Arial, sans-serif; }
+				.container { text-align: center; margin-top: 50px; }
+				.success { color: green; font-size: 20px; }
+				.error { color: red; font-size: 20px; }
+				.button { padding: 10px 20px; font-size: 16px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px; }
+			</style>
+		</head>
+		<body>
+			<div class="container">
+				<h1 class="success">Congratulations! Your email has been successfully ` + action + `.</h1>
+				<p>If you ` + action + ` the email request, your account information has been updated accordingly.</p>`
+
+	// If the action is "accept" or "reject", you can add specific messages or buttons.
+	if action == "accept" {
+		htmlContent += `
+				<p>Your email registration has been confirmed. You can now access your account.</p>`
+	} else if action == "reject" {
+		htmlContent += `
+				<p>Your email registration has been rejected. If this was a mistake, please contact support.</p>`
+	}
+	htmlContent += `
+				<a href="/" class="button">Back to Homepage</a>
+			</div>
+		</body>
+		</html>
+	`
+	// Send HTML content as response
+	return c.SendString(htmlContent)
 }
 
 // unlinkAnEmail godoc

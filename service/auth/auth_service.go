@@ -268,6 +268,16 @@ func GenerateInviteScheduleLinks(cfg *config.Config, scheduleId int, workspaceUs
 	return acceptLink, declineLink, nil
 }
 
+func GenerateLinkEmailLinks(cfg *config.Config, currentUid string, email string, action string) (string, error) {
+	token, err := auth_utils.GenerateLinkEmailToken(currentUid, email, action, cfg.JWT_SECRET)
+	if err != nil {
+		return "", err
+	}
+	link := fmt.Sprintf("%s/account/user/emails/link/%s", cfg.BaseURL, token)
+
+	return link, nil
+}
+
 func BuildInvitationContent(info *models.TwWorkspace, role, acceptLink, declineLink string) string {
 	return fmt.Sprintf(`
 	<html>
