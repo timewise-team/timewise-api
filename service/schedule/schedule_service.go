@@ -297,3 +297,30 @@ func (h *ScheduleService) GetSchedulesByBoardColumn(workspaceID string, boardCol
 
 	return schedules, nil
 }
+
+func (s *ScheduleService) GetScheduleDetailByID(scheduleID string) (*models.TwSchedule, error) {
+
+	resp, err := dms.CallAPI(
+		"GET",
+		"/schedule/"+scheduleID,
+		nil,
+		nil,
+		nil,
+		120,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("server error: %v", err)
+	}
+	defer resp.Body.Close()
+	// Kiểm tra mã trạng thái HTTP
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	// Parse response
+	var schedule models.TwSchedule
+	if err := json.NewDecoder(resp.Body).Decode(&schedule); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %v", err)
+	}
+	return &schedule, nil
+}
