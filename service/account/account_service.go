@@ -190,21 +190,6 @@ func (s *AccountService) SendLinkAnEmailRequest(userId string, email string) (mo
 	if err != nil || resp.StatusCode != http.StatusOK {
 		return models.TwUserEmail{}, errors.New("Cannot check if email is already a user")
 	}
-	// call dms to create a new user_email
-	userIdInt, err := strconv.Atoi(userId)
-	if err != nil {
-		return models.TwUserEmail{}, err
-	}
-	userEmail := models.TwUserEmail{
-		UserId: userIdInt,
-		Email:  email,
-		Status: "pending",
-	}
-	resp, err = dms.CallAPI("POST", "/user_email", userEmail, nil, nil, 120)
-	if err != nil {
-		return models.TwUserEmail{}, err
-	}
-
 	// get user info from user_emails table
 	resp, err = dms.CallAPI("GET", "/user_email/email/"+email, nil, nil, nil, 120)
 	if err != nil {
@@ -221,6 +206,25 @@ func (s *AccountService) SendLinkAnEmailRequest(userId string, email string) (mo
 	if err != nil {
 		return models.TwUserEmail{}, err
 	}
+	if *userEmailResp.Status != "" {
+		return models.TwUserEmail{}, errors.New("Email is already linked or rejected")
+	}
+	// call dms to create a new user_email
+	userIdInt, err := strconv.Atoi(userId)
+	if err != nil {
+		return models.TwUserEmail{}, err
+	}
+	status := "pending"
+	userEmail := models.TwUserEmail{
+		UserId: userIdInt,
+		Email:  email,
+		Status: &status,
+	}
+	resp, err = dms.CallAPI("POST", "/user_email", userEmail, nil, nil, 120)
+	if err != nil {
+		return models.TwUserEmail{}, err
+	}
+
 	return userEmailResp, nil
 }
 
@@ -301,31 +305,54 @@ func (s *AccountService) UpdateStatusLinkEmailRequest(userId string, email strin
 }
 
 func (s *AccountService) UnlinkAnEmail(email string) (core_dtos.GetUserResponseDto, error) {
-	// call dms to get user_id by email in user_email
-	queryParam := map[string]string{
-		"email": email,
-	}
-	resp, err := dms.CallAPI("GET", "/user", nil, nil, queryParam, 120)
+	// check if email is already is linked to a user
+	respUserEmail, err := dms.CallAPI("GET", "/user_email/email/"+email, nil, nil, nil, 120)
 	if err != nil {
 		return core_dtos.GetUserResponseDto{}, err
 	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil || resp.StatusCode != http.StatusOK {
+	defer respUserEmail.Body.Close()
+	body, err := ioutil.ReadAll(respUserEmail.Body)
+	if err != nil || respUserEmail.StatusCode != http.StatusOK {
 		return core_dtos.GetUserResponseDto{}, err
 	}
 	// marshal response body
-	var userEmailResp []models.TwUser
+	var userEmailResp models.TwUserEmail
 	err = json.Unmarshal(body, &userEmailResp)
 	if err != nil {
 		return core_dtos.GetUserResponseDto{}, err
 	}
-	userId := userEmailResp[0].ID
+	if userEmailResp.Status == nil || *userEmailResp.Status != "linked" {
+		return core_dtos.GetUserResponseDto{}, errors.New("Email is not linked to any user")
+	}
+	// call dms to get user_id by email in user_email
+	queryParam := map[string]string{
+		"email": email,
+	}
+	resp, err := dms.CallAPI("GET", "/user/get", nil, nil, queryParam, 120)
+	if err != nil {
+		return core_dtos.GetUserResponseDto{}, err
+	}
+	defer resp.Body.Close()
+	body, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return core_dtos.GetUserResponseDto{}, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return core_dtos.GetUserResponseDto{}, errors.New("Can not get user_id by email")
+	}
+	// marshal response body
+	var usersResp models.TwUser
+	err = json.Unmarshal(body, &usersResp)
+	if err != nil {
+		return core_dtos.GetUserResponseDto{}, err
+	}
+	userId := usersResp.ID
 	userIdStr := strconv.Itoa(userId)
 	// call dms to change current user_id to user_id got from above api in user_email
 	queryParams := map[string]string{
 		"user_id": userIdStr,
 		"email":   email,
+		"status":  "",
 	}
 	_, err = dms.CallAPI("PATCH", "/user_email", nil, nil, queryParams, 120)
 	if err != nil {

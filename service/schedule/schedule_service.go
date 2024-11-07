@@ -95,9 +95,9 @@ func (s *ScheduleService) FetchScheduleParticipant(workspaceUserIdStr, scheduleI
 }
 
 func applyUpdateFields(baseSchedule, updateSchedule models.TwSchedule, dto core_dtos.TwUpdateScheduleRequest) models.TwSchedule {
-	if dto.BoardColumnID != nil {
-		updateSchedule.BoardColumnId = *dto.BoardColumnID
-	}
+	//if dto.BoardColumnID != nil {
+	//	updateSchedule.BoardColumnId = *dto.BoardColumnID
+	//}
 	if dto.Title != nil {
 		updateSchedule.Title = *dto.Title
 	}
@@ -130,9 +130,9 @@ func applyUpdateFields(baseSchedule, updateSchedule models.TwSchedule, dto core_
 	if dto.RecurrencePattern != nil {
 		updateSchedule.RecurrencePattern = *dto.RecurrencePattern
 	}
-	if dto.Position != nil {
-		updateSchedule.Position = *dto.Position
-	}
+	//if dto.Position != nil {
+	//	updateSchedule.Position = *dto.Position
+	//}
 	if dto.Priority != nil {
 		updateSchedule.Priority = *dto.Priority
 	}
@@ -177,9 +177,9 @@ func (s *ScheduleService) UpdateSchedule(c *fiber.Ctx, UpdateScheduleDto core_dt
 		updateSchedule.Position = schedule.Position
 		updateSchedule.Priority = schedule.Priority
 
-		if UpdateScheduleDto.BoardColumnID != nil {
-			updateSchedule.BoardColumnId = *UpdateScheduleDto.BoardColumnID
-		}
+		//if UpdateScheduleDto.BoardColumnID != nil {
+		//	updateSchedule.BoardColumnId = *UpdateScheduleDto.BoardColumnID
+		//}
 		if UpdateScheduleDto.Status != nil {
 			updateSchedule.Status = *UpdateScheduleDto.Status
 		}
