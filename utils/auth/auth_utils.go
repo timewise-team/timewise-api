@@ -148,7 +148,6 @@ func GenerateScheduleInvitationToken(workspaceUserId int, action string, secretK
 	}
 	return tokenString, nil
 }
-
 func ParseInvitationToken(tokenString string, secretKey string) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return []byte(secretKey), nil
@@ -157,4 +156,19 @@ func ParseInvitationToken(tokenString string, secretKey string) (jwt.MapClaims, 
 		return nil, err
 	}
 	return token.Claims.(jwt.MapClaims), nil
+}
+func GenerateLinkEmailToken(currentUid string, email string, action string, secretKey string) (string, error) {
+	claims := jwt.MapClaims{
+		"user_id": currentUid,
+		"email":   email,
+		"action":  action,                                // accept hoặc decline
+		"exp":     time.Now().Add(24 * time.Hour).Unix(), // Token có thời hạn 24h
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString([]byte(secretKey))
+	if err != nil {
+		return "", err
+	}
+	return tokenString, nil
 }

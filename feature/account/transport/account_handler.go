@@ -1,10 +1,11 @@
 package transport
 
 import (
+	"api/config"
 	"api/notification"
 	"api/service/account"
+	"api/service/auth"
 	auth_utils "api/utils/auth"
-	"encoding/json"
 	"github.com/gofiber/fiber/v2"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos"
 	"strconv"
@@ -83,6 +84,7 @@ func (h *AccountHandler) updateUserInfo(c *fiber.Ctx) error {
 // @Description Get linked user emails
 // @Tags account
 // @Security bearerToken
+// @Param status query string false "Status"
 // @Accept json
 // @Produce json
 // @Success 200 {array} string
@@ -93,8 +95,9 @@ func (h *AccountHandler) getLinkedUserEmails(c *fiber.Ctx) error {
 	if userId == nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid userId"})
 	}
+	status := c.Query("status")
 	// call service to query database
-	userEmails, err := h.service.GetLinkedUserEmails(userId.(string))
+	userEmails, err := h.service.GetLinkedUserEmails(userId.(string), status)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -102,17 +105,17 @@ func (h *AccountHandler) getLinkedUserEmails(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(userEmails)
 }
 
-// linkAnEmail godoc
-// @Summary Link an email
-// @Description Link an email
+// sendLinkEmailRequest godoc
+// @Summary Send link an email request
+// @Description Send link an email request
 // @Tags account
 // @Security bearerToken
 // @Accept json
 // @Produce json
-// @Param linkAnEmailRequest body core_dtos.GoogleAuthRequest true "Link an email request"
-// @Success 200 {object} core_dtos.GetUserResponseDto
-// @Router /api/v1/account/user/emails [post]
-func (h *AccountHandler) linkAnEmail(c *fiber.Ctx) error {
+// @Param email query string true "Target email"
+// @Success 200 {object} string "Link email request sent"
+// @Router /api/v1/account/user/emails/send [post]
+func (h *AccountHandler) sendLinkEmailRequest(c *fiber.Ctx) error {
 	// get userId from context
 	userId := c.Locals("userid")
 	if userId == nil {
@@ -127,42 +130,150 @@ func (h *AccountHandler) linkAnEmail(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid user ID format")
 	}
-	var req core_dtos.GoogleAuthRequest
-	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Cannot parse request",
-		})
-	}
-	if req.Credentials == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Credentials is required",
-		})
-	}
-	// decode credentials
-	decodedCredentials, err := auth_utils.VerifyGoogleToken(req.Credentials)
-	var oauthData auth_utils.GoogleOauthData
-	err = json.Unmarshal(decodedCredentials, &oauthData)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Could not decode credentials",
-		})
+	// get email from request
+	email := c.Query("email")
+	if email == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Email is required"})
 	}
 	// call service
-	userResp, err := h.service.LinkAnEmail(userIdStr, oauthData)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	userEmailResp, err2 := h.service.SendLinkAnEmailRequest(userIdStr, email)
+	if err2 != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err2.Error()})
 	}
 	// send notification
 	notificationDto := core_dtos.PushNotificationDto{
 		UserEmailId: userIdInt,
-		Type:        "info",
-		Message:     "Linked to email: " + oauthData.Email + " successfully",
+		Type:        "link email",
+		Message: "A confirmation link has been successfully sent to " + email +
+			". Please check your inbox and click the link to confirm your request. " +
+			"If you don’t see the email, check your Spam or Promotions folder.",
+		RelatedItemId:   userEmailResp.ID,
+		RelatedItemType: "user_email",
+	}
+	//currentEmail := c.Locals("email")
+	requestEmail, err := generateMessageEmail(userIdStr, email)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+	err = notification.PushNotifications(notificationDto)
+	notificationDto = core_dtos.PushNotificationDto{
+		UserEmailId:     userEmailResp.UserId,
+		Type:            "link email",
+		Message:         requestEmail,
+		RelatedItemId:   userEmailResp.ID,
+		RelatedItemType: "user_email",
 	}
 	err = notification.PushNotifications(notificationDto)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
-	return c.Status(fiber.StatusOK).JSON(userResp)
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Link email request sent"})
+}
+
+func generateMessageEmail(userId string, email string) (string, error) {
+	cfg, err1 := config.LoadConfig()
+	if err1 != nil {
+		return "", err1
+	}
+
+	accptLink, err := auth.GenerateLinkEmailLinks(cfg, userId, email, "linked")
+	if err != nil {
+		return "", err
+	}
+
+	rejectLink, err := auth.GenerateLinkEmailLinks(cfg, userId, email, "rejected")
+	if err != nil {
+		return "", err
+	}
+
+	// Nội dung email HTML
+	emailContent := `
+	<!DOCTYPE html>
+	<html>
+		<body>
+			<p>Hello,</p>
+			<p>You have requested to register the email address ` + email + `.</p>
+			<p>Please confirm or decline this request by clicking on one of the links below:</p>
+			<p>
+				<a href="` + accptLink + `">Confirm Registration</a><br>
+				<a href="` + rejectLink + `">Decline Registration</a>
+			</p>
+			<p>If you did not request this registration, please ignore this message.</p>
+			<p>Best regards,<br>Timewise Team</p>
+		</body>
+	</html>
+`
+	return emailContent, nil
+}
+
+// actionEmailLinkRequest godoc
+// @Summary Action email link request
+// @Description Action email link request
+// @Tags account
+// @Accept json
+// @Produce json
+// @Param token path string true "Token"
+// @Success 200 {object} core_dtos.GetUserResponseDto
+// @Router /api/v1/account/user/emails/link/{token} [get]
+func (h *AccountHandler) actionEmailLinkRequest(c *fiber.Ctx) error {
+	cfg, err1 := config.LoadConfig()
+	if err1 != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"message": "Failed to load config",
+		})
+	}
+	token := c.Params("token")
+	claims, err2 := auth_utils.ParseInvitationToken(token, cfg.JWT_SECRET)
+	if err2 != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"message": "Invalid token: " + err2.Error(),
+		})
+	}
+	userId := claims["user_id"].(string)
+	email := claims["email"].(string)
+	action := claims["action"].(string)
+	// call service to send mail
+	_, err := h.service.UpdateStatusLinkEmailRequest(userId, email, action)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+	htmlContent := `
+		<!DOCTYPE html>
+		<html lang="en">
+		<head>
+			<meta charset="UTF-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<title>Email ` + action + ` Success</title>
+			<style>
+				body { font-family: Arial, sans-serif; }
+				.container { text-align: center; margin-top: 50px; }
+				.success { color: green; font-size: 20px; }
+				.error { color: red; font-size: 20px; }
+				.button { padding: 10px 20px; font-size: 16px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px; }
+			</style>
+		</head>
+		<body>
+			<div class="container">
+				<h1 class="success">Congratulations! Your email has been successfully ` + action + `.</h1>
+				<p>If you ` + action + ` the email request, your account information has been updated accordingly.</p>`
+
+	// If the action is "accept" or "reject", you can add specific messages or buttons.
+	if action == "accept" {
+		htmlContent += `
+				<p>Your email registration has been confirmed. You can now access your account.</p>`
+	} else if action == "reject" {
+		htmlContent += `
+				<p>Your email registration has been rejected. If this was a mistake, please contact support.</p>`
+	}
+	htmlContent += `
+				<a href="/" class="button">You can close this page now.</a>
+			</div>
+		</body>
+		</html>
+	`
+	// Send HTML content as response
+	c.Set("Content-Type", "text/html")
+	return c.SendString(htmlContent)
 }
 
 // unlinkAnEmail godoc
@@ -172,32 +283,16 @@ func (h *AccountHandler) linkAnEmail(c *fiber.Ctx) error {
 // @Security bearerToken
 // @Accept json
 // @Produce json
-// @Param unlinkAnEmailRequest body core_dtos.GoogleAuthRequest true "Unlink an email request"
+// @Param email query string true "Email"
 // @Success 200 {object} core_dtos.GetUserResponseDto
 // @Router /api/v1/account/user/emails/unlink [post]
 func (h *AccountHandler) unlinkAnEmail(c *fiber.Ctx) error {
-	var req core_dtos.GoogleAuthRequest
-	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Cannot parse request",
-		})
-	}
-	if req.Credentials == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Credentials is required",
-		})
-	}
-	// decode credentials
-	decodedCredentials, err := auth_utils.VerifyGoogleToken(req.Credentials)
-	var oauthData auth_utils.GoogleOauthData
-	err = json.Unmarshal(decodedCredentials, &oauthData)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Could not decode credentials",
-		})
+	targetEmail := c.Query("email")
+	if targetEmail == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Email is required"})
 	}
 	// call service
-	userResp, err := h.service.UnlinkAnEmail(oauthData.Email)
+	userResp, err := h.service.UnlinkAnEmail(targetEmail)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -218,8 +313,17 @@ func (h *AccountHandler) unlinkAnEmail(c *fiber.Ctx) error {
 	// send notification
 	notificationDto := core_dtos.PushNotificationDto{
 		UserEmailId: userIdInt,
-		Type:        "info",
-		Message:     "Linked to email: " + oauthData.Email + " successfully",
+		Type:        "unlink email",
+		Message:     "Unlink to email: " + targetEmail + " successfully",
+	}
+	err = notification.PushNotifications(notificationDto)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+	notificationDto = core_dtos.PushNotificationDto{
+		UserEmailId: userResp.ID,
+		Type:        "unlink email",
+		Message:     "You have been unlinked from: " + targetEmail,
 	}
 	err = notification.PushNotifications(notificationDto)
 	if err != nil {

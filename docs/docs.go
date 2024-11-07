@@ -138,6 +138,14 @@ const docTemplate = `{
                     "account"
                 ],
                 "summary": "Get linked user emails",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Status",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -149,14 +157,11 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
-            "post": {
-                "security": [
-                    {
-                        "bearerToken": []
-                    }
-                ],
-                "description": "Link an email",
+            }
+        },
+        "/api/v1/account/user/emails/link/{token}": {
+            "get": {
+                "description": "Action email link request",
                 "consumes": [
                     "application/json"
                 ],
@@ -166,16 +171,14 @@ const docTemplate = `{
                 "tags": [
                     "account"
                 ],
-                "summary": "Link an email",
+                "summary": "Action email link request",
                 "parameters": [
                     {
-                        "description": "Link an email request",
-                        "name": "linkAnEmailRequest",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/core_dtos.GoogleAuthRequest"
-                        }
+                        "type": "string",
+                        "description": "Token",
+                        "name": "token",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -183,6 +186,43 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/core_dtos.GetUserResponseDto"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/account/user/emails/send": {
+            "post": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Send link an email request",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "Send link an email request",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Target email",
+                        "name": "email",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Link email request sent",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }
@@ -208,13 +248,11 @@ const docTemplate = `{
                 "summary": "Unlink an email",
                 "parameters": [
                     {
-                        "description": "Unlink an email request",
-                        "name": "unlinkAnEmailRequest",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/core_dtos.GoogleAuthRequest"
-                        }
+                        "type": "string",
+                        "description": "Email",
+                        "name": "email",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -2037,9 +2075,6 @@ const docTemplate = `{
                 },
                 "workspace_id": {
                     "description": "Nullable field",
-                    "type": "integer"
-                },
-                "workspace_user_id": {
                     "type": "integer"
                 }
             }

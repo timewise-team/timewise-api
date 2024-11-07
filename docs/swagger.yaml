@@ -165,8 +165,6 @@ definitions:
       workspace_id:
         description: Nullable field
         type: integer
-      workspace_user_id:
-        type: integer
     type: object
   core_dtos.TwCreateShecduleResponse:
     properties:
@@ -829,6 +827,11 @@ paths:
       consumes:
       - application/json
       description: Get linked user emails
+      parameters:
+      - description: Status
+        in: query
+        name: status
+        type: string
       produces:
       - application/json
       responses:
@@ -843,17 +846,17 @@ paths:
       summary: Get linked user emails
       tags:
       - account
-    post:
+  /api/v1/account/user/emails/link/{token}:
+    get:
       consumes:
       - application/json
-      description: Link an email
+      description: Action email link request
       parameters:
-      - description: Link an email request
-        in: body
-        name: linkAnEmailRequest
+      - description: Token
+        in: path
+        name: token
         required: true
-        schema:
-          $ref: '#/definitions/core_dtos.GoogleAuthRequest'
+        type: string
       produces:
       - application/json
       responses:
@@ -861,9 +864,30 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/core_dtos.GetUserResponseDto'
+      summary: Action email link request
+      tags:
+      - account
+  /api/v1/account/user/emails/send:
+    post:
+      consumes:
+      - application/json
+      description: Send link an email request
+      parameters:
+      - description: Target email
+        in: query
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Link email request sent
+          schema:
+            type: string
       security:
       - bearerToken: []
-      summary: Link an email
+      summary: Send link an email request
       tags:
       - account
   /api/v1/account/user/emails/unlink:
@@ -872,12 +896,11 @@ paths:
       - application/json
       description: Unlink an email
       parameters:
-      - description: Unlink an email request
-        in: body
-        name: unlinkAnEmailRequest
+      - description: Email
+        in: query
+        name: email
         required: true
-        schema:
-          $ref: '#/definitions/core_dtos.GoogleAuthRequest'
+        type: string
       produces:
       - application/json
       responses:
