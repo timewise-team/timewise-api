@@ -999,6 +999,47 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/schedules/position/{schedule_id}": {
+            "put": {
+                "description": "Update an existing schedule position",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "schedule"
+                ],
+                "summary": "Update an existing schedule position",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Schedule ID",
+                        "name": "schedule_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Schedule",
+                        "name": "schedule",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/core_dtos.TwUpdateSchedulePosition"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/core_dtos.TwUpdateScheduleResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/schedules/{schedule_id}": {
             "get": {
                 "description": "Get schedule by ID",
@@ -2199,6 +2240,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "workspace_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "core_dtos.TwUpdateSchedulePosition": {
+            "type": "object",
+            "properties": {
+                "board_column_id": {
+                    "type": "integer"
+                },
+                "position": {
                     "type": "integer"
                 }
             }

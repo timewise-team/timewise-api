@@ -275,6 +275,13 @@ definitions:
       workspace_id:
         type: integer
     type: object
+  core_dtos.TwUpdateSchedulePosition:
+    properties:
+      board_column_id:
+        type: integer
+      position:
+        type: integer
+    type: object
   core_dtos.TwUpdateScheduleRequest:
     properties:
       all_day:
@@ -1458,6 +1465,33 @@ paths:
           schema:
             $ref: '#/definitions/core_dtos.TwUpdateScheduleResponse'
       summary: Update an existing schedule
+      tags:
+      - schedule
+  /api/v1/schedules/position/{schedule_id}:
+    put:
+      consumes:
+      - application/json
+      description: Update an existing schedule position
+      parameters:
+      - description: Schedule ID
+        in: path
+        name: schedule_id
+        required: true
+        type: integer
+      - description: Schedule
+        in: body
+        name: schedule
+        required: true
+        schema:
+          $ref: '#/definitions/core_dtos.TwUpdateSchedulePosition'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/core_dtos.TwUpdateScheduleResponse'
+      summary: Update an existing schedule position
       tags:
       - schedule
   /api/v1/user_email/search-user_email/{query}:

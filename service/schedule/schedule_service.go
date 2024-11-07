@@ -26,11 +26,12 @@ func (s *ScheduleService) CreateSchedule(c *fiber.Ctx, CreateScheduleDto core_dt
 		return nil, fiber.StatusInternalServerError, errors.New("Failed to retrieve schedule participant")
 	}
 
-	newSchedule := models.TwSchedule{
-		WorkspaceId:   *CreateScheduleDto.WorkspaceID,
-		BoardColumnId: *CreateScheduleDto.BoardColumnID,
-		Title:         *CreateScheduleDto.Title,
-		CreatedBy:     workspaceUser.ID,
+	newSchedule := core_dtos.TwCreateScheduleRequest{
+		WorkspaceID:     CreateScheduleDto.WorkspaceID,
+		BoardColumnID:   CreateScheduleDto.BoardColumnID,
+		WorkspaceUserID: &workspaceUser.ID,
+		Title:           CreateScheduleDto.Title,
+		Description:     CreateScheduleDto.Description,
 	}
 
 	resp1, err := dms.CallAPI(
@@ -95,9 +96,6 @@ func (s *ScheduleService) FetchScheduleParticipant(workspaceUserIdStr, scheduleI
 }
 
 func applyUpdateFields(baseSchedule, updateSchedule models.TwSchedule, dto core_dtos.TwUpdateScheduleRequest) models.TwSchedule {
-	//if dto.BoardColumnID != nil {
-	//	updateSchedule.BoardColumnId = *dto.BoardColumnID
-	//}
 	if dto.Title != nil {
 		updateSchedule.Title = *dto.Title
 	}
@@ -130,9 +128,6 @@ func applyUpdateFields(baseSchedule, updateSchedule models.TwSchedule, dto core_
 	if dto.RecurrencePattern != nil {
 		updateSchedule.RecurrencePattern = *dto.RecurrencePattern
 	}
-	//if dto.Position != nil {
-	//	updateSchedule.Position = *dto.Position
-	//}
 	if dto.Priority != nil {
 		updateSchedule.Priority = *dto.Priority
 	}
@@ -174,12 +169,8 @@ func (s *ScheduleService) UpdateSchedule(c *fiber.Ctx, UpdateScheduleDto core_dt
 		updateSchedule.RecurrencePattern = schedule.RecurrencePattern
 		updateSchedule.StartTime = schedule.StartTime
 		updateSchedule.EndTime = schedule.EndTime
-		updateSchedule.Position = schedule.Position
 		updateSchedule.Priority = schedule.Priority
 
-		//if UpdateScheduleDto.BoardColumnID != nil {
-		//	updateSchedule.BoardColumnId = *UpdateScheduleDto.BoardColumnID
-		//}
 		if UpdateScheduleDto.Status != nil {
 			updateSchedule.Status = *UpdateScheduleDto.Status
 		}
@@ -209,9 +200,33 @@ func (s *ScheduleService) UpdateSchedule(c *fiber.Ctx, UpdateScheduleDto core_dt
 	return c.JSON(updatedSchedule)
 }
 
-func (s *ScheduleService) GetScheduleByID(c *fiber.Ctx) (*models.TwSchedule, error) {
+func (s *ScheduleService) UpdateSchedulePosition(scheduleId string, workspaceUser *models.TwWorkspaceUser, UpdateScheduleDto core_dtos.TwUpdateSchedulePosition) (*core_dtos.TwUpdateScheduleResponse, error) {
 
-	scheduleID := c.Params("scheduleId")
+	resp, err := dms.CallAPI("PUT", "/schedule/position/"+scheduleId+"/workspace_user/"+strconv.Itoa(workspaceUser.ID), UpdateScheduleDto, nil, nil, 120)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errors.New("cannot read response body")
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(string(body))
+	}
+
+	var updatedSchedule core_dtos.TwUpdateScheduleResponse
+	if err := json.Unmarshal(body, &updatedSchedule); err != nil {
+		return nil, errors.New("error parsing JSON")
+	}
+
+	return &updatedSchedule, nil
+}
+
+func (s *ScheduleService) GetScheduleByID(scheduleID string) (*models.TwSchedule, error) {
+
 	resp, err := dms.CallAPI(
 		"GET",
 		"/schedule/"+scheduleID,

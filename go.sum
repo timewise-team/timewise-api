@@ -117,12 +117,10 @@ github.com/timewise-team/timewise-models v0.0.0-20241103062342-6faee731ce92 h1:F
 github.com/timewise-team/timewise-models v0.0.0-20241103062342-6faee731ce92/go.mod h1:cfqhHkxSfbNnHHOpkRdrN6j6LVZh1A3CM5qkjeaMGiQ=
 github.com/timewise-team/timewise-models v0.0.0-20241103075947-5735d770de96 h1:aXUr5zQa9TNggxLxAua5XX+8/CGUz1YBF9H+qKIuBWM=
 github.com/timewise-team/timewise-models v0.0.0-20241103075947-5735d770de96/go.mod h1:cfqhHkxSfbNnHHOpkRdrN6j6LVZh1A3CM5qkjeaMGiQ=
-github.com/timewise-team/timewise-models v0.0.0-20241105041316-384e8c86d2cc h1:BzI4ZQYcKnshvZyPJcWmgqjdLBypURP1fAa4bDhSbZQ=
-github.com/timewise-team/timewise-models v0.0.0-20241105041316-384e8c86d2cc/go.mod h1:cfqhHkxSfbNnHHOpkRdrN6j6LVZh1A3CM5qkjeaMGiQ=
-github.com/timewise-team/timewise-models v0.0.0-20241106163139-8f38281b9a61 h1:l4Xw+L1YVNayedOAm+7XvX7W0aifG/RtFsxqI/x4rmA=
-github.com/timewise-team/timewise-models v0.0.0-20241106163139-8f38281b9a61/go.mod h1:cfqhHkxSfbNnHHOpkRdrN6j6LVZh1A3CM5qkjeaMGiQ=
-github.com/timewise-team/timewise-models v0.0.0-20241106183249-df53e21126ac h1:Is8ZyNJuRAcAaHGGr5Nto43UC1mpxBIBZ5uM8DMXA+A=
-github.com/timewise-team/timewise-models v0.0.0-20241106183249-df53e21126ac/go.mod h1:cfqhHkxSfbNnHHOpkRdrN6j6LVZh1A3CM5qkjeaMGiQ=
+github.com/timewise-team/timewise-models v0.0.0-20241106151454-77b3e9d681ba h1:5j5c6gRTA7BYibGDijGds7ROH3AjYhjIgVuv41oQhdk=
+github.com/timewise-team/timewise-models v0.0.0-20241106151454-77b3e9d681ba/go.mod h1:cfqhHkxSfbNnHHOpkRdrN6j6LVZh1A3CM5qkjeaMGiQ=
+github.com/timewise-team/timewise-models v0.0.0-20241107031738-3adcb695a3dc h1:ahE7fI/WN3JAN3HzXA7ADXOORSTlZy0h8EFQOrsxb0g=
+github.com/timewise-team/timewise-models v0.0.0-20241107031738-3adcb695a3dc/go.mod h1:cfqhHkxSfbNnHHOpkRdrN6j6LVZh1A3CM5qkjeaMGiQ=
 github.com/valyala/bytebufferpool v1.0.0 h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6KllzawFIhcdPw=
 github.com/valyala/bytebufferpool v1.0.0/go.mod h1:6bBcMArwyJ5K/AmCkWv1jt77kVWyCJ6HpOuEn7z0Csc=
 github.com/valyala/fasthttp v1.55.0 h1:Zkefzgt6a7+bVKHnu/YaYSOPfNYNisSVBo/unVCf8k8=
