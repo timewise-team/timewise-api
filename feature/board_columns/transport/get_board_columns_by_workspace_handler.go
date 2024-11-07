@@ -19,6 +19,9 @@ import (
 // @Accept json
 // @Produce json
 // @Param workspace_id path string true "Workspace ID"
+// @Param X-User-Email header string true "User email"
+// @Param X-Workspace-Id header string true "Workspace ID"
+// @Security bearerToken
 // @Success 200 {array} []dtos.BoardColumnsResponse
 // @Router /api/v1/board_columns/workspace/{workspace_id} [get]
 func (h *BoardColumnsHandler) getBoardColumnsByWorkspace(c *fiber.Ctx) error {
