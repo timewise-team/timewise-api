@@ -214,9 +214,9 @@ func (s *AccountService) SendLinkAnEmailRequest(userId string, email string) (mo
 	if err != nil {
 		return models.TwUserEmail{}, err
 	}
-	if userEmailResp.Status != nil {
-		return models.TwUserEmail{}, errors.New("Email is already linked or rejected or pending")
-	}
+	//if userEmailResp.Status != nil {
+	//	return models.TwUserEmail{}, errors.New("Email is already linked or rejected or pending")
+	//}
 	// call dms to create a new user_email
 	userIdInt, err := strconv.Atoi(userId)
 	if err != nil {
