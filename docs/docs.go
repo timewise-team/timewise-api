@@ -614,6 +614,69 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/document/upload": {
+            "post": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Upload file with multipart/form-data and upload to Google Cloud Storage",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "document"
+                ],
+                "summary": "Upload file",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "File to upload",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Schedule ID associated with the file",
+                        "name": "scheduleId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workspace user ID who uploads the file",
+                        "name": "wspUserId",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File uploaded successfully",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - Missing or invalid parameters",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Something went wrong during file upload",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/schedule/schedule": {
             "get": {
                 "security": [
@@ -2075,6 +2138,9 @@ const docTemplate = `{
                 },
                 "workspace_id": {
                     "description": "Nullable field",
+                    "type": "integer"
+                },
+                "workspace_user_id": {
                     "type": "integer"
                 }
             }

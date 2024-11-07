@@ -18,4 +18,5 @@ func RegisterDocumentHandler(router fiber.Router) {
 	// Register all endpoints here
 	router.Get("schedule/:scheduleId",
 		scheduleHandler.Handler.GetDocumentByScheduleID)
+	router.Post("/upload", scheduleHandler.Handler.uploadHandler)
 }
