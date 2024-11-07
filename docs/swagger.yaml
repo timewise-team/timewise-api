@@ -165,8 +165,6 @@ definitions:
       workspace_id:
         description: Nullable field
         type: integer
-      workspace_user_id:
-        type: integer
     type: object
   core_dtos.TwCreateShecduleResponse:
     properties:
@@ -1146,48 +1144,6 @@ paths:
               $ref: '#/definitions/document_dtos.TwDocumentResponse'
             type: array
       summary: Get documents by schedule
-      tags:
-      - document
-  /api/v1/document/upload:
-    post:
-      consumes:
-      - multipart/form-data
-      description: Upload file with multipart/form-data and upload to Google Cloud
-        Storage
-      parameters:
-      - description: File to upload
-        in: formData
-        name: file
-        required: true
-        type: file
-      - description: Schedule ID associated with the file
-        in: formData
-        name: scheduleId
-        required: true
-        type: string
-      - description: Workspace user ID who uploads the file
-        in: formData
-        name: wspUserId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: File uploaded successfully
-          schema:
-            type: string
-        "400":
-          description: Bad Request - Missing or invalid parameters
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error - Something went wrong during file upload
-          schema:
-            type: string
-      security:
-      - bearerToken: []
-      summary: Upload file
       tags:
       - document
   /api/v1/schedule/schedule:
