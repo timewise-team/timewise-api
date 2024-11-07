@@ -206,7 +206,7 @@ func (s *AccountService) SendLinkAnEmailRequest(userId string, email string) (mo
 	if err != nil {
 		return models.TwUserEmail{}, err
 	}
-	if *userEmailResp.Status != "" {
+	if userEmailResp.Status != nil {
 		return models.TwUserEmail{}, errors.New("Email is already linked or rejected")
 	}
 	// call dms to create a new user_email
