@@ -283,12 +283,12 @@ func (h *AccountHandler) actionEmailLinkRequest(c *fiber.Ctx) error {
 // @Security bearerToken
 // @Accept json
 // @Produce json
-// @Param email path string true "Email"
+// @Param email query string true "Email"
 // @Success 200 {object} core_dtos.GetUserResponseDto
-// @Router /api/v1/account/user/emails/unlink/{email} [post]
+// @Router /api/v1/account/user/emails/unlink [post]
 func (h *AccountHandler) unlinkAnEmail(c *fiber.Ctx) error {
-	targetEmail := c.Params("email")
-	if targetEmail != "" {
+	targetEmail := c.Query("email")
+	if targetEmail == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Email is required"})
 	}
 	// call service

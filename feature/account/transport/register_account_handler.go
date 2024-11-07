@@ -19,6 +19,6 @@ func RegisterAccountHandler(router fiber.Router) {
 	router.Patch("/user", accountHandler.Handler.updateUserInfo)
 	router.Post("/user/emails/send", accountHandler.Handler.sendLinkEmailRequest)
 	router.Get("/user/emails/link/:token", accountHandler.Handler.actionEmailLinkRequest)
-	router.Post("/user/emails/unlink/:email", accountHandler.Handler.unlinkAnEmail)
+	router.Post("/user/emails/unlink", accountHandler.Handler.unlinkAnEmail)
 	router.Post("/user/deactivate", accountHandler.Handler.deactivateAccount)
 }
