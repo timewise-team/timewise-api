@@ -191,6 +191,14 @@ func (s *AccountService) SendLinkAnEmailRequest(userId string, email string) (mo
 		return models.TwUserEmail{}, errors.New("Cannot check if email is already a user")
 	}
 	// get user info from user_emails table
+	resp, err = dms.CallAPI("GET", "/user_email/check", nil, nil, map[string]string{"email": email, "user_id": userId}, 120)
+	if err != nil {
+		return models.TwUserEmail{}, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusNotFound {
+		return models.TwUserEmail{}, errors.New("Email is already linked or rejected or pending")
+	}
 	resp, err = dms.CallAPI("GET", "/user_email/email/"+email, nil, nil, nil, 120)
 	if err != nil {
 		return models.TwUserEmail{}, err
@@ -198,7 +206,7 @@ func (s *AccountService) SendLinkAnEmailRequest(userId string, email string) (mo
 	defer resp.Body.Close()
 	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil || resp.StatusCode != http.StatusOK {
-		return models.TwUserEmail{}, err
+		return models.TwUserEmail{}, errors.New("Cannot check fetch user email info")
 	}
 	// marshal response body
 	var userEmailResp models.TwUserEmail
@@ -207,7 +215,7 @@ func (s *AccountService) SendLinkAnEmailRequest(userId string, email string) (mo
 		return models.TwUserEmail{}, err
 	}
 	if userEmailResp.Status != nil {
-		return models.TwUserEmail{}, errors.New("Email is already linked or rejected")
+		return models.TwUserEmail{}, errors.New("Email is already linked or rejected or pending")
 	}
 	// call dms to create a new user_email
 	userIdInt, err := strconv.Atoi(userId)
@@ -235,7 +243,7 @@ func (s *AccountService) UpdateStatusLinkEmailRequest(userId string, email strin
 		"status":  status,
 	}
 	// delete pending email if status is rejected or accepted
-	if status == "rejected" || status == "linked" {
+	if status == "linked" {
 		queryParams := map[string]string{
 			"user_id": userId,
 			"email":   email,
