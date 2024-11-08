@@ -4,6 +4,7 @@ import (
 	"api/service/document"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
+	"path/filepath"
 	"strconv"
 )
 
@@ -57,7 +58,6 @@ func (h *DocumentHandler) GetDocumentByScheduleID(c *fiber.Ctx) error {
 // @Failure 500 {string} string "Internal Server Error - Something went wrong during file upload"
 // @Router /api/v1/document/upload [post]
 func (h *DocumentHandler) uploadHandler(c *fiber.Ctx) error {
-
 	file, err := c.FormFile("file")
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Unable to retrieve file"})
@@ -73,11 +73,61 @@ func (h *DocumentHandler) uploadHandler(c *fiber.Ctx) error {
 	}
 
 	bucketName := "timewise-docs"
-	objectName := fmt.Sprintf("%s/%s", scheduleId, file.Filename)
+	originalFileName := file.Filename
+	objectName := fmt.Sprintf("%s/%s", scheduleId, originalFileName)
 
-	if err := h.service.UploadFileToGCS(file, bucketName, objectName, scheduleId, wspUserId); err != nil {
+	// Check if file with the same name already exists and append numbering if necessary
+	newFileName := originalFileName
+	counter := 1
+	for h.service.CheckIfFileExists(bucketName, objectName) {
+		ext := filepath.Ext(originalFileName)
+		baseName := originalFileName[:len(originalFileName)-len(ext)]
+		newFileName = fmt.Sprintf("%s(%d)%s", baseName, counter, ext)
+		objectName = fmt.Sprintf("%s/%s", scheduleId, newFileName)
+		counter++
+	}
+
+	if err := h.service.UploadFileToGCS(file, bucketName, objectName, scheduleId, wspUserId, newFileName); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
 	return c.SendString("File uploaded successfully to Google Cloud Storage")
+}
+
+// @Summary Delete file
+// @Description Delete file from Google Cloud Storage
+// @Tags document
+// @Accept json
+// @Security bearerToken
+// @Produce json
+// @Param scheduleId query string true "Schedule ID associated with the file"
+// @Param fileName query string true "Name of the file to delete"
+// @Success 200 {string} string "File deleted successfully"
+// @Failure 400 {string} string "Bad Request - Missing or invalid parameters"
+// @Failure 500 {string} string "Internal Server Error - Something went wrong during file deletion"
+// @Router /api/v1/document/delete [delete]
+func (h *DocumentHandler) deleteHandler(c *fiber.Ctx) error {
+	scheduleId := c.Query("scheduleId")
+	if scheduleId == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Must have schedule id"})
+	}
+
+	fileName := c.Query("fileName")
+	if fileName == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Must have file name"})
+	}
+
+	bucketName := "timewise-docs"
+	objectName := fmt.Sprintf("%s/%s", scheduleId, fileName)
+
+	if err := h.service.DeleteFileFromGCS(bucketName, objectName); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	// Xóa bản ghi trong database nếu cần
+	if err := h.service.DeleteDocumentFromDatabase(scheduleId, fileName); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to delete document from database"})
+	}
+
+	return c.SendString("File deleted successfully from Google Cloud Storage")
 }

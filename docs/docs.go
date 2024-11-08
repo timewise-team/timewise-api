@@ -702,6 +702,62 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/document/delete": {
+            "delete": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Delete file from Google Cloud Storage",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "document"
+                ],
+                "summary": "Delete file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Schedule ID associated with the file",
+                        "name": "scheduleId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Name of the file to delete",
+                        "name": "fileName",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File deleted successfully",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - Missing or invalid parameters",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Something went wrong during file deletion",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/document/schedule/{schedule_id}": {
             "get": {
                 "description": "Get documents by schedule",
@@ -2157,6 +2213,17 @@ const docTemplate = `{
                 }
             }
         },
+        "core_dtos.EmailDto": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "core_dtos.GetUserResponseDto": {
             "type": "object",
             "properties": {
@@ -2172,7 +2239,7 @@ const docTemplate = `{
                 "email": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/core_dtos.EmailDto"
                     }
                 },
                 "first_name": {

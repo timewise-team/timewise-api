@@ -94,6 +94,13 @@ definitions:
       workspace_user_id:
         type: integer
     type: object
+  core_dtos.EmailDto:
+    properties:
+      email:
+        type: string
+      status:
+        type: string
+    type: object
   core_dtos.GetUserResponseDto:
     properties:
       calendar_settings:
@@ -104,7 +111,7 @@ definitions:
         type: string
       email:
         items:
-          type: string
+          $ref: '#/definitions/core_dtos.EmailDto'
         type: array
       first_name:
         type: string
@@ -1215,6 +1222,42 @@ paths:
       summary: Get comments by schedule
       tags:
       - comment
+  /api/v1/document/delete:
+    delete:
+      consumes:
+      - application/json
+      description: Delete file from Google Cloud Storage
+      parameters:
+      - description: Schedule ID associated with the file
+        in: query
+        name: scheduleId
+        required: true
+        type: string
+      - description: Name of the file to delete
+        in: query
+        name: fileName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: File deleted successfully
+          schema:
+            type: string
+        "400":
+          description: Bad Request - Missing or invalid parameters
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error - Something went wrong during file deletion
+          schema:
+            type: string
+      security:
+      - bearerToken: []
+      summary: Delete file
+      tags:
+      - document
   /api/v1/document/schedule/{schedule_id}:
     get:
       consumes:
