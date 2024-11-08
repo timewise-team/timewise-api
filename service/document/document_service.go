@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos/document_dtos"
 	"github.com/timewise-team/timewise-models/models"
+	"google.golang.org/api/option"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -77,7 +78,7 @@ func (h *DocumentService) GetDocumentsByScheduleID(scheduleId int) ([]document_d
 func (s *DocumentService) UploadFileToGCS(fileHeader *multipart.FileHeader, bucketName string, objectName string, scheduleId string, wspUserId string) error {
 
 	ctx := context.Background()
-	client, err := storage.NewClient(ctx)
+	client, err := storage.NewClient(ctx, option.WithScopes(storage.ScopeReadWrite, "https://www.googleapis.com/auth/cloud-platform"))
 	if err != nil {
 		return fmt.Errorf("Failed to create client: %v", err)
 	}
