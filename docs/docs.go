@@ -758,6 +758,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/document/download/{documentId}": {
+            "get": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Download a document from Google Cloud Storage",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "document"
+                ],
+                "summary": "Download document",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Document ID",
+                        "name": "documentId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File downloaded successfully",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "404": {
+                        "description": "Document not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/document/schedule/{schedule_id}": {
             "get": {
                 "description": "Get documents by schedule",
