@@ -78,7 +78,7 @@ func (h *DocumentService) GetDocumentsByScheduleID(scheduleId int) ([]document_d
 func (s *DocumentService) UploadFileToGCS(fileHeader *multipart.FileHeader, bucketName string, objectName string, scheduleId string, wspUserId string) error {
 
 	ctx := context.Background()
-	client, err := storage.NewClient(ctx, option.WithScopes(storage.ScopeReadWrite, "https://www.googleapis.com/auth/cloud-platform"))
+	client, err := storage.NewClient(ctx, option.WithCredentialsFile("serviceAccount.json"))
 	if err != nil {
 		return fmt.Errorf("Failed to create client: %v", err)
 	}
