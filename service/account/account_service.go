@@ -19,7 +19,7 @@ func NewAccountService() *AccountService {
 	return &AccountService{}
 }
 
-func (s *AccountService) GetUserInfoByUserId(userId string) (core_dtos.GetUserResponseDto, error) {
+func (s *AccountService) GetUserInfoByUserId(userId string, status string) (core_dtos.GetUserResponseDto, error) {
 	// call dms to query database
 	resp, err := dms.CallAPI("GET", "/user/"+userId, nil, nil, nil, 120)
 	if err != nil {
@@ -60,7 +60,7 @@ func (s *AccountService) GetUserInfoByUserId(userId string) (core_dtos.GetUserRe
 		Role:                 userResponse.Role,
 	}
 
-	resp, err = dms.CallAPI("GET", "/user_email/user/"+userId, nil, nil, nil, 120)
+	resp, err = dms.CallAPI("GET", "/user_email/user/"+userId, nil, nil, map[string]string{"status": status}, 120)
 	if err != nil {
 		return core_dtos.GetUserResponseDto{}, err
 	}
@@ -75,12 +75,18 @@ func (s *AccountService) GetUserInfoByUserId(userId string) (core_dtos.GetUserRe
 	if err != nil {
 		return core_dtos.GetUserResponseDto{}, err
 	}
-	// parse userEmailResp to []string
-	emailSlice := make([]string, 0)
+	emailStatusSlice := make([]core_dtos.EmailDto, 0)
 	for _, email := range userEmailResp {
-		emailSlice = append(emailSlice, email.Email)
+		status := ""
+		if email.Status != nil {
+			status = *email.Status
+		}
+		emailStatusSlice = append(emailStatusSlice, core_dtos.EmailDto{
+			Email:  email.Email,
+			Status: status,
+		})
 	}
-	userDto.Email = emailSlice
+	userDto.Email = emailStatusSlice
 	// return user info
 	return userDto, nil
 }
@@ -140,16 +146,22 @@ func (s *AccountService) UpdateUserInfo(userId string, request core_dtos.UpdateP
 	if err != nil {
 		return core_dtos.GetUserResponseDto{}, err
 	}
-	// parse userEmailResp to []string
-	emailSlice := make([]string, 0)
+	emailStatusSlice := make([]core_dtos.EmailDto, 0)
 	for _, email := range userEmailResp {
-		emailSlice = append(emailSlice, email.Email)
+		status := ""
+		if email.Status != nil {
+			status = *email.Status
+		}
+		emailStatusSlice = append(emailStatusSlice, core_dtos.EmailDto{
+			Email:  email.Email,
+			Status: status,
+		})
 	}
-	userDto.Email = emailSlice
+	userDto.Email = emailStatusSlice
 	return userDto, nil
 }
 
-func (s *AccountService) GetLinkedUserEmails(userId string, status string) ([]string, error) {
+func (s *AccountService) GetLinkedUserEmails(userId string, status string) ([]core_dtos.EmailDto, error) {
 	query := map[string]string{
 		"status": status,
 	}
@@ -168,12 +180,19 @@ func (s *AccountService) GetLinkedUserEmails(userId string, status string) ([]st
 	if err != nil {
 		return nil, err
 	}
-	// parse userEmailResp to []string
-	emailSlice := make([]string, 0)
+	emailStatusSlice := make([]core_dtos.EmailDto, 0)
 	for _, email := range userEmailResp {
-		emailSlice = append(emailSlice, email.Email)
+		status := ""
+		if email.Status != nil {
+			status = *email.Status
+		}
+		emailStatusSlice = append(emailStatusSlice, core_dtos.EmailDto{
+			Email:  email.Email,
+			Status: status,
+		})
 	}
-	return emailSlice, nil
+
+	return emailStatusSlice, nil
 }
 
 func (s *AccountService) SendLinkAnEmailRequest(userId string, email string) (models.TwUserEmail, error) {

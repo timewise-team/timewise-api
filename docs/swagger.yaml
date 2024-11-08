@@ -774,6 +774,11 @@ paths:
       consumes:
       - application/json
       description: Get user info
+      parameters:
+      - description: Status
+        in: query
+        name: status
+        type: string
       produces:
       - application/json
       responses:
