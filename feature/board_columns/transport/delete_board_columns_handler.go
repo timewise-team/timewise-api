@@ -15,6 +15,7 @@ import (
 // @Param X-User-Email header string true "User email"
 // @Param X-Workspace-Id header string true "Workspace ID"
 // @Security bearerToken
+// @Success 200 {object} fiber.Map
 // @Router /api/v1/board_columns/{board_column_id} [delete]
 func (h *BoardColumnsHandler) deleteBoardColumn(c *fiber.Ctx) error {
 	// Parse the request

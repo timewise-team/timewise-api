@@ -1016,7 +1016,11 @@ paths:
         type: string
       produces:
       - application/json
-      responses: {}
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/fiber.Map'
       security:
       - bearerToken: []
       summary: Delete a board column (X-User-Email required, X-Workspace-Id required)
@@ -1050,7 +1054,11 @@ paths:
         type: string
       produces:
       - application/json
-      responses: {}
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TwBoardColumn'
       security:
       - bearerToken: []
       summary: Update a board column (X-User-Email required, X-Workspace-Id required)
@@ -1086,7 +1094,11 @@ paths:
         type: string
       produces:
       - application/json
-      responses: {}
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/fiber.Map'
       security:
       - bearerToken: []
       summary: Update a board column position (X-User-Email required, X-Workspace-Id
