@@ -33,6 +33,14 @@ const docTemplate = `{
                     "account"
                 ],
                 "summary": "Get user info",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Status",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
