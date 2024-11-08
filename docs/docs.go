@@ -301,6 +301,11 @@ const docTemplate = `{
         },
         "/api/v1/board_columns": {
             "post": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
                 "description": "Create a board column (X-User-Email required, X-Workspace-Id required)",
                 "consumes": [
                     "application/json"
@@ -321,6 +326,20 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/board_columns_dtos.BoardColumnsRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "User email",
+                        "name": "X-User-Email",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "X-Workspace-Id",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -333,8 +352,66 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/board_columns/update_position/{board_column_id}": {
+            "put": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Update a board column position (X-User-Email required, X-Workspace-Id required)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "board_columns"
+                ],
+                "summary": "Update a board column position (X-User-Email required, X-Workspace-Id required)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Board column ID",
+                        "name": "board_column_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update board column position request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/transport.updatePositionRequest"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "User email",
+                        "name": "X-User-Email",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "X-Workspace-Id",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/v1/board_columns/workspace/{workspace_id}": {
             "get": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
                 "description": "Get all board columns by workspace (X-User-Email required, X-Workspace-Id required)",
                 "consumes": [
                     "application/json"
@@ -352,6 +429,20 @@ const docTemplate = `{
                         "description": "Workspace ID",
                         "name": "workspace_id",
                         "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User email",
+                        "name": "X-User-Email",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "X-Workspace-Id",
+                        "in": "header",
                         "required": true
                     }
                 ],
@@ -373,6 +464,11 @@ const docTemplate = `{
         },
         "/api/v1/board_columns/{board_column_id}": {
             "put": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
                 "description": "Update a board column (X-User-Email required, X-Workspace-Id required)",
                 "consumes": [
                     "application/json"
@@ -398,13 +494,32 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/board_columns_dtos.BoardColumnsRequest"
+                            "$ref": "#/definitions/transport.UpdateBoardColumnRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "User email",
+                        "name": "X-User-Email",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "X-Workspace-Id",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {}
             },
             "delete": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
                 "description": "Delete a board column (X-User-Email required, X-Workspace-Id required)",
                 "consumes": [
                     "application/json"
@@ -427,15 +542,15 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "User email",
-                        "name": "email",
-                        "in": "path",
+                        "name": "X-User-Email",
+                        "in": "header",
                         "required": true
                     },
                     {
                         "type": "string",
                         "description": "Workspace ID",
-                        "name": "workspace_id",
-                        "in": "path",
+                        "name": "X-Workspace-Id",
+                        "in": "header",
                         "required": true
                     }
                 ],
@@ -2938,6 +3053,14 @@ const docTemplate = `{
                 }
             }
         },
+        "transport.UpdateBoardColumnRequest": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "transport.UpdateWorkspace": {
             "type": "object",
             "properties": {
@@ -2946,6 +3069,14 @@ const docTemplate = `{
                 },
                 "title": {
                     "type": "string"
+                }
+            }
+        },
+        "transport.updatePositionRequest": {
+            "type": "object",
+            "properties": {
+                "position": {
+                    "type": "integer"
                 }
             }
         },

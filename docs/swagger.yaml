@@ -691,12 +691,22 @@ definitions:
       workspace_user_id:
         type: integer
     type: object
+  transport.UpdateBoardColumnRequest:
+    properties:
+      name:
+        type: string
+    type: object
   transport.UpdateWorkspace:
     properties:
       description:
         type: string
       title:
         type: string
+    type: object
+  transport.updatePositionRequest:
+    properties:
+      position:
+        type: integer
     type: object
   user_email_dtos.SearchUserEmailResponse:
     properties:
@@ -949,6 +959,16 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/board_columns_dtos.BoardColumnsRequest'
+      - description: User email
+        in: header
+        name: X-User-Email
+        required: true
+        type: string
+      - description: Workspace ID
+        in: header
+        name: X-Workspace-Id
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -956,6 +976,8 @@ paths:
           description: Created
           schema:
             $ref: '#/definitions/models.TwBoardColumn'
+      security:
+      - bearerToken: []
       summary: Create a board column (X-User-Email required, X-Workspace-Id required)
       tags:
       - board_columns
@@ -971,18 +993,20 @@ paths:
         required: true
         type: string
       - description: User email
-        in: path
-        name: email
+        in: header
+        name: X-User-Email
         required: true
         type: string
       - description: Workspace ID
-        in: path
-        name: workspace_id
+        in: header
+        name: X-Workspace-Id
         required: true
         type: string
       produces:
       - application/json
       responses: {}
+      security:
+      - bearerToken: []
       summary: Delete a board column (X-User-Email required, X-Workspace-Id required)
       tags:
       - board_columns
@@ -1001,11 +1025,60 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/board_columns_dtos.BoardColumnsRequest'
+          $ref: '#/definitions/transport.UpdateBoardColumnRequest'
+      - description: User email
+        in: header
+        name: X-User-Email
+        required: true
+        type: string
+      - description: Workspace ID
+        in: header
+        name: X-Workspace-Id
+        required: true
+        type: string
       produces:
       - application/json
       responses: {}
+      security:
+      - bearerToken: []
       summary: Update a board column (X-User-Email required, X-Workspace-Id required)
+      tags:
+      - board_columns
+  /api/v1/board_columns/update_position/{board_column_id}:
+    put:
+      consumes:
+      - application/json
+      description: Update a board column position (X-User-Email required, X-Workspace-Id
+        required)
+      parameters:
+      - description: Board column ID
+        in: path
+        name: board_column_id
+        required: true
+        type: string
+      - description: Update board column position request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/transport.updatePositionRequest'
+      - description: User email
+        in: header
+        name: X-User-Email
+        required: true
+        type: string
+      - description: Workspace ID
+        in: header
+        name: X-Workspace-Id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - bearerToken: []
+      summary: Update a board column position (X-User-Email required, X-Workspace-Id
+        required)
       tags:
       - board_columns
   /api/v1/board_columns/workspace/{workspace_id}:
@@ -1020,6 +1093,16 @@ paths:
         name: workspace_id
         required: true
         type: string
+      - description: User email
+        in: header
+        name: X-User-Email
+        required: true
+        type: string
+      - description: Workspace ID
+        in: header
+        name: X-Workspace-Id
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1031,6 +1114,8 @@ paths:
                 $ref: '#/definitions/board_columns_dtos.BoardColumnsResponse'
               type: array
             type: array
+      security:
+      - bearerToken: []
       summary: Get all board columns by workspace (X-User-Email required, X-Workspace-Id
         required)
       tags:

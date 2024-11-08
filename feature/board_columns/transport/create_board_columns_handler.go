@@ -14,6 +14,9 @@ import (
 // @Accept json
 // @Produce json
 // @Param body body dtos.BoardColumnsRequest true "Create board column request"
+// @Param X-User-Email header string true "User email"
+// @Param X-Workspace-Id header string true "Workspace ID"
+// @Security bearerToken
 // @Success 201 {object} models.TwBoardColumn
 // @Router /api/v1/board_columns [post]
 func (h *BoardColumnsHandler) createBoardColumn(c *fiber.Ctx) error {
