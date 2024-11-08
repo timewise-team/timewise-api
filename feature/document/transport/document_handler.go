@@ -4,6 +4,8 @@ import (
 	"api/service/document"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
+	"io"
+	"net/url"
 	"path/filepath"
 	"strconv"
 )
@@ -62,7 +64,10 @@ func (h *DocumentHandler) uploadHandler(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Unable to retrieve file"})
 	}
-
+	const maxFileSize = 10 * 1024 * 1024 // 10MB
+	if file.Size > maxFileSize {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "File size exceeds the 10MB limit"})
+	}
 	scheduleId := c.FormValue("scheduleId")
 	if scheduleId == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Must have schedule id"})
@@ -130,4 +135,46 @@ func (h *DocumentHandler) deleteHandler(c *fiber.Ctx) error {
 	}
 
 	return c.SendString("File deleted successfully from Google Cloud Storage")
+}
+
+// downloadDocument godoc
+// @Summary Download document
+// @Description Download a document from Google Cloud Storage
+// @Tags document
+// @Security bearerToken
+// @Produce application/octet-stream
+// @Param documentId path int true "Document ID"
+// @Success 200 {file} file "File downloaded successfully"
+// @Failure 404 {string} string "Document not found"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /api/v1/document/download/{documentId} [get]
+func (h *DocumentHandler) downloadDocument(c *fiber.Ctx) error {
+	// Lấy documentId từ đường dẫn
+	documentID := c.Params("documentId")
+	if documentID == "" {
+		return c.Status(fiber.StatusBadRequest).SendString("Invalid document ID")
+	}
+	// call service
+	resp, fileName, err := h.service.DownloadDocuments(documentID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(resp.Body)
+	encodedFileName := url.PathEscape(fileName)
+	// Đặt header để tải về file dưới dạng attachment
+	c.Set("Content-Disposition", fmt.Sprintf("attachment; filename*=UTF-8''%s", encodedFileName))
+	c.Set("Content-Type", "application/octet-stream")
+
+	// Gửi file về client
+	_, err = io.Copy(c.Response().BodyWriter(), resp.Body)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to send document"})
+	}
+
+	return c.SendString("File downloaded successfully.")
 }

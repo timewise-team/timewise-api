@@ -5,6 +5,7 @@ import (
 	"cloud.google.com/go/storage"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos/document_dtos"
 	"github.com/timewise-team/timewise-models/models"
@@ -227,4 +228,42 @@ func (s *DocumentService) DeleteDocumentFromDatabase(scheduleId string, fileName
 	}
 
 	return nil
+}
+
+func (s *DocumentService) DownloadDocuments(documentId string) (*http.Response, string, error) {
+	// Tìm document trong cơ sở dữ liệu
+	resp, err := dms.CallAPI("GET", "/document/"+documentId, nil, nil, nil, 120)
+	if err != nil {
+		return nil, "", errors.New("failed to retrieve document")
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, "", errors.New("failed to read document")
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, "", errors.New("failed to retrieve document")
+	}
+	var document models.TwDocument
+	if err := json.Unmarshal(body, &document); err != nil {
+		return nil, "", errors.New("failed to unmarshal document")
+	}
+	// Sử dụng FilePath hoặc DownloadUrl từ document
+	downloadURL := document.DownloadUrl
+	if downloadURL == "" {
+		return nil, "", errors.New("no download URL available")
+	}
+
+	// Tải file từ URL đã ký
+	resp, err = http.Get(downloadURL)
+	if err != nil {
+		return nil, "", errors.New("failed to download document")
+	}
+
+	// Kiểm tra xem file có được tải thành công không
+	if resp.StatusCode != http.StatusOK {
+		return nil, "", errors.New("failed to retrieve document from storage")
+	}
+
+	return resp, document.FileName, nil
 }
