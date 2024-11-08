@@ -871,12 +871,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Schedule"
+                    "schedule"
                 ],
                 "summary": "Get schedules by filter",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Filter by Workspace ID",
                         "name": "workspace_id",
                         "in": "query"

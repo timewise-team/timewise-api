@@ -1332,7 +1332,7 @@ paths:
       - description: Filter by Workspace ID
         in: query
         name: workspace_id
-        type: integer
+        type: string
       - description: Filter by Board Column ID
         in: query
         name: board_column_id
@@ -1390,7 +1390,7 @@ paths:
       - bearerToken: []
       summary: Get schedules by filter
       tags:
-      - Schedule
+      - schedule
   /api/v1/schedule_log/schedule/{scheduleId}:
     get:
       consumes:
