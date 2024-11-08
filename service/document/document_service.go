@@ -74,9 +74,31 @@ func (h *DocumentService) GetDocumentsByScheduleID(scheduleId int) ([]document_d
 
 	return documents, nil
 }
+func (s *DocumentService) CheckIfFileExists(bucketName string, objectName string) bool {
+	ctx := context.Background()
+	client, err := storage.NewClient(ctx, option.WithCredentialsFile("serviceAccount.json"))
+	if err != nil {
+		fmt.Printf("Failed to create client: %v", err)
+		return false
+	}
+	defer client.Close()
 
-func (s *DocumentService) UploadFileToGCS(fileHeader *multipart.FileHeader, bucketName string, objectName string, scheduleId string, wspUserId string) error {
+	// Kiểm tra sự tồn tại của object
+	_, err = client.Bucket(bucketName).Object(objectName).Attrs(ctx)
+	if err != nil {
+		// Nếu lỗi là "not found", thì file không tồn tại
+		if err == storage.ErrObjectNotExist {
+			return false
+		}
+		// Các lỗi khác sẽ được ghi log
+		fmt.Printf("Error checking if file exists: %v", err)
+		return false
+	}
 
+	// Nếu không có lỗi thì file tồn tại
+	return true
+}
+func (s *DocumentService) UploadFileToGCS(fileHeader *multipart.FileHeader, bucketName string, objectName string, scheduleId string, wspUserId string, fileNameWithoutSchedule string) error {
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx, option.WithCredentialsFile("serviceAccount.json"))
 	if err != nil {
@@ -95,7 +117,7 @@ func (s *DocumentService) UploadFileToGCS(fileHeader *multipart.FileHeader, buck
 
 	wc := obj.NewWriter(ctx)
 	// Đặt Content-Disposition: attachment để yêu cầu tải về
-	wc.ContentDisposition = "attachment; filename=" + fileHeader.Filename
+	wc.ContentDisposition = "attachment; filename=" + fileNameWithoutSchedule
 	defer wc.Close()
 
 	if _, err := io.Copy(wc, file); err != nil {
@@ -117,7 +139,7 @@ func (s *DocumentService) UploadFileToGCS(fileHeader *multipart.FileHeader, buck
 	ext := filepath.Ext(fileHeader.Filename)
 	extWithoutDot := ext[1:]
 
-	fileNameWithoutExt := fileHeader.Filename[:len(fileHeader.Filename)-len(ext)]
+	//fileNameWithoutExt := fileHeader.Filename[:len(fileHeader.Filename)-len(ext)]
 	scheduleIdInt, err := strconv.Atoi(scheduleId)
 	if err != nil {
 		return err
@@ -127,7 +149,7 @@ func (s *DocumentService) UploadFileToGCS(fileHeader *multipart.FileHeader, buck
 		return err
 	}
 	document := models.TwDocument{
-		FileName:    fileNameWithoutExt,
+		FileName:    fileNameWithoutSchedule,
 		FilePath:    fmt.Sprintf("https://storage.googleapis.com/%s/%s", bucketName, objectName),
 		FileSize:    int(fileHeader.Size),
 		FileType:    extWithoutDot,
@@ -165,5 +187,44 @@ func (s *DocumentService) CreateDocumentInDatabase(document models.TwDocument) e
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to create document in database: %v", err)
 	}
+	return nil
+}
+
+func (s *DocumentService) DeleteFileFromGCS(bucketName string, objectName string) error {
+	ctx := context.Background()
+	client, err := storage.NewClient(ctx, option.WithCredentialsFile("serviceAccount.json"))
+	if err != nil {
+		return fmt.Errorf("Failed to create client: %v", err)
+	}
+	defer client.Close()
+
+	bucket := client.Bucket(bucketName)
+	obj := bucket.Object(objectName)
+
+	// Thực hiện xóa file
+	if err := obj.Delete(ctx); err != nil {
+		return fmt.Errorf("Failed to delete file from bucket: %v", err)
+	}
+
+	return nil
+}
+
+func (s *DocumentService) DeleteDocumentFromDatabase(scheduleId string, fileName string) error {
+	// Xóa bản ghi với điều kiện theo `scheduleId` và `fileName`
+	resp, err := dms.CallAPI(
+		"DELETE",
+		"/document",
+		nil,
+		nil,
+		map[string]string{"scheduleId": scheduleId, "fileName": fileName},
+		120,
+	)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("failed to delete document in database: %v", err)
+	}
+
 	return nil
 }

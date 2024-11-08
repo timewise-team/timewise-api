@@ -19,4 +19,5 @@ func RegisterDocumentHandler(router fiber.Router) {
 	router.Get("schedule/:scheduleId",
 		scheduleHandler.Handler.GetDocumentByScheduleID)
 	router.Post("/upload", scheduleHandler.Handler.uploadHandler)
+	router.Delete("/delete", scheduleHandler.Handler.deleteHandler)
 }
