@@ -9,8 +9,10 @@ RUN git config --global url."https://${GITHUB_TOKEN}@github.com/".insteadOf "htt
 ENV GOPRIVATE=github.com/timewise-team/timewise-models
 ENV GONOSUMDB=github.com/timewise-team/timewise-models
 
-COPY go.mod go.sum /app/
+COPY go.mod go.sum serviceAccount.json /app/
 RUN go mod download
+
+ENV GOOGLE_APPLICATION_CREDENTIALS="/app/serviceAccount.json"
 
 COPY . /app/
 
@@ -18,8 +20,6 @@ RUN go install github.com/swaggo/swag/cmd/swag@latest
 RUN go get -u github.com/gofiber/swagger
 RUN swag init --parseDependency
 
-COPY serviceAccount.json /app/serviceAccount.json
-ENV GOOGLE_APPLICATION_CREDENTIALS="/app/serviceAccount.json"
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o timewise-api .
 
