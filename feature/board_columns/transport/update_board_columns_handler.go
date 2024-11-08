@@ -21,6 +21,7 @@ type UpdateBoardColumnRequest struct {
 // @Param X-User-Email header string true "User email"
 // @Param X-Workspace-Id header string true "Workspace ID"
 // @Security bearerToken
+// @Success 200 {object} models.TwBoardColumn
 // @Router /api/v1/board_columns/{board_column_id} [put]
 func (h *BoardColumnsHandler) updateBoardColumn(c *fiber.Ctx) error {
 	// Parse the request
