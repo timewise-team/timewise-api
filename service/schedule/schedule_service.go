@@ -11,6 +11,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
+	"time"
 )
 
 type ScheduleService struct {
@@ -323,4 +325,56 @@ func (s *ScheduleService) GetScheduleDetailByID(scheduleID string) (*models.TwSc
 		return nil, fmt.Errorf("failed to decode response: %v", err)
 	}
 	return &schedule, nil
+}
+
+func (h *ScheduleService) GetSchedulesByBoardColumnWithFilters(workspaceID string, boardColumnId int, filters map[string]interface{}) ([]models.TwSchedule, error) {
+	// Construct the base URL
+	url := "/schedule/workspace/" + workspaceID + "/board_column/" + strconv.Itoa(boardColumnId) + "/filter"
+
+	// Create queryParams map to hold filter parameters
+	queryParams := make(map[string]string)
+
+	// Iterate over the filters map and handle array and boolean types
+	for key, value := range filters {
+		switch v := value.(type) {
+		case string:
+			queryParams[key] = v
+		case bool:
+			// Convert boolean to "true" or "false"
+			queryParams[key] = fmt.Sprintf("%v", v)
+		case []string:
+			// Convert array of strings (e.g., members) into a comma-separated list
+			queryParams[key] = strings.Join(v, ",")
+		default:
+			// For other types, convert to string
+			queryParams[key] = fmt.Sprintf("%v", v)
+		}
+	}
+
+	// Call the API with the constructed URL and query parameters
+	resp, err := dms.CallAPI(
+		"GET",
+		url,
+		nil,
+		nil,
+		queryParams, // Pass queryParams map directly
+		120*time.Second,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("server error: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Check the HTTP status code
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	// Parse the response into a list of schedules
+	var schedules []models.TwSchedule
+	if err := json.NewDecoder(resp.Body).Decode(&schedules); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %v", err)
+	}
+
+	return schedules, nil
 }

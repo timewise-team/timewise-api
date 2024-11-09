@@ -9,7 +9,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 	schedule_dtos "github.com/timewise-team/timewise-models/dtos/core_dtos"
 	dtos "github.com/timewise-team/timewise-models/dtos/core_dtos/board_columns_dtos"
+	"github.com/timewise-team/timewise-models/models"
 	"strconv"
+	"strings"
 )
 
 // getBoardColumnsByWorkspace godoc
@@ -35,6 +37,41 @@ func (h *BoardColumnsHandler) getBoardColumnsByWorkspace(c *fiber.Ctx) error {
 			"message": "Invalid workspace ID",
 		})
 	}
+	search := c.Query("search")
+	membersParam := c.Query("member")
+	dueParam := c.Query("due")
+	dueCompleteParam := c.Query("dueComplete")
+	overdueParam := c.Query("overdue")
+	notDueParam := c.Query("notDue")
+
+	// Create an empty map to hold active filters
+	filters := make(map[string]interface{})
+
+	// Check and add filters if they exist
+	if search != "" {
+		filters["search"] = search
+	}
+
+	if membersParam != "" {
+		members := strings.Split(membersParam, ",")
+		filters["members"] = members
+	}
+
+	if dueParam == "day" {
+		filters["dueDay"] = true
+	}
+
+	if dueCompleteParam == "true" {
+		filters["dueComplete"] = true
+	}
+
+	if overdueParam == "true" {
+		filters["overdue"] = true
+	}
+
+	if notDueParam == "true" {
+		filters["notDue"] = true
+	}
 
 	// Get the board columns
 	boardColumns, err := board_columns.NewBoardColumnsService().GetBoardColumnsByWorkspace(workspaceID)
@@ -58,8 +95,13 @@ func (h *BoardColumnsHandler) getBoardColumnsByWorkspace(c *fiber.Ctx) error {
 		boardColumnsResponse.CreatedAt = boardColumn.CreatedAt
 		boardColumnsResponse.UpdatedAt = boardColumn.UpdatedAt
 		boardColumnsResponse.DeletedAt = boardColumn.DeletedAt
-
-		schedules, err := schedule.NewScheduleService().GetSchedulesByBoardColumn(workspaceID, boardColumn.ID)
+		var schedules []models.TwSchedule
+		var err error
+		if len(filters) > 0 {
+			schedules, err = schedule.NewScheduleService().GetSchedulesByBoardColumnWithFilters(workspaceID, boardColumn.ID, filters)
+		} else {
+			schedules, err = schedule.NewScheduleService().GetSchedulesByBoardColumn(workspaceID, boardColumn.ID)
+		}
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"message": "The server failed to respond",
