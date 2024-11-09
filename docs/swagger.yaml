@@ -728,6 +728,23 @@ definitions:
       profile_picture:
         type: string
     type: object
+  user_email_dtos.UserEmailStatusResponse:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      is_verified:
+        type: boolean
+      last_name:
+        type: string
+      profile_picture:
+        type: string
+      status:
+        type: string
+    type: object
   workspace_user_dtos.GetWorkspaceUserListResponse:
     properties:
       created_at:
@@ -1712,6 +1729,29 @@ paths:
       summary: Update an existing schedule position
       tags:
       - schedule
+  /api/v1/user_email/list_approve/{scheduleId}:
+    get:
+      consumes:
+      - application/json
+      description: list approve user email
+      parameters:
+      - description: Schedule ID
+        in: path
+        name: scheduleId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/user_email_dtos.UserEmailStatusResponse'
+            type: array
+      summary: list approve user email
+      tags:
+      - User Email
   /api/v1/user_email/search-user_email/{query}:
     get:
       consumes:

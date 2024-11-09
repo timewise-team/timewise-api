@@ -112,7 +112,7 @@ func (h *ScheduleParticipantService) GetScheduleParticipantsByScheduleID(schedul
 
 func (h *ScheduleParticipantService) InviteToSchedule(
 	c *fiber.Ctx,
-	InviteToScheduleDto schedule_participant_dtos.InviteToScheduleRequest,
+	InviteToScheduleDto schedule_participant_dtos.InviteToScheduleRequest, check int,
 ) (*schedule_participant_dtos.ScheduleParticipantResponse, error) {
 
 	workspaceUserInvite, err := h.getWorkspaceUserFromContext(c)
@@ -353,7 +353,7 @@ func (h *ScheduleParticipantService) InviteOutsideWorkspace(
 		workspaceUserResponse = &temp
 
 		// Mời người dùng tham gia lịch trình
-		scheduleParticipant, err = h.InviteToSchedule(c, InviteToScheduleDto)
+		scheduleParticipant, err = h.InviteToSchedule(c, InviteToScheduleDto, 0)
 		if err != nil {
 			return nil, nil, c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": err.Error(),
@@ -365,7 +365,26 @@ func (h *ScheduleParticipantService) InviteOutsideWorkspace(
 			AddWorkspaceUserViaScheduleInvitation(userEmail, workspaceUserInvite.WorkspaceId, false)
 		workspaceUserResponse = &temp
 
-		// Bạn có thể thêm logic xử lý cho scheduleParticipant nếu cần
+		now := time.Now()
+		newParticipant := models.TwScheduleParticipant{
+			CreatedAt:        now,
+			UpdatedAt:        now,
+			ScheduleId:       scheduleParticipantInvite.ScheduleId,
+			WorkspaceUserId:  workspaceUserResponse.ID,
+			AssignBy:         workspaceUserInvite.ID,
+			InvitationSentAt: &now,
+			InvitationStatus: "pending",
+		}
+
+		resp, err := dms.CallAPI("POST", "/schedule_participant", newParticipant, nil, nil, 120)
+		if err != nil {
+			return nil, nil, err
+		}
+		defer resp.Body.Close()
+
+		if err := json.NewDecoder(resp.Body).Decode(&scheduleParticipant); err != nil {
+			return nil, nil, err
+		}
 	}
 
 	if err != nil {

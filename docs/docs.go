@@ -1447,6 +1447,41 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/user_email/list_approve/{scheduleId}": {
+            "get": {
+                "description": "list approve user email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User Email"
+                ],
+                "summary": "list approve user email",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Schedule ID",
+                        "name": "scheduleId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/user_email_dtos.UserEmailStatusResponse"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/user_email/search-user_email/{query}": {
             "get": {
                 "description": "search user email",
@@ -3238,6 +3273,32 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "profile_picture": {
+                    "type": "string"
+                }
+            }
+        },
+        "user_email_dtos.UserEmailStatusResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_verified": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "profile_picture": {
+                    "type": "string"
+                },
+                "status": {
                     "type": "string"
                 }
             }

@@ -252,6 +252,33 @@ func (s *ScheduleService) GetScheduleByID(scheduleID string) (*models.TwSchedule
 	return &schedule, nil
 }
 
+func (s *ScheduleService) GetScheduleById(scheduleID string) (*core_dtos.TwScheduleResponse, error) {
+
+	resp, err := dms.CallAPI(
+		"GET",
+		"/schedule/"+scheduleID,
+		nil,
+		nil,
+		nil,
+		120,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("server error: %v", err)
+	}
+	defer resp.Body.Close()
+	// Kiểm tra mã trạng thái HTTP
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	// Parse response
+	var schedule core_dtos.TwScheduleResponse
+	if err := json.NewDecoder(resp.Body).Decode(&schedule); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %v", err)
+	}
+	return &schedule, nil
+}
+
 func (s *ScheduleService) DeleteSchedule(c *fiber.Ctx) error {
 
 	scheduleID := c.Params("scheduleID")
