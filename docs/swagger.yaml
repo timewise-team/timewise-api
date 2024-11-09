@@ -698,12 +698,22 @@ definitions:
       workspace_user_id:
         type: integer
     type: object
+  transport.UpdateBoardColumnRequest:
+    properties:
+      name:
+        type: string
+    type: object
   transport.UpdateWorkspace:
     properties:
       description:
         type: string
       title:
         type: string
+    type: object
+  transport.updatePositionRequest:
+    properties:
+      position:
+        type: integer
     type: object
   user_email_dtos.SearchUserEmailResponse:
     properties:
@@ -784,6 +794,27 @@ info:
   version: "1.0"
 paths:
   /api/v1/account/user:
+    get:
+      consumes:
+      - application/json
+      description: Get user info
+      parameters:
+      - description: Status
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/core_dtos.GetUserResponseDto'
+      security:
+      - bearerToken: []
+      summary: Get user info
+      tags:
+      - account
     patch:
       consumes:
       - application/json
@@ -957,6 +988,16 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/board_columns_dtos.BoardColumnsRequest'
+      - description: User email
+        in: header
+        name: X-User-Email
+        required: true
+        type: string
+      - description: Workspace ID
+        in: header
+        name: X-Workspace-Id
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -964,6 +1005,8 @@ paths:
           description: Created
           schema:
             $ref: '#/definitions/models.TwBoardColumn'
+      security:
+      - bearerToken: []
       summary: Create a board column (X-User-Email required, X-Workspace-Id required)
       tags:
       - board_columns
@@ -979,18 +1022,24 @@ paths:
         required: true
         type: string
       - description: User email
-        in: path
-        name: email
+        in: header
+        name: X-User-Email
         required: true
         type: string
       - description: Workspace ID
-        in: path
-        name: workspace_id
+        in: header
+        name: X-Workspace-Id
         required: true
         type: string
       produces:
       - application/json
-      responses: {}
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/fiber.Map'
+      security:
+      - bearerToken: []
       summary: Delete a board column (X-User-Email required, X-Workspace-Id required)
       tags:
       - board_columns
@@ -1009,11 +1058,68 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/board_columns_dtos.BoardColumnsRequest'
+          $ref: '#/definitions/transport.UpdateBoardColumnRequest'
+      - description: User email
+        in: header
+        name: X-User-Email
+        required: true
+        type: string
+      - description: Workspace ID
+        in: header
+        name: X-Workspace-Id
+        required: true
+        type: string
       produces:
       - application/json
-      responses: {}
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TwBoardColumn'
+      security:
+      - bearerToken: []
       summary: Update a board column (X-User-Email required, X-Workspace-Id required)
+      tags:
+      - board_columns
+  /api/v1/board_columns/update_position/{board_column_id}:
+    put:
+      consumes:
+      - application/json
+      description: Update a board column position (X-User-Email required, X-Workspace-Id
+        required)
+      parameters:
+      - description: Board column ID
+        in: path
+        name: board_column_id
+        required: true
+        type: string
+      - description: Update board column position request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/transport.updatePositionRequest'
+      - description: User email
+        in: header
+        name: X-User-Email
+        required: true
+        type: string
+      - description: Workspace ID
+        in: header
+        name: X-Workspace-Id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/fiber.Map'
+      security:
+      - bearerToken: []
+      summary: Update a board column position (X-User-Email required, X-Workspace-Id
+        required)
       tags:
       - board_columns
   /api/v1/board_columns/workspace/{workspace_id}:
@@ -1028,6 +1134,16 @@ paths:
         name: workspace_id
         required: true
         type: string
+      - description: User email
+        in: header
+        name: X-User-Email
+        required: true
+        type: string
+      - description: Workspace ID
+        in: header
+        name: X-Workspace-Id
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1039,6 +1155,8 @@ paths:
                 $ref: '#/definitions/board_columns_dtos.BoardColumnsResponse'
               type: array
             type: array
+      security:
+      - bearerToken: []
       summary: Get all board columns by workspace (X-User-Email required, X-Workspace-Id
         required)
       tags:
@@ -1133,6 +1251,71 @@ paths:
       summary: Get comments by schedule
       tags:
       - comment
+  /api/v1/document/delete:
+    delete:
+      consumes:
+      - application/json
+      description: Delete file from Google Cloud Storage
+      parameters:
+      - description: Schedule ID associated with the file
+        in: query
+        name: scheduleId
+        required: true
+        type: string
+      - description: Name of the file to delete
+        in: query
+        name: fileName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: File deleted successfully
+          schema:
+            type: string
+        "400":
+          description: Bad Request - Missing or invalid parameters
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error - Something went wrong during file deletion
+          schema:
+            type: string
+      security:
+      - bearerToken: []
+      summary: Delete file
+      tags:
+      - document
+  /api/v1/document/download/{documentId}:
+    get:
+      description: Download a document from Google Cloud Storage
+      parameters:
+      - description: Document ID
+        in: path
+        name: documentId
+        required: true
+        type: integer
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: File downloaded successfully
+          schema:
+            type: file
+        "404":
+          description: Document not found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - bearerToken: []
+      summary: Download document
+      tags:
+      - document
   /api/v1/document/schedule/{schedule_id}:
     get:
       consumes:
@@ -1156,6 +1339,48 @@ paths:
       summary: Get documents by schedule
       tags:
       - document
+  /api/v1/document/upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload file with multipart/form-data and upload to Google Cloud
+        Storage
+      parameters:
+      - description: File to upload
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: Schedule ID associated with the file
+        in: formData
+        name: scheduleId
+        required: true
+        type: string
+      - description: Workspace user ID who uploads the file
+        in: formData
+        name: wspUserId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: File uploaded successfully
+          schema:
+            type: string
+        "400":
+          description: Bad Request - Missing or invalid parameters
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error - Something went wrong during file upload
+          schema:
+            type: string
+      security:
+      - bearerToken: []
+      summary: Upload file
+      tags:
+      - document
   /api/v1/schedule/schedule:
     get:
       consumes:
@@ -1165,7 +1390,7 @@ paths:
       - description: Filter by Workspace ID
         in: query
         name: workspace_id
-        type: integer
+        type: string
       - description: Filter by Board Column ID
         in: query
         name: board_column_id
@@ -1223,7 +1448,7 @@ paths:
       - bearerToken: []
       summary: Get schedules by filter
       tags:
-      - Schedule
+      - schedule
   /api/v1/schedule_log/schedule/{scheduleId}:
     get:
       consumes:

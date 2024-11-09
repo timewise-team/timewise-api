@@ -16,6 +16,40 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/api/v1/account/user": {
+            "get": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Get user info",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "Get user info",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Status",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/core_dtos.GetUserResponseDto"
+                        }
+                    }
+                }
+            },
             "patch": {
                 "security": [
                     {
@@ -275,6 +309,11 @@ const docTemplate = `{
         },
         "/api/v1/board_columns": {
             "post": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
                 "description": "Create a board column (X-User-Email required, X-Workspace-Id required)",
                 "consumes": [
                     "application/json"
@@ -295,6 +334,20 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/board_columns_dtos.BoardColumnsRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "User email",
+                        "name": "X-User-Email",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "X-Workspace-Id",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -307,8 +360,73 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/board_columns/update_position/{board_column_id}": {
+            "put": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Update a board column position (X-User-Email required, X-Workspace-Id required)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "board_columns"
+                ],
+                "summary": "Update a board column position (X-User-Email required, X-Workspace-Id required)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Board column ID",
+                        "name": "board_column_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update board column position request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/transport.updatePositionRequest"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "User email",
+                        "name": "X-User-Email",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "X-Workspace-Id",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/fiber.Map"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/board_columns/workspace/{workspace_id}": {
             "get": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
                 "description": "Get all board columns by workspace (X-User-Email required, X-Workspace-Id required)",
                 "consumes": [
                     "application/json"
@@ -326,6 +444,20 @@ const docTemplate = `{
                         "description": "Workspace ID",
                         "name": "workspace_id",
                         "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User email",
+                        "name": "X-User-Email",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "X-Workspace-Id",
+                        "in": "header",
                         "required": true
                     }
                 ],
@@ -347,6 +479,11 @@ const docTemplate = `{
         },
         "/api/v1/board_columns/{board_column_id}": {
             "put": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
                 "description": "Update a board column (X-User-Email required, X-Workspace-Id required)",
                 "consumes": [
                     "application/json"
@@ -372,13 +509,39 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/board_columns_dtos.BoardColumnsRequest"
+                            "$ref": "#/definitions/transport.UpdateBoardColumnRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "User email",
+                        "name": "X-User-Email",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "X-Workspace-Id",
+                        "in": "header",
+                        "required": true
                     }
                 ],
-                "responses": {}
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TwBoardColumn"
+                        }
+                    }
+                }
             },
             "delete": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
                 "description": "Delete a board column (X-User-Email required, X-Workspace-Id required)",
                 "consumes": [
                     "application/json"
@@ -401,19 +564,26 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "User email",
-                        "name": "email",
-                        "in": "path",
+                        "name": "X-User-Email",
+                        "in": "header",
                         "required": true
                     },
                     {
                         "type": "string",
                         "description": "Workspace ID",
-                        "name": "workspace_id",
-                        "in": "path",
+                        "name": "X-Workspace-Id",
+                        "in": "header",
                         "required": true
                     }
                 ],
-                "responses": {}
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/fiber.Map"
+                        }
+                    }
+                }
             }
         },
         "/api/v1/comment": {
@@ -553,6 +723,108 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/document/delete": {
+            "delete": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Delete file from Google Cloud Storage",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "document"
+                ],
+                "summary": "Delete file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Schedule ID associated with the file",
+                        "name": "scheduleId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Name of the file to delete",
+                        "name": "fileName",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File deleted successfully",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - Missing or invalid parameters",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Something went wrong during file deletion",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/document/download/{documentId}": {
+            "get": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Download a document from Google Cloud Storage",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "document"
+                ],
+                "summary": "Download document",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Document ID",
+                        "name": "documentId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File downloaded successfully",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "404": {
+                        "description": "Document not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/document/schedule/{schedule_id}": {
             "get": {
                 "description": "Get documents by schedule",
@@ -588,6 +860,69 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/document/upload": {
+            "post": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Upload file with multipart/form-data and upload to Google Cloud Storage",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "document"
+                ],
+                "summary": "Upload file",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "File to upload",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Schedule ID associated with the file",
+                        "name": "scheduleId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workspace user ID who uploads the file",
+                        "name": "wspUserId",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File uploaded successfully",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - Missing or invalid parameters",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Something went wrong during file upload",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/schedule/schedule": {
             "get": {
                 "security": [
@@ -603,12 +938,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Schedule"
+                    "schedule"
                 ],
                 "summary": "Get schedules by filter",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Filter by Workspace ID",
                         "name": "workspace_id",
                         "in": "query"
@@ -2895,6 +3230,14 @@ const docTemplate = `{
                 }
             }
         },
+        "transport.UpdateBoardColumnRequest": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "transport.UpdateWorkspace": {
             "type": "object",
             "properties": {
@@ -2903,6 +3246,14 @@ const docTemplate = `{
                 },
                 "title": {
                     "type": "string"
+                }
+            }
+        },
+        "transport.updatePositionRequest": {
+            "type": "object",
+            "properties": {
+                "position": {
+                    "type": "integer"
                 }
             }
         },

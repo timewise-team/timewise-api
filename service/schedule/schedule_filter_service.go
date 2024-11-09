@@ -4,6 +4,7 @@ import (
 	"api/dms"
 	"github.com/gofiber/fiber/v2"
 	"net/http"
+	"strings"
 )
 
 type ScheduleFilterService struct {
@@ -15,14 +16,15 @@ func NewScheduleFilterService() *ScheduleFilterService {
 func (s *ScheduleFilterService) ScheduleFilter(c *fiber.Ctx) (*http.Response, error) {
 	queryParams := map[string]string{}
 
-	workspaceID := c.Query("workspace_id")
-	if workspaceID != "" {
-		queryParams["workspace_id"] = workspaceID
-	}
+	workspaceIDs := c.Context().QueryArgs().PeekMulti("workspace_id")
+	if len(workspaceIDs) > 0 {
+		var workspaceIDStrings []string
+		for _, id := range workspaceIDs {
+			workspaceIDStrings = append(workspaceIDStrings, string(id)) // Convert each []byte to string
+		}
 
-	boardColumnID := c.Query("board_column_id")
-	if boardColumnID != "" {
-		queryParams["board_column_id"] = boardColumnID
+		// Join the workspace_ids into a single string with commas as delimiter
+		queryParams["workspace_id"] = strings.Join(workspaceIDStrings, ",")
 	}
 
 	title := c.Query("title")

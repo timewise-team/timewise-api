@@ -29,6 +29,7 @@ func NewAccountHandler() *AccountHandler {
 // @Security bearerToken
 // @Accept json
 // @Produce json
+// @Param status query string false "Status"
 // @Success 200 {object} core_dtos.GetUserResponseDto
 // @Router /api/v1/account/user [get]
 func (h *AccountHandler) getUserInfo(c *fiber.Ctx) error {
@@ -37,8 +38,9 @@ func (h *AccountHandler) getUserInfo(c *fiber.Ctx) error {
 	if userId == nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid userId"})
 	}
+	status := c.Query("status")
 	// call service to query database
-	userInfo, err := h.service.GetUserInfoByUserId(userId.(string))
+	userInfo, err := h.service.GetUserInfoByUserId(userId.(string), status)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
