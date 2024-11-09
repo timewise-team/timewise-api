@@ -94,6 +94,13 @@ definitions:
       workspace_user_id:
         type: integer
     type: object
+  core_dtos.EmailDto:
+    properties:
+      email:
+        type: string
+      status:
+        type: string
+    type: object
   core_dtos.GetUserResponseDto:
     properties:
       calendar_settings:
@@ -104,7 +111,7 @@ definitions:
         type: string
       email:
         items:
-          type: string
+          $ref: '#/definitions/core_dtos.EmailDto'
         type: array
       first_name:
         type: string
@@ -164,6 +171,8 @@ definitions:
         type: string
       workspace_id:
         description: Nullable field
+        type: integer
+      workspace_user_id:
         type: integer
     type: object
   core_dtos.TwCreateShecduleResponse:
@@ -709,6 +718,23 @@ definitions:
       profile_picture:
         type: string
     type: object
+  user_email_dtos.UserEmailStatusResponse:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      is_verified:
+        type: boolean
+      last_name:
+        type: string
+      profile_picture:
+        type: string
+      status:
+        type: string
+    type: object
   workspace_user_dtos.GetWorkspaceUserListResponse:
     properties:
       created_at:
@@ -758,22 +784,6 @@ info:
   version: "1.0"
 paths:
   /api/v1/account/user:
-    get:
-      consumes:
-      - application/json
-      description: Get user info
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/core_dtos.GetUserResponseDto'
-      security:
-      - bearerToken: []
-      summary: Get user info
-      tags:
-      - account
     patch:
       consumes:
       - application/json
@@ -1494,6 +1504,29 @@ paths:
       summary: Update an existing schedule position
       tags:
       - schedule
+  /api/v1/user_email/list_approve/{scheduleId}:
+    get:
+      consumes:
+      - application/json
+      description: list approve user email
+      parameters:
+      - description: Schedule ID
+        in: path
+        name: scheduleId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/user_email_dtos.UserEmailStatusResponse'
+            type: array
+      summary: list approve user email
+      tags:
+      - User Email
   /api/v1/user_email/search-user_email/{query}:
     get:
       consumes:

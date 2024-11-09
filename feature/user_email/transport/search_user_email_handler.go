@@ -30,3 +30,29 @@ func (h *UserEmailHandler) searchUserEmail(c *fiber.Ctx) error {
 	}
 	return c.JSON(userEmail)
 }
+
+// list approve user email
+// @Summary list approve user email
+// @Description list approve user email
+// @Tags User Email
+// @Accept json
+// @Produce json
+// @Param scheduleId path string true "Schedule ID"
+// @Success 200 {array} user_email_dtos.UserEmailStatusResponse
+// @Router /api/v1/user_email/list_approve/{scheduleId} [get]
+func (h *UserEmailHandler) listApproveUserEmailHandler(c *fiber.Ctx) error {
+	query := c.Params("scheduleId")
+
+	var userEmail, err = user_email.NewUserEmailService().GetUserEmailInProgress(query)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+	if userEmail == nil {
+		return c.Status(500).JSON(fiber.Map{
+			"message": "Failed to search user email",
+		})
+	}
+	return c.JSON(userEmail)
+}

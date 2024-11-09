@@ -56,3 +56,24 @@ func (service *UserEmailService) GetUserEmail(email string) (*models.TwUserEmail
 	log.Printf("User email: %v", userEmail)
 	return &userEmail, nil
 }
+
+func (service *UserEmailService) GetUserEmailInProgress(scheduleId string) (*[]user_email_dtos.UserEmailStatusResponse, error) {
+
+	resp, err := dms.CallAPI(
+		"GET",
+		"/user_email/listApprove/"+scheduleId,
+		nil,
+		nil,
+		nil,
+		120,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	var userEmail []user_email_dtos.UserEmailStatusResponse
+	if err := json.NewDecoder(resp.Body).Decode(&userEmail); err != nil {
+		return nil, err
+	}
+	return &userEmail, nil
+}

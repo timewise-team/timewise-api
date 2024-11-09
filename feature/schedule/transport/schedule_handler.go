@@ -55,7 +55,7 @@ func (h *ScheduleHandler) CreateSchedule(c *fiber.Ctx) error {
 // @Router /api/v1/schedules/{schedule_id} [get]
 func (h *ScheduleHandler) GetScheduleByID(c *fiber.Ctx) error {
 	scheduleID := c.Params("scheduleId")
-	schedule, err := h.service.GetScheduleByID(scheduleID)
+	schedule, err := h.service.GetScheduleById(scheduleID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),

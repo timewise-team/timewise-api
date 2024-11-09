@@ -16,32 +16,6 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/api/v1/account/user": {
-            "get": {
-                "security": [
-                    {
-                        "bearerToken": []
-                    }
-                ],
-                "description": "Get user info",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "account"
-                ],
-                "summary": "Get user info",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/core_dtos.GetUserResponseDto"
-                        }
-                    }
-                }
-            },
             "patch": {
                 "security": [
                     {
@@ -1138,6 +1112,41 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/user_email/list_approve/{scheduleId}": {
+            "get": {
+                "description": "list approve user email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User Email"
+                ],
+                "summary": "list approve user email",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Schedule ID",
+                        "name": "scheduleId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/user_email_dtos.UserEmailStatusResponse"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/user_email/search-user_email/{query}": {
             "get": {
                 "description": "search user email",
@@ -1971,6 +1980,17 @@ const docTemplate = `{
                 }
             }
         },
+        "core_dtos.EmailDto": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "core_dtos.GetUserResponseDto": {
             "type": "object",
             "properties": {
@@ -1986,7 +2006,7 @@ const docTemplate = `{
                 "email": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/core_dtos.EmailDto"
                     }
                 },
                 "first_name": {
@@ -2075,6 +2095,9 @@ const docTemplate = `{
                 },
                 "workspace_id": {
                     "description": "Nullable field",
+                    "type": "integer"
+                },
+                "workspace_user_id": {
                     "type": "integer"
                 }
             }
@@ -2899,6 +2922,32 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "profile_picture": {
+                    "type": "string"
+                }
+            }
+        },
+        "user_email_dtos.UserEmailStatusResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_verified": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "profile_picture": {
+                    "type": "string"
+                },
+                "status": {
                     "type": "string"
                 }
             }

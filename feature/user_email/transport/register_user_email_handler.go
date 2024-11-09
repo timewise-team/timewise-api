@@ -14,4 +14,5 @@ func RegisterUserEmailHandler(router fiber.Router) {
 	}
 
 	router.Get("/search-user_email/:query?", userEmailHandler.searchUserEmail)
+	router.Get("/list_approve/:scheduleId", userEmailHandler.listApproveUserEmailHandler)
 }
