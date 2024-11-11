@@ -213,7 +213,7 @@ func (s *AccountService) SendLinkAnEmailRequest(userId string, email string) (mo
 		return models.TwUserEmail{}, errors.New("Cannot check if email is already a user")
 	}
 	// get user info from user_emails table
-	resp, err = dms.CallAPI("GET", "/user_email/check", nil, nil, map[string]string{"email": email, "user_id": userId}, 120)
+	resp, err = dms.CallAPI("GET", "/user_email/check", nil, nil, map[string]string{"email": email}, 120)
 	if err != nil {
 		return models.TwUserEmail{}, err
 	}
