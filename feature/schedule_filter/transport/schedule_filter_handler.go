@@ -1,11 +1,14 @@
 package transport
 
 import (
+	"api/dms"
 	"api/service/schedule"
 	"encoding/json"
 	"github.com/gofiber/fiber/v2"
 	dtos "github.com/timewise-team/timewise-models/dtos/core_dtos"
+	"github.com/timewise-team/timewise-models/models"
 	"io"
+	"strconv"
 )
 
 type ScheduleFilterHandler struct {
@@ -41,7 +44,81 @@ func NewScheduleFilterHandler() *ScheduleFilterHandler {
 // @Failure 500 {object} fiber.Error "Internal Server Error"
 // @Router /api/v1/schedule/schedule [get]
 func (h *ScheduleFilterHandler) ScheduleFilter(c *fiber.Ctx) error {
-	resp, err := h.service.ScheduleFilter(c)
+	// check wsp id
+	wspId := c.Query("workspace_id")
+	if wspId == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Workspace ID is required",
+		})
+	}
+	// get user_email_id by email
+	email := c.Locals("email").(string)
+	resp, err := dms.CallAPI("GET", "user_email/email"+email, nil, nil, nil, 120)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error":   "Failed to fetch user_email_id from service",
+			"details": err.Error(),
+		})
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to read response body",
+		})
+	}
+	if resp.StatusCode != fiber.StatusOK {
+		return c.Status(resp.StatusCode).JSON(fiber.Map{
+			"error":   "Error from external service",
+			"details": string(body),
+		})
+	}
+	var userResponse models.TwUserEmail
+	err = json.Unmarshal(body, &userResponse)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error":   "Could not unmarshal response body",
+			"details": err.Error(),
+		})
+	}
+	// get wsp_id belong to current account in workspace_user
+	resp, err = dms.CallAPI("GET", "workspace_user/user_email_id/"+strconv.Itoa(userResponse.ID), nil, nil, nil, 120)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error":   "Failed to fetch workspace_id from service",
+			"details": err.Error(),
+		})
+	}
+	defer resp.Body.Close()
+	body, err = io.ReadAll(resp.Body)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to read response body",
+		})
+	}
+	if resp.StatusCode != fiber.StatusOK {
+		return c.Status(resp.StatusCode).JSON(fiber.Map{
+			"error":   "Error from external service",
+			"details": string(body),
+		})
+	}
+	var workspaceUserResponse []models.TwWorkspaceUser
+	err = json.Unmarshal(body, &workspaceUserResponse)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error":   "Could not unmarshal response body",
+			"details": err.Error(),
+		})
+	}
+	// check wsp_id belong to current account
+	var check bool
+	for _, workspaceUser := range workspaceUserResponse {
+		if workspaceUser.WorkspaceID == wspId {
+			check = true
+			break
+		}
+	}
+	resp, err = h.service.ScheduleFilter(c)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error":   "Failed to fetch schedules from service",
@@ -50,7 +127,7 @@ func (h *ScheduleFilterHandler) ScheduleFilter(c *fiber.Ctx) error {
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	body, err = io.ReadAll(resp.Body)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to read response body",
