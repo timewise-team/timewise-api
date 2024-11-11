@@ -171,8 +171,11 @@ func (s *AccountService) GetLinkedUserEmails(userId string, status string) ([]co
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil || resp.StatusCode != http.StatusOK {
+	if err != nil {
 		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New("Cannot get linked user emails")
 	}
 	// marshal response body
 	var userEmailResp []models.TwUserEmail
@@ -233,21 +236,14 @@ func (s *AccountService) SendLinkAnEmailRequest(userId string, email string) (mo
 	if err != nil {
 		return models.TwUserEmail{}, err
 	}
-	//if userEmailResp.Status != nil {
-	//	return models.TwUserEmail{}, errors.New("Email is already linked or rejected or pending")
-	//}
-	// call dms to create a new user_email
-	userIdInt, err := strconv.Atoi(userId)
-	if err != nil {
-		return models.TwUserEmail{}, err
-	}
+	// call dms to update status and is_linked_to in user_email
 	status := "pending"
-	userEmail := models.TwUserEmail{
-		UserId: userIdInt,
-		Email:  email,
-		Status: &status,
+	queryParam := map[string]string{
+		"email":          email,
+		"status":         status,
+		"target_user_id": userId,
 	}
-	resp, err = dms.CallAPI("POST", "/user_email", userEmail, nil, nil, 120)
+	resp, err = dms.CallAPI("PATCH", "/user_email/status", nil, nil, queryParam, 120)
 	if err != nil {
 		return models.TwUserEmail{}, err
 	}
@@ -257,25 +253,8 @@ func (s *AccountService) SendLinkAnEmailRequest(userId string, email string) (mo
 
 func (s *AccountService) UpdateStatusLinkEmailRequest(userId string, email string, status string) (core_dtos.GetUserResponseDto, error) {
 	queryParams := map[string]string{
-		"user_id": userId,
-		"email":   email,
-		"status":  status,
-	}
-	// delete pending email if status is rejected or accepted
-	if status == "linked" {
-		queryParams := map[string]string{
-			"user_id": userId,
-			"email":   email,
-			"status":  "pending",
-		}
-		respEmail, err := dms.CallAPI("DELETE", "/user_email", nil, nil, queryParams, 120)
-		if err != nil {
-			return core_dtos.GetUserResponseDto{}, err
-		}
-		defer respEmail.Body.Close()
-		if respEmail.StatusCode != http.StatusOK {
-			return core_dtos.GetUserResponseDto{}, errors.New("cannot delete email")
-		}
+		"email":  email,
+		"status": status,
 	}
 	respEmail, err := dms.CallAPI("PATCH", "/user_email", nil, nil, queryParams, 120)
 	if err != nil {
@@ -377,9 +356,8 @@ func (s *AccountService) UnlinkAnEmail(email string) (core_dtos.GetUserResponseD
 	userIdStr := strconv.Itoa(userId)
 	// call dms to change current user_id to user_id got from above api in user_email
 	queryParams := map[string]string{
-		"user_id": userIdStr,
-		"email":   email,
-		"status":  "",
+		"email":  email,
+		"status": "",
 	}
 	_, err = dms.CallAPI("PATCH", "/user_email", nil, nil, queryParams, 120)
 	if err != nil {
