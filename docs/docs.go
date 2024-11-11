@@ -2976,6 +2976,9 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
+                "is_linked_to": {
+                    "type": "integer"
+                },
                 "status": {
                     "type": "string"
                 },
