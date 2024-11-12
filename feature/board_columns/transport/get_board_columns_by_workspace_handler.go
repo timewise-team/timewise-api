@@ -101,7 +101,7 @@ func (h *BoardColumnsHandler) getBoardColumnsByWorkspace(c *fiber.Ctx) error {
 				schedulesList.AllDay = schedule.AllDay
 				schedulesList.Visibility = schedule.Visibility
 				schedulesList.VideoTranscript = schedule.VideoTranscript
-				schedulesList.ExtraData = schedule.ExtraData
+				schedulesList.ExtraData = "Open"
 				schedulesList.IsDeleted = schedule.IsDeleted
 				schedulesList.RecurrencePattern = schedule.RecurrencePattern
 				schedulesList.Position = schedule.Position
@@ -158,7 +158,7 @@ func (h *BoardColumnsHandler) getBoardColumnsByWorkspace(c *fiber.Ctx) error {
 					schedulesList.AllDay = schedule.AllDay
 					schedulesList.Visibility = schedule.Visibility
 					schedulesList.VideoTranscript = schedule.VideoTranscript
-					schedulesList.ExtraData = schedule.ExtraData
+					schedulesList.ExtraData = "Open"
 					schedulesList.IsDeleted = schedule.IsDeleted
 					schedulesList.RecurrencePattern = schedule.RecurrencePattern
 					schedulesList.Position = schedule.Position
@@ -226,7 +226,7 @@ func (h *BoardColumnsHandler) getBoardColumnsByWorkspace(c *fiber.Ctx) error {
 						schedulesList.AllDay = schedule.AllDay
 						schedulesList.Visibility = schedule.Visibility
 						schedulesList.VideoTranscript = schedule.VideoTranscript
-						schedulesList.ExtraData = schedule.ExtraData
+						schedulesList.ExtraData = "Open"
 						schedulesList.IsDeleted = schedule.IsDeleted
 						schedulesList.RecurrencePattern = schedule.RecurrencePattern
 						schedulesList.Position = schedule.Position
