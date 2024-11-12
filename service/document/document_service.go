@@ -91,20 +91,20 @@ func (h *DocumentService) CreateReminder(reminder models.TwReminder) (models.TwR
 
 }
 
-func (h *DocumentService) GetRemindersByScheduleID(id string) (models.TwReminder, error) {
+func (h *DocumentService) GetRemindersByScheduleID(id string) ([]models.TwReminder, error) {
 	resp, err := dms.CallAPI("GET", "/reminder/schedule/"+id, nil, nil, nil, 120)
 	if err != nil {
-		return models.TwReminder{}, err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		return models.TwReminder{}, err
+		return nil, err
 	}
 
-	var reminders models.TwReminder
+	var reminders []models.TwReminder
 	if err := json.NewDecoder(resp.Body).Decode(&reminders); err != nil {
-		return models.TwReminder{}, err
+		return nil, err
 	}
 
 	return reminders, nil

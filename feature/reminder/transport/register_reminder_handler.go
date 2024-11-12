@@ -16,9 +16,10 @@ func RegisterReminderHandler(router fiber.Router) {
 		Handler: handler,
 	}
 
-	router.Post("/", middleware.CheckWorkspaceRole([]string{"owner", "admin", "member"}),
-		middleware.CheckScheduleStatus([]string{"creator", "assign to"}), reminderHandler.Handler.CreateReminder)
-	router.Get("/schedule/:schedule_id", reminderHandler.Handler.GetReminders)
+	router.Post("/all_participants", middleware.CheckWorkspaceRole([]string{"owner", "admin", "member"}),
+		middleware.CheckScheduleStatus([]string{"creator", "assign to"}), reminderHandler.Handler.CreateReminderAllParticipant)
+	router.Get("/schedule/:schedule_id/all_participants", middleware.CheckWorkspaceRole([]string{"owner", "admin", "member", "guest"}),
+		middleware.CheckScheduleStatus([]string{"creator", "assign to"}), reminderHandler.Handler.GetRemindersAllParticipant)
 	router.Put("/:reminder_id", reminderHandler.Handler.UpdateReminder)
 	router.Delete("/:reminder_id", reminderHandler.Handler.DeleteReminder)
 }
