@@ -136,6 +136,8 @@ github.com/spf13/viper v1.19.0/go.mod h1:GQUN9bilAbhU/jgc1bKs99f/suXKeUMct8Adx5+
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.4.0/go.mod h1:YvHI0jy2hoMjB+UWwv71VJQ9isScKT/TqJzVSSt89Yw=
 github.com/stretchr/objx v0.5.0/go.mod h1:Yh+to48EsGEfYuaHDzXPcE3xhTkx73EhmCGUpEOglKo=
+github.com/stretchr/objx v0.5.2 h1:xuMeJ0Sdp5ZMRXx/aWO6RZxdr3beISkG5/G/aIRr3pY=
+github.com/stretchr/objx v0.5.2/go.mod h1:FRsXN1f5AsAjCGJKqEizvkpNtU+EGNCLh3NxZ/8L+MA=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO+kdMU+MU=
@@ -148,16 +150,8 @@ github.com/swaggo/files/v2 v2.0.1 h1:XCVJO/i/VosCDsJu1YLpdejGsGnBE9deRMpjN4pJLHk
 github.com/swaggo/files/v2 v2.0.1/go.mod h1:24kk2Y9NYEJ5lHuCra6iVwkMjIekMCaFq/0JQj66kyM=
 github.com/swaggo/swag v1.16.3 h1:PnCYjPCah8FK4I26l2F/KQ4yz3sILcVUN3cTlBFA9Pg=
 github.com/swaggo/swag v1.16.3/go.mod h1:DImHIuOFXKpMFAQjcC7FG4m3Dg4+QuUgUzJmKjI/gRk=
-github.com/timewise-team/timewise-models v0.0.0-20241107031738-3adcb695a3dc h1:ahE7fI/WN3JAN3HzXA7ADXOORSTlZy0h8EFQOrsxb0g=
-github.com/timewise-team/timewise-models v0.0.0-20241107031738-3adcb695a3dc/go.mod h1:cfqhHkxSfbNnHHOpkRdrN6j6LVZh1A3CM5qkjeaMGiQ=
-github.com/timewise-team/timewise-models v0.0.0-20241107065038-9587e0bd4e46 h1:5bLg33cts6NMlLaxepJYi0a64CrWbXRO6mh4NnQUmQU=
-github.com/timewise-team/timewise-models v0.0.0-20241107065038-9587e0bd4e46/go.mod h1:cfqhHkxSfbNnHHOpkRdrN6j6LVZh1A3CM5qkjeaMGiQ=
-github.com/timewise-team/timewise-models v0.0.0-20241107084532-eabf93c4c25f h1:esd+Z4YKs9cvx9F558/A96RA9zhgNuwW3gqTCr8Uz4c=
-github.com/timewise-team/timewise-models v0.0.0-20241107084532-eabf93c4c25f/go.mod h1:cfqhHkxSfbNnHHOpkRdrN6j6LVZh1A3CM5qkjeaMGiQ=
-github.com/timewise-team/timewise-models v0.0.0-20241108033214-aa688d85a98c h1:6lceb7J5MGry0uUtRDIU2/FqI310PfbJYO1bQyJUU1o=
-github.com/timewise-team/timewise-models v0.0.0-20241108033214-aa688d85a98c/go.mod h1:cfqhHkxSfbNnHHOpkRdrN6j6LVZh1A3CM5qkjeaMGiQ=
-github.com/timewise-team/timewise-models v0.0.0-20241110181202-fd074a2f03e4 h1:8bE+uziVbGc1nLB9BGTF6Bg8vj2xRAKz3HzVmXwHAEI=
-github.com/timewise-team/timewise-models v0.0.0-20241110181202-fd074a2f03e4/go.mod h1:cfqhHkxSfbNnHHOpkRdrN6j6LVZh1A3CM5qkjeaMGiQ=
+github.com/timewise-team/timewise-models v0.0.0-20241113130841-42f9f16fb8ac h1:36Zg0+eWIfFAXlcFvG0rxR3d1PDaiYm6ZRYBPYo6rsM=
+github.com/timewise-team/timewise-models v0.0.0-20241113130841-42f9f16fb8ac/go.mod h1:cfqhHkxSfbNnHHOpkRdrN6j6LVZh1A3CM5qkjeaMGiQ=
 github.com/valyala/bytebufferpool v1.0.0 h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6KllzawFIhcdPw=
 github.com/valyala/bytebufferpool v1.0.0/go.mod h1:6bBcMArwyJ5K/AmCkWv1jt77kVWyCJ6HpOuEn7z0Csc=
 github.com/valyala/fasthttp v1.55.0 h1:Zkefzgt6a7+bVKHnu/YaYSOPfNYNisSVBo/unVCf8k8=
