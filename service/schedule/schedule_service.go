@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 type ScheduleService struct {
@@ -56,7 +57,7 @@ func (s *ScheduleService) CreateSchedule(c *fiber.Ctx, CreateScheduleDto core_dt
 }
 
 func fetchSchedule(scheduleID string) (models.TwSchedule, error) {
-	resp, err := dms.CallAPI("GET", "/schedule/"+scheduleID, nil, nil, nil, 120)
+	resp, err := dms.CallAPI("GET", "/schedule/ori/"+scheduleID, nil, nil, nil, 120)
 	if err != nil {
 		return models.TwSchedule{}, err
 	}
@@ -103,12 +104,26 @@ func applyUpdateFields(baseSchedule, updateSchedule models.TwSchedule, dto core_
 		updateSchedule.Description = *dto.Description
 	}
 	if dto.StartTime != nil {
-		t := *dto.StartTime
-		updateSchedule.StartTime = &t
+		// Chuyển chuỗi StartTime thành *time.Time
+		parsedStartTime, err := time.Parse("2006-01-02 15:04:05.000", *dto.StartTime)
+		if err != nil {
+			// Xử lý lỗi nếu không thể phân tích chuỗi thành thời gian
+			fmt.Println("Error parsing start time:", err)
+		} else {
+			updateSchedule.StartTime = &parsedStartTime
+		}
 	}
+
+	// Chuyển đổi và cập nhật EndTime
 	if dto.EndTime != nil {
-		t := *dto.EndTime
-		updateSchedule.EndTime = &t
+		// Chuyển chuỗi EndTime thành *time.Time
+		parsedEndTime, err := time.Parse("2006-01-02 15:04:05.000", *dto.EndTime)
+		if err != nil {
+			// Xử lý lỗi nếu không thể phân tích chuỗi thành thời gian
+			fmt.Println("Error parsing end time:", err)
+		} else {
+			updateSchedule.EndTime = &parsedEndTime
+		}
 	}
 	if dto.Location != nil {
 		updateSchedule.Location = *dto.Location
@@ -252,7 +267,7 @@ func (s *ScheduleService) GetScheduleByID(scheduleID string) (*models.TwSchedule
 	return &schedule, nil
 }
 
-func (s *ScheduleService) GetScheduleById(scheduleID string) (*core_dtos.TwScheduleResponse, error) {
+func (s *ScheduleService) GetScheduleById(scheduleID string) (*core_dtos.TwGetScheduleResponse, error) {
 
 	resp, err := dms.CallAPI(
 		"GET",
@@ -272,7 +287,7 @@ func (s *ScheduleService) GetScheduleById(scheduleID string) (*core_dtos.TwSched
 	}
 
 	// Parse response
-	var schedule core_dtos.TwScheduleResponse
+	var schedule core_dtos.TwGetScheduleResponse
 	if err := json.NewDecoder(resp.Body).Decode(&schedule); err != nil {
 		return nil, fmt.Errorf("failed to decode response: %v", err)
 	}
