@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 type ScheduleService struct {
@@ -103,12 +104,20 @@ func applyUpdateFields(baseSchedule, updateSchedule models.TwSchedule, dto core_
 		updateSchedule.Description = *dto.Description
 	}
 	if dto.StartTime != nil {
-		t := *dto.StartTime
-		updateSchedule.StartTime = &t
+		parsedStartTime, err := time.Parse("2006-01-02 15:04:05.000", *dto.StartTime)
+		if err != nil {
+			fmt.Println("Error parsing start time:", err)
+		} else {
+			updateSchedule.StartTime = &parsedStartTime
+		}
 	}
 	if dto.EndTime != nil {
-		t := *dto.EndTime
-		updateSchedule.EndTime = &t
+		parsedEndTime, err := time.Parse("2006-01-02 15:04:05.000", *dto.EndTime)
+		if err != nil {
+			fmt.Println("Error parsing end time:", err)
+		} else {
+			updateSchedule.EndTime = &parsedEndTime
+		}
 	}
 	if dto.Location != nil {
 		updateSchedule.Location = *dto.Location
