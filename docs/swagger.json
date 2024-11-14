@@ -451,6 +451,42 @@
                         "name": "X-Workspace-Id",
                         "in": "header",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Member",
+                        "name": "member",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Due",
+                        "name": "due",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Due Complete",
+                        "name": "dueComplete",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Overdue",
+                        "name": "overdue",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Not Due",
+                        "name": "notDue",
+                        "in": "query"
                     }
                 ],
                 "responses": {

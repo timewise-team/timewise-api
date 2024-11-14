@@ -1250,6 +1250,30 @@ paths:
         name: X-Workspace-Id
         required: true
         type: string
+      - description: Search
+        in: query
+        name: search
+        type: string
+      - description: Member
+        in: query
+        name: member
+        type: string
+      - description: Due
+        in: query
+        name: due
+        type: string
+      - description: Due Complete
+        in: query
+        name: dueComplete
+        type: string
+      - description: Overdue
+        in: query
+        name: overdue
+        type: string
+      - description: Not Due
+        in: query
+        name: notDue
+        type: string
       produces:
       - application/json
       responses:

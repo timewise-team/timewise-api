@@ -24,6 +24,12 @@ import (
 // @Param X-User-Email header string true "User email"
 // @Param X-Workspace-Id header string true "Workspace ID"
 // @Security bearerToken
+// @Param search query string false "Search"
+// @Param member query string false "Member"
+// @Param due query string false "Due"
+// @Param dueComplete query string false "Due Complete"
+// @Param overdue query string false "Overdue"
+// @Param notDue query string false "Not Due"
 // @Success 200 {array} []dtos.BoardColumnsResponse
 // @Router /api/v1/board_columns/workspace/{workspace_id} [get]
 func (h *BoardColumnsHandler) getBoardColumnsByWorkspace(c *fiber.Ctx) error {
