@@ -504,6 +504,84 @@ definitions:
       workspace_id:
         type: integer
     type: object
+  models.TwReminder:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      id:
+        type: integer
+      is_sent:
+        type: boolean
+      method:
+        type: string
+      reminder_time:
+        type: string
+      schedule:
+        $ref: '#/definitions/models.TwSchedule'
+      schedule_id:
+        type: integer
+      type:
+        type: string
+      updated_at:
+        type: string
+      workspace_user_id:
+        type: integer
+      workspaceUser:
+        $ref: '#/definitions/models.TwWorkspaceUser'
+    type: object
+  models.TwSchedule:
+    properties:
+      all_day:
+        type: boolean
+      board_column_id:
+        type: integer
+      boardColumn:
+        $ref: '#/definitions/models.TwBoardColumn'
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      description:
+        type: string
+      end_time:
+        type: string
+      extra_data:
+        type: string
+      id:
+        type: integer
+      is_deleted:
+        type: boolean
+      location:
+        type: string
+      position:
+        type: integer
+      priority:
+        type: string
+      recurrence_pattern:
+        type: string
+      start_time:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+      video_transcript:
+        type: string
+      visibility:
+        type: string
+      workspace:
+        $ref: '#/definitions/models.TwWorkspace'
+      workspace_id:
+        type: integer
+      workspace_user_id:
+        type: integer
+      workspaceUser:
+        $ref: '#/definitions/models.TwWorkspaceUser'
+    type: object
   models.TwUser:
     properties:
       calendarSettings:
@@ -714,6 +792,32 @@ definitions:
       status:
         type: string
       workspace_user_id:
+        type: integer
+    type: object
+  transport.CreateReminderOnlyMeRequest:
+    properties:
+      schedule_id:
+        type: integer
+    type: object
+  transport.CreateReminderRequest:
+    properties:
+      reminder_time:
+        type: string
+      schedule_id:
+        type: integer
+    type: object
+  transport.UpdateReminderOnlyMeRequest:
+    properties:
+      schedule_id:
+        type: integer
+      time:
+        type: string
+    type: object
+  transport.UpdateReminderRequest:
+    properties:
+      reminder_time:
+        type: string
+      schedule_id:
         type: integer
     type: object
   transport.UpdateWorkspace:
@@ -1148,6 +1252,256 @@ paths:
       summary: Get documents by schedule
       tags:
       - document
+  /api/v1/reminder/{reminder_id}/schedule/{schedule_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete reminder
+      parameters:
+      - description: User Email
+        in: header
+        name: X-User-Email
+        required: true
+        type: string
+      - description: Workspace ID
+        in: header
+        name: X-Workspace-Id
+        required: true
+        type: string
+      - description: Reminder ID
+        in: path
+        name: reminder_id
+        required: true
+        type: integer
+      - description: Schedule ID
+        in: path
+        name: schedule_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/fiber.Map'
+      security:
+      - bearerToken: []
+      summary: Delete reminder
+      tags:
+      - reminder
+  /api/v1/reminder/all_participants:
+    post:
+      consumes:
+      - application/json
+      description: Create reminder for all participants
+      parameters:
+      - description: User Email
+        in: header
+        name: X-User-Email
+        required: true
+        type: string
+      - description: Workspace ID
+        in: header
+        name: X-Workspace-Id
+        required: true
+        type: string
+      - description: Reminder
+        in: body
+        name: reminder
+        required: true
+        schema:
+          $ref: '#/definitions/transport.CreateReminderRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.TwReminder'
+      security:
+      - bearerToken: []
+      summary: Create reminder for all participants
+      tags:
+      - reminder
+  /api/v1/reminder/all_participants/{reminder_id}:
+    put:
+      consumes:
+      - application/json
+      description: Update reminder for all participants
+      parameters:
+      - description: User Email
+        in: header
+        name: X-User-Email
+        required: true
+        type: string
+      - description: Workspace ID
+        in: header
+        name: X-Workspace-Id
+        required: true
+        type: string
+      - description: Reminder ID
+        in: path
+        name: reminder_id
+        required: true
+        type: integer
+      - description: Reminder
+        in: body
+        name: reminder
+        required: true
+        schema:
+          $ref: '#/definitions/transport.UpdateReminderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/fiber.Map'
+      security:
+      - bearerToken: []
+      summary: Update reminder for all participants
+      tags:
+      - reminder
+  /api/v1/reminder/only_me:
+    post:
+      consumes:
+      - application/json
+      description: Create reminder for only me
+      parameters:
+      - description: User Email
+        in: header
+        name: X-User-Email
+        required: true
+        type: string
+      - description: Workspace ID
+        in: header
+        name: X-Workspace-Id
+        required: true
+        type: string
+      - description: Reminder
+        in: body
+        name: reminder
+        required: true
+        schema:
+          $ref: '#/definitions/transport.CreateReminderOnlyMeRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/fiber.Map'
+      security:
+      - bearerToken: []
+      summary: Create reminder for only me
+      tags:
+      - reminder
+  /api/v1/reminder/only_me/{reminder_id}:
+    put:
+      consumes:
+      - application/json
+      description: Update reminder for only me
+      parameters:
+      - description: User Email
+        in: header
+        name: X-User-Email
+        required: true
+        type: string
+      - description: Workspace ID
+        in: header
+        name: X-Workspace-Id
+        required: true
+        type: string
+      - description: Reminder ID
+        in: path
+        name: reminder_id
+        required: true
+        type: integer
+      - description: Reminder
+        in: body
+        name: reminder
+        required: true
+        schema:
+          $ref: '#/definitions/transport.UpdateReminderOnlyMeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/fiber.Map'
+      security:
+      - bearerToken: []
+      summary: Update reminder for only me
+      tags:
+      - reminder
+  /api/v1/reminder/schedule/{schedule_id}/all_participants:
+    get:
+      consumes:
+      - application/json
+      description: Get reminder for all participants
+      parameters:
+      - description: User Email
+        in: header
+        name: X-User-Email
+        required: true
+        type: string
+      - description: Workspace ID
+        in: header
+        name: X-Workspace-Id
+        required: true
+        type: string
+      - description: Schedule ID
+        in: path
+        name: schedule_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TwReminder'
+      security:
+      - bearerToken: []
+      summary: Get reminder for all participants
+      tags:
+      - reminder
+  /api/v1/reminder/schedule/{schedule_id}/only_me:
+    get:
+      consumes:
+      - application/json
+      description: Get reminder for only me
+      parameters:
+      - description: User Email
+        in: header
+        name: X-User-Email
+        required: true
+        type: string
+      - description: Workspace ID
+        in: header
+        name: X-Workspace-Id
+        required: true
+        type: string
+      - description: Schedule ID
+        in: path
+        name: schedule_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TwReminder'
+      security:
+      - bearerToken: []
+      summary: Get reminder for only me
+      tags:
+      - reminder
   /api/v1/schedule/schedule:
     get:
       consumes:
