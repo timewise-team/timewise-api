@@ -4,6 +4,7 @@ import (
 	"api/service/schedule"
 	"github.com/gofiber/fiber/v2"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos"
+	"github.com/timewise-team/timewise-models/models"
 )
 
 type ScheduleHandler struct {
@@ -53,7 +54,8 @@ func (h *ScheduleHandler) CreateSchedule(c *fiber.Ctx) error {
 // @Success 200 {object} core_dtos.TwScheduleResponse
 // @Router /api/v1/schedules/{schedule_id} [get]
 func (h *ScheduleHandler) GetScheduleByID(c *fiber.Ctx) error {
-	schedule, err := h.service.GetScheduleByID(c)
+	scheduleID := c.Params("scheduleId")
+	schedule, err := h.service.GetScheduleById(scheduleID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
@@ -92,6 +94,38 @@ func (h *ScheduleHandler) UpdateSchedule(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"message": "Update schedule successfully",
 	})
+}
+
+// UpdateSchedulePosition godoc
+// @Summary Update an existing schedule position
+// @Description Update an existing schedule position
+// @Tags schedule
+// @Accept json
+// @Produce json
+// @Param schedule_id path int true "Schedule ID"
+// @Param schedule body core_dtos.TwUpdateSchedulePosition true "Schedule"
+// @Success 200 {object} core_dtos.TwUpdateScheduleResponse
+// @Router /api/v1/schedules/position/{schedule_id} [put]
+func (h *ScheduleHandler) UpdateSchedulePosition(c *fiber.Ctx) error {
+	scheduleID := c.Params("scheduleId")
+	var UpdateScheduleDto core_dtos.TwUpdateSchedulePosition
+	if err := c.BodyParser(&UpdateScheduleDto); err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+	}
+
+	workspaceUser, ok := c.Locals("workspace_user").(*models.TwWorkspaceUser)
+	if !ok {
+		return c.Status(fiber.StatusBadRequest).SendString("invalid workspaceuser")
+	}
+
+	updateSchedule, err := h.service.UpdateSchedulePosition(scheduleID, workspaceUser, UpdateScheduleDto)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.JSON(updateSchedule)
 }
 
 // DeleteSchedule godoc

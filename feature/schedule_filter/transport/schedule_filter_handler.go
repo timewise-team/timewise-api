@@ -22,11 +22,11 @@ func NewScheduleFilterHandler() *ScheduleFilterHandler {
 // ScheduleFilter godoc
 // @Summary Get schedules by filter
 // @Description Retrieve a list of schedules based on specified filter parameters.
-// @Tags Schedule
+// @Tags schedule
 // @Accept json
 // @Produce json
 // @Security bearerToken
-// @Param workspace_id query int false "Filter by Workspace ID"
+// @Param workspace_id query string false "Filter by Workspace ID"
 // @Param board_column_id query int false "Filter by Board Column ID"
 // @Param title query string false "Filter by Title (searches with LIKE)"
 // @Param start_time query string false "Filter by Start Time (ISO8601 format)"

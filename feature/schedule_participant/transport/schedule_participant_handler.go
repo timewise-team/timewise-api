@@ -79,7 +79,7 @@ func (h *ScheduleParticipantHandler) InviteToSchedule(c *fiber.Ctx) error {
 	}
 
 	if workspaceUserInvited.ID != 0 {
-		scheduleParticipant, err1 := h.service.InviteToSchedule(c, InviteToScheduleDto)
+		scheduleParticipant, err1 := h.service.InviteToSchedule(c, InviteToScheduleDto, 0)
 		if err1 != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": err1.Error(),
@@ -100,6 +100,55 @@ func (h *ScheduleParticipantHandler) InviteToSchedule(c *fiber.Ctx) error {
 	}
 
 	return c.JSON("invite sucessfully")
+}
+
+// assginMember godoc
+// @Summary Assign member to schedule
+// @Description Send invitation to user (X-User-Email required, X-Workspace-Id required)
+// @Tags ScheduleParticipant
+// @Accept json
+// @Produce json
+// @Param schedule_participant body schedule_participant_dtos.InviteToScheduleRequest true "Request body"
+// @Success 200 {object} schedule_participant_dtos.ScheduleParticipantResponse
+// @Router /api/v1/schedule_participant/assign [put]
+func (h *ScheduleParticipantHandler) AssignMember(c *fiber.Ctx) error {
+	var InviteToScheduleDto schedule_participant_dtos.InviteToScheduleRequest
+	if err := c.BodyParser(&InviteToScheduleDto); err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+	}
+	workspaceUser, ok := c.Locals("workspace_user").(*models.TwWorkspaceUser)
+	if !ok {
+		return errors.New("Failed to retrieve workspace user from context")
+	}
+
+	workspaceUserInvited, err := schedule_participant.NewScheduleParticipantService().GetWorkspaceUserByEmail(
+		InviteToScheduleDto.Email, workspaceUser.WorkspaceId,
+	)
+	if err != nil {
+		return err
+	}
+	if workspaceUserInvited.ID == 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "member does not exist in workspace",
+		})
+	}
+
+	scheduleParticipantInvited, err := h.service.GetScheduleParticipantsByScheduleAndWorkspaceUser(strconv.Itoa(InviteToScheduleDto.ScheduleId), strconv.Itoa(workspaceUserInvited.ID))
+	if err != nil {
+		return err
+	}
+	if scheduleParticipantInvited.ID == 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "member does not exist in schedule",
+		})
+	}
+	scheduleParticipant, err1 := h.service.AssignMember(c, scheduleParticipantInvited)
+	if err1 != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err1.Error(),
+		})
+	}
+	return c.JSON(scheduleParticipant)
 }
 
 // acceptInvitationViaEmail godoc

@@ -33,6 +33,14 @@ const docTemplate = `{
                     "account"
                 ],
                 "summary": "Get user info",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Status",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -138,6 +146,14 @@ const docTemplate = `{
                     "account"
                 ],
                 "summary": "Get linked user emails",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Status",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -149,14 +165,11 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
-            "post": {
-                "security": [
-                    {
-                        "bearerToken": []
-                    }
-                ],
-                "description": "Link an email",
+            }
+        },
+        "/api/v1/account/user/emails/link/{token}": {
+            "get": {
+                "description": "Action email link request",
                 "consumes": [
                     "application/json"
                 ],
@@ -166,16 +179,14 @@ const docTemplate = `{
                 "tags": [
                     "account"
                 ],
-                "summary": "Link an email",
+                "summary": "Action email link request",
                 "parameters": [
                     {
-                        "description": "Link an email request",
-                        "name": "linkAnEmailRequest",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/core_dtos.GoogleAuthRequest"
-                        }
+                        "type": "string",
+                        "description": "Token",
+                        "name": "token",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -183,6 +194,43 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/core_dtos.GetUserResponseDto"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/account/user/emails/send": {
+            "post": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Send link an email request",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "Send link an email request",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Target email",
+                        "name": "email",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Link email request sent",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }
@@ -208,13 +256,11 @@ const docTemplate = `{
                 "summary": "Unlink an email",
                 "parameters": [
                     {
-                        "description": "Unlink an email request",
-                        "name": "unlinkAnEmailRequest",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/core_dtos.GoogleAuthRequest"
-                        }
+                        "type": "string",
+                        "description": "Email",
+                        "name": "email",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -263,6 +309,11 @@ const docTemplate = `{
         },
         "/api/v1/board_columns": {
             "post": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
                 "description": "Create a board column (X-User-Email required, X-Workspace-Id required)",
                 "consumes": [
                     "application/json"
@@ -283,6 +334,20 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/board_columns_dtos.BoardColumnsRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "User email",
+                        "name": "X-User-Email",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "X-Workspace-Id",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -295,8 +360,73 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/board_columns/update_position/{board_column_id}": {
+            "put": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Update a board column position (X-User-Email required, X-Workspace-Id required)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "board_columns"
+                ],
+                "summary": "Update a board column position (X-User-Email required, X-Workspace-Id required)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Board column ID",
+                        "name": "board_column_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update board column position request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/transport.updatePositionRequest"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "User email",
+                        "name": "X-User-Email",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "X-Workspace-Id",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/fiber.Map"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/board_columns/workspace/{workspace_id}": {
             "get": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
                 "description": "Get all board columns by workspace (X-User-Email required, X-Workspace-Id required)",
                 "consumes": [
                     "application/json"
@@ -314,6 +444,20 @@ const docTemplate = `{
                         "description": "Workspace ID",
                         "name": "workspace_id",
                         "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User email",
+                        "name": "X-User-Email",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "X-Workspace-Id",
+                        "in": "header",
                         "required": true
                     }
                 ],
@@ -335,6 +479,11 @@ const docTemplate = `{
         },
         "/api/v1/board_columns/{board_column_id}": {
             "put": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
                 "description": "Update a board column (X-User-Email required, X-Workspace-Id required)",
                 "consumes": [
                     "application/json"
@@ -360,13 +509,39 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/board_columns_dtos.BoardColumnsRequest"
+                            "$ref": "#/definitions/transport.UpdateBoardColumnRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "User email",
+                        "name": "X-User-Email",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "X-Workspace-Id",
+                        "in": "header",
+                        "required": true
                     }
                 ],
-                "responses": {}
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TwBoardColumn"
+                        }
+                    }
+                }
             },
             "delete": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
                 "description": "Delete a board column (X-User-Email required, X-Workspace-Id required)",
                 "consumes": [
                     "application/json"
@@ -389,19 +564,26 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "User email",
-                        "name": "email",
-                        "in": "path",
+                        "name": "X-User-Email",
+                        "in": "header",
                         "required": true
                     },
                     {
                         "type": "string",
                         "description": "Workspace ID",
-                        "name": "workspace_id",
-                        "in": "path",
+                        "name": "X-Workspace-Id",
+                        "in": "header",
                         "required": true
                     }
                 ],
-                "responses": {}
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/fiber.Map"
+                        }
+                    }
+                }
             }
         },
         "/api/v1/comment": {
@@ -541,6 +723,108 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/document/delete": {
+            "delete": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Delete file from Google Cloud Storage",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "document"
+                ],
+                "summary": "Delete file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Schedule ID associated with the file",
+                        "name": "scheduleId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Name of the file to delete",
+                        "name": "fileName",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File deleted successfully",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - Missing or invalid parameters",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Something went wrong during file deletion",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/document/download/{documentId}": {
+            "get": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Download a document from Google Cloud Storage",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "document"
+                ],
+                "summary": "Download document",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Document ID",
+                        "name": "documentId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File downloaded successfully",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "404": {
+                        "description": "Document not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/document/schedule/{schedule_id}": {
             "get": {
                 "description": "Get documents by schedule",
@@ -571,6 +855,69 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/document_dtos.TwDocumentResponse"
                             }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/document/upload": {
+            "post": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Upload file with multipart/form-data and upload to Google Cloud Storage",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "document"
+                ],
+                "summary": "Upload file",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "File to upload",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Schedule ID associated with the file",
+                        "name": "scheduleId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workspace user ID who uploads the file",
+                        "name": "wspUserId",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File uploaded successfully",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - Missing or invalid parameters",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Something went wrong during file upload",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }
@@ -977,12 +1324,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Schedule"
+                    "schedule"
                 ],
                 "summary": "Get schedules by filter",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Filter by Workspace ID",
                         "name": "workspace_id",
                         "in": "query"
@@ -1156,6 +1503,40 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/schedule_participant/assign": {
+            "put": {
+                "description": "Send invitation to user (X-User-Email required, X-Workspace-Id required)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ScheduleParticipant"
+                ],
+                "summary": "Assign member to schedule",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "schedule_participant",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schedule_participant_dtos.InviteToScheduleRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schedule_participant_dtos.ScheduleParticipantResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/schedule_participant/decline-invitation-via-email/token/{token}": {
             "get": {
                 "description": "Decline invitation via email",
@@ -1313,6 +1694,47 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/schedules/position/{schedule_id}": {
+            "put": {
+                "description": "Update an existing schedule position",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "schedule"
+                ],
+                "summary": "Update an existing schedule position",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Schedule ID",
+                        "name": "schedule_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Schedule",
+                        "name": "schedule",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/core_dtos.TwUpdateSchedulePosition"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/core_dtos.TwUpdateScheduleResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/schedules/{schedule_id}": {
             "get": {
                 "description": "Get schedule by ID",
@@ -1407,6 +1829,41 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/api/v1/user_email/list_approve/{scheduleId}": {
+            "get": {
+                "description": "list approve user email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User Email"
+                ],
+                "summary": "list approve user email",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Schedule ID",
+                        "name": "scheduleId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/user_email_dtos.UserEmailStatusResponse"
+                            }
+                        }
                     }
                 }
             }
@@ -2244,6 +2701,17 @@ const docTemplate = `{
                 }
             }
         },
+        "core_dtos.EmailDto": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "core_dtos.GetUserResponseDto": {
             "type": "object",
             "properties": {
@@ -2259,7 +2727,7 @@ const docTemplate = `{
                 "email": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/core_dtos.EmailDto"
                     }
                 },
                 "first_name": {
@@ -2334,61 +2802,15 @@ const docTemplate = `{
         "core_dtos.TwCreateScheduleRequest": {
             "type": "object",
             "properties": {
-                "all_day": {
-                    "description": "Nullable field (represented by tinyint in SQL)",
-                    "type": "boolean"
-                },
                 "board_column_id": {
                     "description": "Nullable field",
-                    "type": "integer"
-                },
-                "created_by": {
-                    "description": "Required field",
                     "type": "integer"
                 },
                 "description": {
                     "description": "Nullable field",
                     "type": "string"
                 },
-                "end_time": {
-                    "description": "Nullable field",
-                    "type": "string"
-                },
-                "extra_data": {
-                    "description": "Nullable field",
-                    "type": "string"
-                },
-                "location": {
-                    "description": "Nullable field",
-                    "type": "string"
-                },
-                "position": {
-                    "type": "integer"
-                },
-                "priority": {
-                    "type": "string"
-                },
-                "recurrence_pattern": {
-                    "description": "Nullable field",
-                    "type": "string"
-                },
-                "start_time": {
-                    "description": "Nullable field",
-                    "type": "string"
-                },
-                "status": {
-                    "description": "Nullable field",
-                    "type": "string"
-                },
                 "title": {
-                    "description": "Nullable field",
-                    "type": "string"
-                },
-                "video_transcript": {
-                    "description": "Nullable field",
-                    "type": "string"
-                },
-                "visibility": {
                     "description": "Nullable field",
                     "type": "string"
                 },
@@ -2406,6 +2828,9 @@ const docTemplate = `{
             "properties": {
                 "board_column_id": {
                     "type": "integer"
+                },
+                "description": {
+                    "type": "string"
                 },
                 "id": {
                     "type": "integer"
@@ -2563,14 +2988,22 @@ const docTemplate = `{
                 }
             }
         },
+        "core_dtos.TwUpdateSchedulePosition": {
+            "type": "object",
+            "properties": {
+                "board_column_id": {
+                    "type": "integer"
+                },
+                "position": {
+                    "type": "integer"
+                }
+            }
+        },
         "core_dtos.TwUpdateScheduleRequest": {
             "type": "object",
             "properties": {
                 "all_day": {
                     "type": "boolean"
-                },
-                "board_column_id": {
-                    "type": "integer"
                 },
                 "description": {
                     "type": "string"
@@ -2584,10 +3017,8 @@ const docTemplate = `{
                 "location": {
                     "type": "string"
                 },
-                "position": {
-                    "type": "integer"
-                },
                 "priority": {
+                    "description": "Position          *int       ` + "`" + `json:\"position,omitempty\"` + "`" + `",
                     "type": "string"
                 },
                 "recurrence_pattern": {
@@ -2600,6 +3031,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "title": {
+                    "description": "BoardColumnID     *int       ` + "`" + `json:\"board_column_id,omitempty\"` + "`" + `",
                     "type": "string"
                 },
                 "video_transcript": {
@@ -3048,6 +3480,12 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
+                "is_linked_to": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                },
                 "updated_at": {
                     "type": "string"
                 },
@@ -3318,6 +3756,14 @@ const docTemplate = `{
                 }
             }
         },
+        "transport.UpdateBoardColumnRequest": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "transport.UpdateReminderOnlyMeRequest": {
             "type": "object",
             "properties": {
@@ -3351,6 +3797,14 @@ const docTemplate = `{
                 }
             }
         },
+        "transport.updatePositionRequest": {
+            "type": "object",
+            "properties": {
+                "position": {
+                    "type": "integer"
+                }
+            }
+        },
         "user_email_dtos.SearchUserEmailResponse": {
             "type": "object",
             "properties": {
@@ -3367,6 +3821,32 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "profile_picture": {
+                    "type": "string"
+                }
+            }
+        },
+        "user_email_dtos.UserEmailStatusResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_verified": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "profile_picture": {
+                    "type": "string"
+                },
+                "status": {
                     "type": "string"
                 }
             }

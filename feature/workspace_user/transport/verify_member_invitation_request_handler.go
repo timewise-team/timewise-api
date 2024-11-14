@@ -1,9 +1,12 @@
 package transport
 
 import (
-	"api/service/schedule_participant"
+	"api/config"
+	"api/service/auth"
+	"api/service/schedule"
 	"api/service/user_email"
 	"api/service/workspace_user"
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos/schedule_participant_dtos"
 	"github.com/timewise-team/timewise-models/models"
@@ -23,6 +26,13 @@ func (h *WorkspaceUserHandler) verifyMemberInvitationRequest(c *fiber.Ctx) error
 	var InviteToScheduleDto schedule_participant_dtos.InviteToScheduleRequest
 	if err := c.BodyParser(&InviteToScheduleDto); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+	}
+
+	cfg, err1 := config.LoadConfig()
+	if err1 != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"message": "Failed to load config",
+		})
 	}
 
 	workspaceUserLocal := c.Locals("workspace_user")
@@ -65,30 +75,23 @@ func (h *WorkspaceUserHandler) verifyMemberInvitationRequest(c *fiber.Ctx) error
 			"message": "Internal server error",
 		})
 	}
-	//if workspaceUserCheck != nil {
-	//	if workspaceUserCheck.Status == "pending" {
-	//		worspaceIdStr := strconv.Itoa(workspaceUser.WorkspaceId)
-	//		workspaceInfo := workspace.NewWorkspaceService().GetWorkspaceById(worspaceIdStr)
-	//		acceptLink, declineLink, _ := auth.GenerateInviteLinks(cfg, userEmail.Email, workspaceInfo.ID, workspaceUserCheck.Role)
-	//		content := auth.BuildInvitationContent(workspaceInfo, workspaceUserCheck.Role, acceptLink, declineLink)
-	//		subject := fmt.Sprintf("Invitation to join workspace: %s", workspaceInfo.Title)
-	//		if err := auth.SendInvitationEmail(cfg, userEmail.Email, content, subject); err != nil {
-	//			return c.Status(500).JSON(fiber.Map{"message": "Failed to send invitation email"})
-	//		}
-	//		return c.Status(200).JSON(fiber.Map{
-	//			"message": "Invitation sent successfully",
-	//		})
-	//	}
-	//}
-	schedudeParticipant, err := schedule_participant.NewScheduleParticipantService().InviteToSchedule(c, InviteToScheduleDto)
-	if err1 != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err1.Error(),
-		})
+	if workspaceUserCheck != nil {
+		if workspaceUserCheck.Status == "pending" {
+			scheduleIdStr := strconv.Itoa(InviteToScheduleDto.ScheduleId)
+			scheduleInfo, _ := schedule.NewScheduleService().GetScheduleByID(scheduleIdStr)
+			acceptLink, declineLink, _ := auth.GenerateInviteScheduleLinks(cfg, InviteToScheduleDto.ScheduleId, workspaceUserCheck.ID)
+			content := auth.BuildScheduleInvitationContent(scheduleInfo, acceptLink, declineLink)
+			subject := fmt.Sprintf("Invitation to join workspace: %s", scheduleInfo.Title)
+			if err := auth.SendInvitationEmail(cfg, userEmail.Email, content, subject); err != nil {
+				return c.Status(500).JSON(fiber.Map{"message": "Failed to send invitation email"})
+			}
+			return c.Status(200).JSON(fiber.Map{
+				"message": "Invitation sent successfully",
+			})
+		}
 	}
 	return c.JSON(fiber.Map{
-		"workspaceUser":       workspaceUserCheck,
-		"scheduleParticipant": schedudeParticipant,
+		"workspaceUser": workspaceUserCheck,
 	})
 
 }

@@ -18,3 +18,14 @@ func ValidateBoardColumn(boardColumn dtos.BoardColumnsRequest) error {
 	}
 	return nil
 }
+
+func ValidateBoardColumnName(name string) error {
+	// Validate board column name
+	if name == "" {
+		return errors.New("Board column name is required")
+	}
+	if len(name) > 50 {
+		return errors.New("Board column name must not exceed 50 characters")
+	}
+	return nil
+}
