@@ -28,6 +28,7 @@ func NewDocumentHandler() *DocumentHandler {
 // @Accept json
 // @Produce json
 // @Param schedule_id path string true "Schedule ID"
+// @Security bearerToken
 // @Success 200 {array} document_dtos.TwDocumentResponse
 // @Router /api/v1/document/schedule/{schedule_id} [get]
 func (h *DocumentHandler) GetDocumentByScheduleID(c *fiber.Ctx) error {

@@ -863,6 +863,11 @@ const docTemplate = `{
         },
         "/api/v1/document/schedule/{schedule_id}": {
             "get": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
                 "description": "Get documents by schedule",
                 "consumes": [
                     "application/json"
