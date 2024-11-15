@@ -30,7 +30,7 @@ func NewDocumentHandler() *DocumentHandler {
 // @Param schedule_id path string true "Schedule ID"
 // @Security bearerToken
 // @Success 200 {array} document_dtos.TwDocumentResponse
-// @Router /api/v1/document/schedule/{schedule_id} [get]
+// @Router /api/v1/document/schedule/{scheduleId} [get]
 func (h *DocumentHandler) GetDocumentByScheduleID(c *fiber.Ctx) error {
 	scheduleIDStr := c.Params("scheduleID")
 	scheduleID, err := strconv.Atoi(scheduleIDStr)

@@ -1446,7 +1446,7 @@ paths:
       summary: Download document
       tags:
       - document
-  /api/v1/document/schedule/{schedule_id}:
+  /api/v1/document/schedule/{scheduleId}:
     get:
       consumes:
       - application/json

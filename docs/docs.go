@@ -861,7 +861,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/document/schedule/{schedule_id}": {
+        "/api/v1/document/schedule/{scheduleId}": {
             "get": {
                 "security": [
                     {
