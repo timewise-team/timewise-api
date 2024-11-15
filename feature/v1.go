@@ -7,6 +7,7 @@ import (
 	boardColumnsTransport "api/feature/board_columns/transport"
 	commentsTransport "api/feature/comment/transport"
 	documentTransport "api/feature/document/transport"
+	notificationSettingTransport "api/feature/notification_setting/transport"
 	reminderTransport "api/feature/reminder/transport"
 	"api/feature/schedule/transport"
 	scheduleFilterTransport "api/feature/schedule_filter/transport"
@@ -72,5 +73,6 @@ func RegisterHandlerV1() *fiber.App {
 	commentsTransport.RegisterCommentHandler(v1.Group("/comment"))
 	accountTransport.RegisterAccountHandler(v1.Group("/account"))
 	reminderTransport.RegisterReminderHandler(v1.Group("/reminder"))
+	notificationSettingTransport.RegisterNotificationSettingHandler(v1.Group("/notification_setting"))
 	return router
 }

@@ -964,6 +964,71 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/notification_setting": {
+            "get": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Get notification setting by user id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notification_setting"
+                ],
+                "summary": "Get notification setting by user id",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TwNotificationSettings"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Update notification setting",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notification_setting"
+                ],
+                "summary": "Update notification setting",
+                "parameters": [
+                    {
+                        "description": "Notification Setting",
+                        "name": "notification_setting",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/transport.UpdateNotificationSettingRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TwNotificationSettings"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/reminder/all_participants": {
             "post": {
                 "security": [
@@ -3332,6 +3397,47 @@ const docTemplate = `{
                 }
             }
         },
+        "models.TwNotificationSettings": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "extra_data": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "notification_on_comment": {
+                    "type": "boolean"
+                },
+                "notification_on_due_date": {
+                    "type": "boolean"
+                },
+                "notification_on_email": {
+                    "type": "boolean"
+                },
+                "notification_on_schedule_change": {
+                    "type": "boolean"
+                },
+                "notification_on_tag": {
+                    "type": "boolean"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/models.TwUser"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "models.TwReminder": {
             "type": "object",
             "properties": {
@@ -3802,6 +3908,26 @@ const docTemplate = `{
             "properties": {
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "transport.UpdateNotificationSettingRequest": {
+            "type": "object",
+            "properties": {
+                "notificationOnComment": {
+                    "type": "boolean"
+                },
+                "notificationOnDueDate": {
+                    "type": "boolean"
+                },
+                "notificationOnEmail": {
+                    "type": "boolean"
+                },
+                "notificationOnScheduleChange": {
+                    "type": "boolean"
+                },
+                "notificationOnTag": {
+                    "type": "boolean"
                 }
             }
         },
