@@ -484,6 +484,33 @@ definitions:
       workspace_id:
         type: integer
     type: object
+  models.TwNotificationSettings:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      extra_data:
+        type: string
+      id:
+        type: integer
+      notification_on_comment:
+        type: boolean
+      notification_on_due_date:
+        type: boolean
+      notification_on_email:
+        type: boolean
+      notification_on_schedule_change:
+        type: boolean
+      notification_on_tag:
+        type: boolean
+      updated_at:
+        type: string
+      user:
+        $ref: '#/definitions/models.TwUser'
+      user_id:
+        type: integer
+    type: object
   models.TwReminder:
     properties:
       created_at:
@@ -794,6 +821,19 @@ definitions:
     properties:
       name:
         type: string
+    type: object
+  transport.UpdateNotificationSettingRequest:
+    properties:
+      notificationOnComment:
+        type: boolean
+      notificationOnDueDate:
+        type: boolean
+      notificationOnEmail:
+        type: boolean
+      notificationOnScheduleChange:
+        type: boolean
+      notificationOnTag:
+        type: boolean
     type: object
   transport.UpdateReminderOnlyMeRequest:
     properties:
@@ -1513,6 +1553,46 @@ paths:
       summary: Upload file
       tags:
       - document
+  /api/v1/notification_setting:
+    get:
+      consumes:
+      - application/json
+      description: Get notification setting by user id
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TwNotificationSettings'
+      security:
+      - bearerToken: []
+      summary: Get notification setting by user id
+      tags:
+      - notification_setting
+    put:
+      consumes:
+      - application/json
+      description: Update notification setting
+      parameters:
+      - description: Notification Setting
+        in: body
+        name: notification_setting
+        required: true
+        schema:
+          $ref: '#/definitions/transport.UpdateNotificationSettingRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TwNotificationSettings'
+      security:
+      - bearerToken: []
+      summary: Update notification setting
+      tags:
+      - notification_setting
   /api/v1/reminder/{reminder_id}/schedule/{schedule_id}:
     delete:
       consumes:
