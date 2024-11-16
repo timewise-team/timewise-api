@@ -817,6 +817,13 @@ definitions:
       schedule_id:
         type: integer
     type: object
+  transport.StartMeetingRequest:
+    properties:
+      meet_link:
+        type: string
+      schedule_id:
+        type: integer
+    type: object
   transport.UpdateBoardColumnRequest:
     properties:
       name:
@@ -1553,6 +1560,30 @@ paths:
       summary: Upload file
       tags:
       - document
+  /api/v1/meeting_bot/start:
+    post:
+      consumes:
+      - application/json
+      description: Start a meeting
+      parameters:
+      - description: Start meeting request
+        in: body
+        name: startMeetingRequest
+        required: true
+        schema:
+          $ref: '#/definitions/transport.StartMeetingRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - bearerToken: []
+      summary: Start a meeting
+      tags:
+      - meeting_bot
   /api/v1/notification_setting:
     get:
       consumes:
