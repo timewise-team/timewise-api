@@ -25,9 +25,9 @@ func (s *ScheduleFilterService) ScheduleFilter(c *fiber.Ctx) (*http.Response, er
 		return nil, errors.New("Workspace ID is required")
 	}
 
-	// Get user_email_id by email
-	email := c.Locals("email").(string)
-	resp, err := dms.CallAPI("GET", "/user_email/email/"+email, nil, nil, nil, 120)
+	// Get user_email_id by userId
+	userId := c.Locals("userid").(string)
+	resp, err := dms.CallAPI("GET", "/user_email/user/"+userId, nil, nil, nil, 120)
 	if err != nil {
 		return nil, err
 	}
@@ -39,14 +39,20 @@ func (s *ScheduleFilterService) ScheduleFilter(c *fiber.Ctx) (*http.Response, er
 	if resp.StatusCode != fiber.StatusOK {
 		return nil, errors.New("error from external service: " + string(body))
 	}
-	var userResponse models.TwUserEmail
+	var userResponse []models.TwUserEmail
 	err = json.Unmarshal(body, &userResponse)
 	if err != nil {
 		return nil, errors.New("could not unmarshal response body: " + err.Error())
 	}
+	// parse userResponse to get list of user_email_id
+	user_email_id := make([]string, len(userResponse))
+	for i, user := range userResponse {
+		user_email_id[i] = strconv.Itoa(user.ID)
+	}
+	// get user_email_id in user_email table by I
 
 	// Get workspace IDs for the user
-	resp, err = dms.CallAPI("GET", "/workspace_user/user_email_id/"+strconv.Itoa(userResponse.ID), nil, nil, nil, 120)
+	resp, err = dms.CallAPI("POST", "/workspace_user/user_email_id", user_email_id, nil, nil, 120)
 	if err != nil {
 		return nil, err
 	}
