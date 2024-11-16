@@ -964,6 +964,45 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/meeting_bot/start": {
+            "post": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Start a meeting",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "meeting_bot"
+                ],
+                "summary": "Start a meeting",
+                "parameters": [
+                    {
+                        "description": "Start meeting request",
+                        "name": "startMeetingRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/transport.StartMeetingRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/notification_setting": {
             "get": {
                 "security": [
@@ -3896,6 +3935,17 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "reminder_time": {
+                    "type": "string"
+                },
+                "schedule_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "transport.StartMeetingRequest": {
+            "type": "object",
+            "properties": {
+                "meet_link": {
                     "type": "string"
                 },
                 "schedule_id": {
