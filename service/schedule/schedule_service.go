@@ -97,28 +97,45 @@ func (s *ScheduleService) FetchScheduleParticipant(workspaceUserIdStr, scheduleI
 	return scheduleParticipant, nil
 }
 
-func applyUpdateFields(baseSchedule, updateSchedule models.TwSchedule, dto core_dtos.TwUpdateScheduleRequest) models.TwSchedule {
+func applyUpdateFields(baseSchedule, updateSchedule models.TwSchedule, dto core_dtos.TwUpdateScheduleRequest) (models.TwSchedule, error) {
+	// Validate Title
 	if dto.Title != nil {
+		if *dto.Title == "" {
+			return updateSchedule, fmt.Errorf("title cannot be empty")
+		}
 		updateSchedule.Title = *dto.Title
 	}
-	if dto.Description != nil {
-		updateSchedule.Description = *dto.Description
-	}
+
 	if dto.StartTime != nil {
+		// Parse StartTime
 		parsedStartTime, err := time.Parse("2006-01-02 15:04:05.000", *dto.StartTime)
 		if err != nil {
-			fmt.Println("Error parsing start time:", err)
-		} else {
-			updateSchedule.StartTime = &parsedStartTime
+			return updateSchedule, fmt.Errorf("error parsing start time: %v", err)
 		}
+		// Kiểm tra StartTime không được nhỏ hơn time.Now()
+		if parsedStartTime.Before(time.Now()) {
+			return updateSchedule, fmt.Errorf("start time cannot be in the past")
+		}
+		updateSchedule.StartTime = &parsedStartTime
 	}
+
+	// Validate EndTime
 	if dto.EndTime != nil {
+		// Parse EndTime
 		parsedEndTime, err := time.Parse("2006-01-02 15:04:05.000", *dto.EndTime)
 		if err != nil {
-			fmt.Println("Error parsing end time:", err)
-		} else {
-			updateSchedule.EndTime = &parsedEndTime
+			return updateSchedule, fmt.Errorf("error parsing end time: %v", err)
 		}
+		// Kiểm tra EndTime không được nhỏ hơn StartTime
+		if updateSchedule.StartTime != nil && parsedEndTime.Before(*updateSchedule.StartTime) {
+			return updateSchedule, fmt.Errorf("end time cannot be earlier than start time")
+		}
+		updateSchedule.EndTime = &parsedEndTime
+	}
+
+	// Apply other fields
+	if dto.Description != nil {
+		updateSchedule.Description = *dto.Description
 	}
 	if dto.Location != nil {
 		updateSchedule.Location = *dto.Location
@@ -141,32 +158,25 @@ func applyUpdateFields(baseSchedule, updateSchedule models.TwSchedule, dto core_
 	if dto.Priority != nil {
 		updateSchedule.Priority = *dto.Priority
 	}
-	return updateSchedule
+
+	return updateSchedule, nil
 }
 
-func (s *ScheduleService) UpdateSchedule(c *fiber.Ctx, UpdateScheduleDto core_dtos.TwUpdateScheduleRequest) error {
-	scheduleID := c.Params("scheduleId")
+func (s *ScheduleService) UpdateSchedule(
+	scheduleID string,
+	scheduleParticipant models.TwScheduleParticipant,
+	workspaceUser *models.TwWorkspaceUser,
+	UpdateScheduleDto core_dtos.TwUpdateScheduleRequest) (*models.TwSchedule, error) {
 
 	schedule, err := fetchSchedule(scheduleID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	updateSchedule := schedule
-	updateSchedule = applyUpdateFields(schedule, updateSchedule, UpdateScheduleDto)
-
-	scheduleParticipant, ok := c.Locals("scheduleParticipant").(models.TwScheduleParticipant)
-	if !ok {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to retrieve schedule participant",
-		})
-	}
-
-	workspaceUser, ok := c.Locals("workspace_user").(*models.TwWorkspaceUser)
-	if !ok {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to retrieve schedule participant",
-		})
+	updateSchedule, err = applyUpdateFields(schedule, updateSchedule, UpdateScheduleDto)
+	if err != nil {
+		return nil, fmt.Errorf("Bad Request: %v", err)
 	}
 
 	if scheduleParticipant.Status == "assign to" {
@@ -189,25 +199,25 @@ func (s *ScheduleService) UpdateSchedule(c *fiber.Ctx, UpdateScheduleDto core_dt
 
 	resp, err := dms.CallAPI("PUT", "/schedule/"+scheduleID+"/workspace_user/"+strconv.Itoa(workspaceUser.ID), updateSchedule, nil, nil, 120)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return errors.New("cannot read response body")
+		return nil, errors.New("cannot read response body")
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return errors.New(string(body))
+		return nil, errors.New(string(body))
 	}
 
 	var updatedSchedule models.TwSchedule
 	if err := json.Unmarshal(body, &updatedSchedule); err != nil {
-		return errors.New("error parsing JSON")
+		return nil, errors.New("error parsing JSON")
 	}
 
-	return c.JSON(updatedSchedule)
+	return &updatedSchedule, nil
 }
 
 func (s *ScheduleService) UpdateSchedulePosition(scheduleId string, workspaceUser *models.TwWorkspaceUser, UpdateScheduleDto core_dtos.TwUpdateSchedulePosition) (*core_dtos.TwUpdateScheduleResponse, error) {
@@ -251,7 +261,8 @@ func (s *ScheduleService) GetScheduleByID(scheduleID string) (*models.TwSchedule
 	defer resp.Body.Close()
 	// Kiểm tra mã trạng thái HTTP
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		body, _ := ioutil.ReadAll(resp.Body)
+		return nil, fmt.Errorf("GET /schedule/%s returned status %d: %s", scheduleID, resp.StatusCode, string(body))
 	}
 
 	// Parse response
@@ -278,7 +289,8 @@ func (s *ScheduleService) GetScheduleById(scheduleID string) (*core_dtos.TwSched
 	defer resp.Body.Close()
 	// Kiểm tra mã trạng thái HTTP
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		body, _ := ioutil.ReadAll(resp.Body)
+		return nil, fmt.Errorf("GET /schedule/%s returned status %d: %s", scheduleID, resp.StatusCode, string(body))
 	}
 
 	// Parse response

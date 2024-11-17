@@ -27,7 +27,7 @@ func RegisterScheduleHandler(router fiber.Router) {
 		middleware.CheckScheduleStatus([]string{"creator", "assign to"}),
 		scheduleHandler.Handler.UpdateSchedule)
 	router.Delete("/:scheduleId",
-		middleware.CheckWorkspaceRole([]string{"owner", "admin"}),
+		middleware.CheckWorkspaceRole([]string{"owner", "admin", "member"}),
 		middleware.CheckScheduleStatus([]string{"creator"}),
 		scheduleHandler.Handler.DeleteSchedule)
 	router.Put("/position/:scheduleId",
