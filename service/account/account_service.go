@@ -103,12 +103,12 @@ func (s *AccountService) GetLinkedUserEmails(userId string, status string) ([]co
 
 func (s *AccountService) UpdateUserInfo(userId string, request core_dtos.UpdateProfileRequestDto) (core_dtos.GetUserResponseDto, error) {
 	// call dms to update user info
-	user := models.TwUser{
-		FirstName:            request.FirstName,
-		LastName:             request.LastName,
-		ProfilePicture:       request.ProfilePicture,
-		NotificationSettings: request.NotificationSettings,
-		CalendarSettings:     request.CalendarSettings,
+	user := core_dtos.UpdateUserRequest{
+		FirstName:            &request.FirstName,
+		LastName:             &request.LastName,
+		ProfilePicture:       &request.ProfilePicture,
+		NotificationSettings: &request.NotificationSettings,
+		CalendarSettings:     &request.CalendarSettings,
 	}
 	resp, err := dms.CallAPI("PUT", "/user/"+userId, user, nil, nil, 120)
 	if err != nil {
