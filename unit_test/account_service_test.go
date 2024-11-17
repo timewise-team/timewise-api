@@ -2,6 +2,7 @@ package unit_test_test
 
 import (
 	"api/service/account"
+	"api/unit_test/utils"
 	"bytes"
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
@@ -34,6 +35,7 @@ func newMockResponse(statusCode int, body interface{}) *http.Response {
 }
 
 func TestGetUserInfoByUserId(t *testing.T) {
+	utils.InitConfig()
 	mockDMS := new(MockDMSClient)
 	service := account.NewAccountService()
 
@@ -69,6 +71,7 @@ func TestGetUserInfoByUserId(t *testing.T) {
 }
 
 func TestUpdateUserInfo(t *testing.T) {
+	utils.InitConfig()
 	mockDMS := new(MockDMSClient)
 	service := account.NewAccountService()
 
@@ -102,6 +105,7 @@ func TestUpdateUserInfo(t *testing.T) {
 }
 
 func TestDeactivateAccount(t *testing.T) {
+	utils.InitConfig()
 	mockDMS := new(MockDMSClient)
 	service := account.NewAccountService()
 
