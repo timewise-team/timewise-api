@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/timewise-team/timewise-models/models"
+	"strconv"
 )
 
 type NotificationSettingService struct {
@@ -60,4 +61,30 @@ func (s NotificationSettingService) UpdateNotificationSetting(id string, setting
 
 	return notificationSetting, nil
 
+}
+
+func (s NotificationSettingService) CreateNotificationSetting(id int) error {
+
+	notificationSetting := models.TwNotificationSettings{
+		UserId:                       id,
+		NotificationOnTag:            true,
+		NotificationOnComment:        true,
+		NotificationOnDueDate:        true,
+		NotificationOnScheduleChange: true,
+		NotificationOnEmail:          true,
+	}
+	resp, err := dms.CallAPI(
+		"POST",
+		"/notification_setting/"+strconv.Itoa(id),
+		notificationSetting,
+		nil,
+		nil,
+		120,
+	)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return nil
 }
