@@ -3,6 +3,7 @@ package auth
 import (
 	"api/config"
 	"api/dms"
+	"api/service/notification_setting"
 	auth_utils "api/utils/auth"
 	"encoding/json"
 	"errors"
@@ -148,7 +149,13 @@ func (s *AuthService) InitNewUser(user models.TwUser) (bool, error) {
 
 	_, err = s.CreateWorkspaceUser(userEmailResponse, workspaceResponse)
 	// Create workspace user
-
+	if err != nil {
+		return false, err // Return error if workspace user creation fails
+	}
+	err = notification_setting.NewNotificationSettingService().CreateNotificationSetting(user.ID)
+	if err != nil {
+		return false, err
+	}
 	return true, nil // Success
 }
 
