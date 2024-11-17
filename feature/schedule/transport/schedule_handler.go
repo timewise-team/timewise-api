@@ -2,6 +2,7 @@ package transport
 
 import (
 	"api/service/schedule"
+	"errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos"
 	"github.com/timewise-team/timewise-models/models"
@@ -80,8 +81,17 @@ func (h *ScheduleHandler) UpdateSchedule(c *fiber.Ctx) error {
 	if err := c.BodyParser(&UpdateScheduleDto); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
+	scheduleID := c.Params("scheduleId")
+	scheduleParticipant, ok := c.Locals("scheduleParticipant").(models.TwScheduleParticipant)
+	if !ok {
+		return errors.New("Failed to retrieve schedule participant")
+	}
 
-	err := h.service.UpdateSchedule(c, UpdateScheduleDto)
+	workspaceUser, ok := c.Locals("workspace_user").(*models.TwWorkspaceUser)
+	if !ok {
+		return errors.New("Failed to retrieve workspace user")
+	}
+	updatedSchedule, err := h.service.UpdateSchedule(scheduleID, scheduleParticipant, workspaceUser, UpdateScheduleDto)
 	if err != nil {
 		if err.Error() == "permission denied" {
 			return c.Status(fiber.StatusForbidden).SendString(err.Error())
@@ -91,9 +101,7 @@ func (h *ScheduleHandler) UpdateSchedule(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.JSON(fiber.Map{
-		"message": "Update schedule successfully",
-	})
+	return c.JSON(updatedSchedule)
 }
 
 // UpdateSchedulePosition godoc
