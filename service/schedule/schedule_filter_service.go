@@ -109,6 +109,8 @@ func (s *ScheduleFilterService) ScheduleFilter(c *fiber.Ctx) (*http.Response, er
 	}
 	if isDeleted := c.Query("is_deleted"); isDeleted != "" {
 		queryParams["is_deleted"] = isDeleted
+	} else if isDeleted == "" {
+		queryParams["is_deleted"] = "0"
 	}
 	if assignedTo := c.Query("assigned_to"); assignedTo != "" {
 		queryParams["assigned_to"] = assignedTo
