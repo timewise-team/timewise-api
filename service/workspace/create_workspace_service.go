@@ -2,7 +2,9 @@ package workspace
 
 import (
 	"api/dms"
+	auth_utils "api/utils/auth"
 	"encoding/json"
+	"errors"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos/create_workspace_dtos"
 	"github.com/timewise-team/timewise-models/models"
 	"io/ioutil"
@@ -19,6 +21,27 @@ func NewCreateWorkspaceService() *CreateWorkspaceService {
 
 // Main method
 func (s *CreateWorkspaceService) InitWorkspace(workspaceRequest create_workspace_dtos.CreateWorkspaceRequest) (*create_workspace_dtos.CreateWorkspaceResponse, error) {
+	//Validate workspace request
+	if workspaceRequest.Email == "" {
+		return nil, errors.New("Email is required")
+	}
+	if workspaceRequest.Title == "" {
+		return nil, errors.New("Title is required")
+	}
+	if workspaceRequest.Description == "" {
+		return nil, errors.New("Description is required")
+	}
+	if len(workspaceRequest.Title) > 50 {
+		return nil, errors.New("Title must not exceed 50 characters")
+	}
+	if len(workspaceRequest.Description) > 255 {
+		return nil, errors.New("Description must not exceed 255 characters")
+	}
+	if auth_utils.IsValidEmail(workspaceRequest.Email) == false {
+		return nil, errors.New("Invalid email")
+	}
+
+	//Create workspace
 	userEmail, err := s.GetUserEmailByEmail(workspaceRequest.Email)
 	if err != nil {
 		return nil, err
@@ -55,7 +78,27 @@ func (s *CreateWorkspaceService) InitWorkspace(workspaceRequest create_workspace
 }
 
 func (s *CreateWorkspaceService) CreateWorkspaceUser(workspaceUser models.TwWorkspaceUser) (*models.TwWorkspaceUser, error) {
+	//Validate workspace user
+	if workspaceUser.WorkspaceId == 0 {
+		return nil, errors.New("Workspace ID is required")
+	}
+	if workspaceUser.UserEmailId == 0 {
+		return nil, errors.New("User Email ID is required")
+	}
+	if workspaceUser.Role == "" {
+		return nil, errors.New("Role is required")
+	}
+	if workspaceUser.Status == "" {
+		return nil, errors.New("Status is required")
+	}
+	if workspaceUser.Role != "owner" && workspaceUser.Role != "member" && workspaceUser.Role != "guest" && workspaceUser.Role != "admin" {
+		return nil, errors.New("Invalid role")
+	}
+	if workspaceUser.Status != "joined" && workspaceUser.Status != "pending" {
+		return nil, errors.New("Invalid status")
+	}
 
+	//Call API
 	resp, err := dms.CallAPI(
 		"POST",
 		"/workspace_user",
@@ -82,6 +125,14 @@ func (s *CreateWorkspaceService) CreateWorkspaceUser(workspaceUser models.TwWork
 	return &CreateWorkspaceUserResponse, nil
 }
 func (s *CreateWorkspaceService) GetUserEmailByEmail(email string) (*models.TwUserEmail, error) {
+	//Validate email
+	if email == "" {
+		return nil, errors.New("Email is required")
+	}
+	if auth_utils.IsValidEmail(email) == false {
+		return nil, errors.New("Invalid email")
+	}
+	//Call API
 	resp, err := dms.CallAPI(
 		"GET",
 		"/user_email/email/"+email,
@@ -107,7 +158,26 @@ func (s *CreateWorkspaceService) GetUserEmailByEmail(email string) (*models.TwUs
 	return &GetUserEmailByEmail, nil
 }
 func (s *CreateWorkspaceService) CreateWorkspace(workspace models.TwWorkspace) (*create_workspace_dtos.CreateWorkspaceResponse, error) {
-
+	//Validate workspace
+	if workspace.Title == "" {
+		return nil, errors.New("Title is required")
+	}
+	if workspace.Description == "" {
+		return nil, errors.New("Description is required")
+	}
+	if len(workspace.Title) > 50 {
+		return nil, errors.New("Title must not exceed 50 characters")
+	}
+	if len(workspace.Description) > 255 {
+		return nil, errors.New("Description must not exceed 255 characters")
+	}
+	if workspace.Type != "workspace" && workspace.Type != "personal" {
+		return nil, errors.New("Invalid type")
+	}
+	if workspace.IsDeleted == true {
+		return nil, errors.New("IsDeleted is required")
+	}
+	//Call API
 	resp, err := dms.CallAPI(
 		"POST",
 		"/workspace",

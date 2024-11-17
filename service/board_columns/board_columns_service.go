@@ -2,11 +2,14 @@ package board_columns
 
 import (
 	"api/dms"
+	"api/service/workspace"
+	board_columns_utils "api/utils/board_columns"
 	"encoding/json"
 	"fmt"
 	dtos "github.com/timewise-team/timewise-models/dtos/core_dtos/board_columns_dtos"
 	"github.com/timewise-team/timewise-models/models"
 	"net/http" // Đảm bảo import gói http để sử dụng http.StatusOK và http.StatusCreated
+	"strconv"
 )
 
 type BoardColumnsService struct {
@@ -17,6 +20,9 @@ func NewBoardColumnsService() *BoardColumnsService {
 }
 
 func (s *BoardColumnsService) CreateBoardColumn(request dtos.BoardColumnsRequest) (*models.TwBoardColumn, error) {
+	if err := board_columns_utils.ValidateBoardColumn(request); err != nil {
+		return nil, fmt.Errorf("invalid request: %v", err)
+	}
 	// Call API
 	boardColumnRequest := models.TwBoardColumn{
 		Name:        request.Name,
@@ -50,6 +56,17 @@ func (s *BoardColumnsService) CreateBoardColumn(request dtos.BoardColumnsRequest
 }
 
 func (s *BoardColumnsService) GetBoardColumnsByWorkspace(workspaceID string) ([]models.TwBoardColumn, error) {
+	// Validate input
+	if workspaceID == "" {
+		return nil, fmt.Errorf("workspace id is required")
+	}
+	if _, err := strconv.Atoi(workspaceID); err != nil {
+		return nil, fmt.Errorf("invalid workspace id")
+	}
+	result := workspace.NewWorkspaceService().GetWorkspaceById(workspaceID)
+	if result.ID == 0 {
+		return nil, fmt.Errorf("workspace not found")
+	}
 	// Call API
 	resp, err := dms.CallAPI(
 		"GET",
@@ -78,6 +95,13 @@ func (s *BoardColumnsService) GetBoardColumnsByWorkspace(workspaceID string) ([]
 }
 
 func (h *BoardColumnsService) InitBoardColumns(workspaceID int) error {
+	// workspace_service
+	workspaceIDStr := fmt.Sprintf("%d", workspaceID)
+	workspaceCheck := workspace.NewWorkspaceService().GetWorkspaceById(workspaceIDStr)
+	if workspaceCheck.ID == 0 {
+		return fmt.Errorf("workspace not found")
+	}
+
 	var boardColumns = []models.TwBoardColumn{
 		{
 			Name:        "Title",
@@ -111,6 +135,17 @@ func (h *BoardColumnsService) InitBoardColumns(workspaceID int) error {
 }
 
 func (h *BoardColumnsService) DeleteBoardColumn(boardColumnId string) error {
+	if boardColumnId == "" {
+		return fmt.Errorf("board column id is required")
+	}
+	if _, err := strconv.Atoi(boardColumnId); err != nil {
+		return fmt.Errorf("invalid board column id")
+	}
+	_, err := h.GetBoardColumnById(boardColumnId)
+	if err != nil {
+		return fmt.Errorf("failed to get board column: %v", err)
+	}
+
 	// Call API
 	resp, err := dms.CallAPI(
 		"DELETE",
@@ -134,6 +169,21 @@ func (h *BoardColumnsService) DeleteBoardColumn(boardColumnId string) error {
 }
 
 func (h *BoardColumnsService) UpdateBoardColumn(boardColumnId string, request string) (*models.TwBoardColumn, error) {
+	// Validate input
+	if boardColumnId == "" {
+		return nil, fmt.Errorf("board column id is required")
+	}
+	if request == "" {
+		return nil, fmt.Errorf("request is required")
+	}
+	if len(request) > 50 {
+		return nil, fmt.Errorf("request is too long")
+	}
+	_, err := h.GetBoardColumnById(boardColumnId)
+	if err != nil {
+		return nil, fmt.Errorf("board column not found: %v", err)
+	}
+
 	// Call API
 	boardColumnRequest := models.TwBoardColumn{
 		Name: request,
@@ -165,6 +215,12 @@ func (h *BoardColumnsService) UpdateBoardColumn(boardColumnId string, request st
 }
 
 func (h *BoardColumnsService) GetBoardColumnById(boardColumnId string) (*models.TwBoardColumn, error) {
+	if boardColumnId == "" {
+		return nil, fmt.Errorf("board column id is required")
+	}
+	if _, err := strconv.Atoi(boardColumnId); err != nil {
+		return nil, fmt.Errorf("invalid board column id")
+	}
 	// Call API
 	resp, err := dms.CallAPI(
 		"GET",
@@ -193,6 +249,16 @@ func (h *BoardColumnsService) GetBoardColumnById(boardColumnId string) (*models.
 }
 
 func (s *BoardColumnsService) UpdatePositionsAfterDeletion(position int, id int) error {
+	if position < 0 {
+		return fmt.Errorf("invalid position")
+	}
+	if id < 0 {
+		return fmt.Errorf("invalid workspace id")
+	}
+	if result := workspace.NewWorkspaceService().GetWorkspaceById(fmt.Sprintf("%d", id)); result.ID == 0 {
+		return fmt.Errorf("workspace not found")
+	}
+
 	// Tạo payload cho API
 	payload := map[string]interface{}{
 		"position":     position,
@@ -222,10 +288,23 @@ func (s *BoardColumnsService) UpdatePositionsAfterDeletion(position int, id int)
 }
 
 func (s *BoardColumnsService) UpdatePositionAfterDrag(oldPosition int, newPosition int, workspaceId int, board_column_id string) error {
+
+	if newPosition < 0 {
+		return fmt.Errorf("invalid position")
+	}
+	if oldPosition < 0 {
+		return fmt.Errorf("invalid position")
+	}
+	if workspaceId < 0 {
+		return fmt.Errorf("invalid workspace id")
+	}
+	if board_column_id == "" {
+		return fmt.Errorf("board column id is required")
+	}
+	// Kiểm tra xem vị trí mới có khác với vị trí cũ không
 	if oldPosition == newPosition {
 		return nil
 	}
-
 	// Tạo một danh sách để chứa các cột cần cập nhật
 	var columnsToUpdate []models.TwBoardColumn
 
@@ -277,6 +356,15 @@ func (s *BoardColumnsService) UpdatePositionAfterDrag(oldPosition int, newPositi
 }
 
 func (s *BoardColumnsService) GetColumnsInRange(position1 int, position2 int, workspaceId int) ([]models.TwBoardColumn, error) {
+	if position1 < 0 || position2 < 0 {
+		return nil, fmt.Errorf("invalid position")
+	}
+	if workspaceId < 0 {
+		return nil, fmt.Errorf("invalid workspace id")
+	}
+	if result := workspace.NewWorkspaceService().GetWorkspaceById(fmt.Sprintf("%d", workspaceId)); result == nil {
+		return nil, fmt.Errorf("workspace not found")
+	}
 	// Tạo payload cho API
 	payload := map[string]interface{}{
 		"position1":    position1,
@@ -313,6 +401,20 @@ func (s *BoardColumnsService) GetColumnsInRange(position1 int, position2 int, wo
 }
 
 func (s *BoardColumnsService) UpdateBoardColumnPosition(column models.TwBoardColumn) error {
+	//Validate input
+	if column.ID < 0 {
+		return fmt.Errorf("invalid column id")
+	}
+	if column.Position < 0 {
+		return fmt.Errorf("invalid position")
+	}
+	if column.WorkspaceId < 0 {
+		return fmt.Errorf("invalid workspace id")
+	}
+	if column.Name == "" {
+		return fmt.Errorf("invalid name")
+	}
+
 	resp, err := dms.CallAPI(
 		"PUT",
 		"/board_columns/update_position/position",
