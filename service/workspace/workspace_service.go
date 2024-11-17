@@ -2,11 +2,13 @@ package workspace
 
 import (
 	"api/dms"
+	auth_utils "api/utils/auth"
 	"encoding/json"
 	"errors"
 	"github.com/timewise-team/timewise-models/models"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 )
 
 type WorkspaceService struct {
@@ -18,6 +20,13 @@ func NewWorkspaceService() *WorkspaceService {
 }
 
 func (s *WorkspaceService) GetWorkspacesByEmail(email string) ([]models.TwWorkspace, error) {
+	// Validate email
+	if email == "" {
+		return nil, errors.New("Invalid email")
+	}
+	if !auth_utils.IsValidEmail(email) {
+		return nil, errors.New("Invalid email")
+	}
 	// Call API
 	resp, err := dms.CallAPI(
 		"GET",
@@ -48,6 +57,10 @@ func (s *WorkspaceService) GetWorkspacesByEmail(email string) ([]models.TwWorksp
 }
 
 func (s *WorkspaceService) GetWorkspacesByUserId(userId string) ([]models.TwWorkspace, error) {
+	_, err := strconv.Atoi(userId)
+	if err != nil {
+		return nil, errors.New("Invalid user id")
+	}
 	// Call API
 	resp, err := dms.CallAPI(
 		"GET",
@@ -78,6 +91,15 @@ func (s *WorkspaceService) GetWorkspacesByUserId(userId string) ([]models.TwWork
 }
 
 func (s *WorkspaceService) GetWorkspaceById(workspaceId string) *models.TwWorkspace {
+	// Validate workspaceId
+	if workspaceId == "" {
+		return nil
+	}
+	//Check is number workspaceId
+	_, err := strconv.Atoi(workspaceId)
+	if err != nil {
+		return nil
+	}
 	// Call API
 	resp, err := dms.CallAPI(
 		"GET",
@@ -109,6 +131,16 @@ func (s *WorkspaceService) GetWorkspaceById(workspaceId string) *models.TwWorksp
 
 func (s *WorkspaceService) DeleteWorkspace(id string) error {
 
+	_, err := strconv.Atoi(id)
+	if err != nil {
+		return errors.New("Invalid workspace id")
+	}
+	if id == "" {
+		return errors.New("Invalid workspace id")
+	}
+	if a := s.GetWorkspaceById(id); a == nil {
+		return errors.New("Workspace not found")
+	}
 	resp, err := dms.CallAPI(
 		"DELETE",
 		"/workspace/"+id,

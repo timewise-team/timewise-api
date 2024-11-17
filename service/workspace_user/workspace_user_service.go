@@ -2,6 +2,8 @@ package workspace_user
 
 import (
 	"api/dms"
+	"api/service/workspace"
+	auth_utils "api/utils/auth"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -57,6 +59,24 @@ func (s *WorkspaceUserService) GetWorkspaceUserByEmailAndWorkspaceID(email strin
 	//	return nil, errors.New("error parsing user id")
 	//}
 
+	//Validate workspace request
+	if email == "" {
+		return nil, errors.New("Email is required")
+	}
+	if workspaceID == "" {
+		return nil, errors.New("Workspace ID is required")
+	}
+	_, err := strconv.Atoi(workspaceID)
+	if err != nil {
+		return nil, errors.New("Invalid workspace ID")
+	}
+	if auth_utils.IsValidEmail(email) == false {
+		return nil, errors.New("Invalid email")
+	}
+	if _, err := strconv.Atoi(workspaceID); err != nil {
+		return nil, errors.New("Invalid workspace ID")
+	}
+
 	// Call API
 	resp, err := dms.CallAPI(
 		"GET",
@@ -87,6 +107,15 @@ func (s *WorkspaceUserService) GetWorkspaceUserByEmailAndWorkspaceID(email strin
 }
 
 func (s *WorkspaceUserService) GetWorkspaceUserList(workspaceID string) ([]workspace_user_dtos.GetWorkspaceUserListResponse, error) {
+	if workspaceID == "" {
+		return nil, errors.New("workspace id not found")
+	}
+	if _, err := strconv.Atoi(workspaceID); err != nil {
+		return nil, errors.New("workspace id is invalid")
+	}
+	if workspace.NewWorkspaceService().GetWorkspaceById(workspaceID).ID == 0 {
+		return nil, errors.New("workspace not found")
+	}
 	// Call API
 	resp, err := dms.CallAPI(
 		"GET",
@@ -147,6 +176,12 @@ func (s *WorkspaceUserService) GetWorkspaceUserListForManage(workspaceID string)
 }
 
 func (s *WorkspaceUserService) GetWorkspaceUserInvitationList(workspaceID string) ([]workspace_user_dtos.GetWorkspaceUserListResponse, error) {
+	if workspaceID == "" {
+		return nil, errors.New("workspace id not found")
+	}
+	if _, err := strconv.Atoi(workspaceID); err != nil {
+		return nil, errors.New("workspace id is invalid")
+	}
 	// Call API
 	resp, err := dms.CallAPI(
 		"GET",
@@ -181,6 +216,10 @@ func (s *WorkspaceUserService) DeleteWorkspaceUser(workspaceUser *models.TwWorks
 	var workspaceIDStr = strconv.Itoa(workspaceID)
 	if workspaceUserMemberId == "" {
 		return nil
+	}
+	_, err := strconv.Atoi(workspaceUserMemberId)
+	if err != nil {
+		return errors.New("workspace user is unvalid")
 	}
 
 	// Call API
@@ -250,6 +289,15 @@ func (s *WorkspaceUserService) AddWorkspaceLog(workspaceLog models.TwWorkspaceLo
 }
 
 func (s *WorkspaceUserService) GetWorkspaceUserInvitationNotVerifiedList(workspaceID string) ([]workspace_user_dtos.GetWorkspaceUserListResponse, error) {
+	if workspaceID == "" {
+		return nil, errors.New("workspace id not found")
+	}
+	if _, err := strconv.Atoi(workspaceID); err != nil {
+		return nil, errors.New("workspace id is invalid")
+	}
+	if workspace.NewWorkspaceService().GetWorkspaceById(workspaceID).ID == 0 {
+		return nil, errors.New("workspace not found")
+	}
 	// Call API
 	resp, err := dms.CallAPI(
 		"GET",
@@ -308,10 +356,19 @@ func (s *WorkspaceUserService) UpdateWorkspaceUserRole(workspaceUser *models.TwW
 }
 
 func (s *WorkspaceUserService) VerifyWorkspaceUserInvitation(workspaceUser *models.TwWorkspaceUser, email string) error {
+	if email == "" {
+		return errors.New("email not found")
+	}
+	if !auth_utils.IsValidEmail(email) {
+		return errors.New("email is invalid")
+	}
 	workspaceId := workspaceUser.WorkspaceId
 	workspaceIdStr := strconv.Itoa(workspaceId)
 	if workspaceIdStr == "" {
 		return errors.New("workspace id not found")
+	}
+	if workspace.NewWorkspaceService().GetWorkspaceById(workspaceIdStr).ID == 0 {
+		return errors.New("workspace not found")
 	}
 	// Call API
 	resp, err := dms.CallAPI(
@@ -340,6 +397,9 @@ func (s *WorkspaceUserService) DisproveWorkspaceUserInvitation(workspaceUser *mo
 	if workspaceIdStr == "" {
 		return errors.New("workspace id not found")
 	}
+	if workspace.NewWorkspaceService().GetWorkspaceById(workspaceIdStr).ID == 0 {
+		return errors.New("workspace not found")
+	}
 	// Call API
 	resp, err := dms.CallAPI(
 		"PUT",
@@ -363,6 +423,10 @@ func (s *WorkspaceUserService) DisproveWorkspaceUserInvitation(workspaceUser *mo
 }
 
 func (s *WorkspaceUserService) AddWorkspaceUserInvitation(userEmail *models.TwUserEmail, workspaceID int, request workspace_user_dtos.UpdateWorkspaceUserRoleRequest) (models.TwWorkspaceUser, error) {
+	if userEmail.ID == 0 {
+		return models.TwWorkspaceUser{}, errors.New("user email id not found")
+	}
+
 	var workspaceUser = models.TwWorkspaceUser{
 		UserEmailId: userEmail.ID,
 		WorkspaceId: workspaceID,
@@ -477,6 +541,12 @@ func (s *WorkspaceUserService) UpdateWorkspaceUserStatus(check *models.TwWorkspa
 }
 
 func (s *WorkspaceUserService) GetWorkspaceUserInformation(workspaceUserId string) (workspace_user_dtos.GetWorkspaceUserListResponse, error) {
+	if workspaceUserId == "" {
+		return workspace_user_dtos.GetWorkspaceUserListResponse{}, errors.New("workspace user id not found")
+	}
+	if _, err := strconv.Atoi(workspaceUserId); err != nil {
+		return workspace_user_dtos.GetWorkspaceUserListResponse{}, errors.New("workspace user id is invalid")
+	}
 	// Call API
 	resp, err := dms.CallAPI(
 		"GET",
