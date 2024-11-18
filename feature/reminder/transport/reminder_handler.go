@@ -193,10 +193,26 @@ func (h ReminderHandler) UpdateReminderAllParticipant(ctx *fiber.Ctx) error {
 		})
 	}
 
-	reminderTime := reminderRequest.ReminderTime.Add(-time.Duration(reminderTimeInt) * time.Minute)
-	fmt.Printf("reminderTime: %v\n", reminderTime.Truncate(time.Second))
-	fmt.Printf("time.Now(): %v\n", time.Now().Truncate(time.Second))
-	if reminderTime.Before(time.Now()) {
+	scheduleDetail, err := schedule.NewScheduleService().GetScheduleDetailByID(strconv.Itoa(reminder.ScheduleId))
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get schedule detail",
+		})
+	}
+	reminderTime := scheduleDetail.StartTime.Add(-time.Duration(reminderTimeInt) * time.Minute)
+
+	loc, err := time.LoadLocation("Asia/Ho_Chi_Minh")
+	if err != nil {
+		// Xử lý lỗi nếu không thể tải múi giờ
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Error loading time zone",
+		})
+	}
+
+	reminderTimeInLocal := time.Date(reminderTime.Year(), reminderTime.Month(), reminderTime.Day(), reminderTime.Hour(), reminderTime.Minute(), reminderTime.Second(), reminderTime.Nanosecond(), loc)
+	fmt.Printf("reminderTime: %v\n", reminderTimeInLocal)
+	fmt.Printf("time.Now(): %v\n", time.Now().In(loc))
+	if reminderTimeInLocal.Before(time.Now().In(loc)) {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Reminder time must be after current time",
 		})
