@@ -2,6 +2,7 @@ package schedule
 
 import (
 	"api/dms"
+	"api/service/reminder"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -54,6 +55,19 @@ func (s *ScheduleService) CreateSchedule(c *fiber.Ctx, CreateScheduleDto core_dt
 		return nil, fiber.StatusInternalServerError, err
 	}
 
+	id := result["id"].(float64)
+	intid := int(id)
+	scheduleDetail, err := s.GetScheduleDetailByID(strconv.Itoa(intid))
+	if err != nil {
+		return nil, fiber.StatusInternalServerError, err
+	}
+	if scheduleDetail.StartTime != nil {
+		startTime := *scheduleDetail.StartTime
+		err1 := reminder.NewReminderService().CreateReminderAllParticipantWhenCreateSchedule(intid, startTime, workspaceUser, 0)
+		if err1 != nil {
+			return nil, fiber.StatusInternalServerError, err
+		}
+	}
 	return result, resp1.StatusCode, nil
 }
 

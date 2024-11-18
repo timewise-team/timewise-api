@@ -25,6 +25,9 @@ func NewScheduleHandler() *ScheduleHandler {
 // @Tags schedule
 // @Accept json
 // @Produce json
+// @Security bearerToken
+// @Param X-User-Email header string true "User email"
+// @Param X-Workspace-Id header string true "Workspace ID"g
 // @Param schedule body core_dtos.TwCreateScheduleRequest true "Schedule"
 // @Success 201 {object} core_dtos.TwCreateShecduleResponse
 // @Router /api/v1/schedules [post]
