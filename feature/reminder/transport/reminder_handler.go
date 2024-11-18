@@ -403,7 +403,7 @@ func (h ReminderHandler) UpdateReminderOnlyMe(ctx *fiber.Ctx) error {
 	}
 	// reminder.Time = "2024-11-11 11:11:11"
 	// Chuyển chuỗi time thành kiểu time.Time
-	reminderTime, err := time.Parse("2006-01-02 15:04:05.000", reminder.Time)
+	reminderTime, err := time.Parse("2006-01-02 15:04", reminder.Time)
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Invalid reminder time format",
