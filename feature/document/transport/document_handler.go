@@ -27,7 +27,7 @@ func NewDocumentHandler() *DocumentHandler {
 // @Tags document
 // @Accept json
 // @Produce json
-// @Param schedule_id path string true "Schedule ID"
+// @Param scheduleId path string true "Schedule ID"
 // @Security bearerToken
 // @Success 200 {array} document_dtos.TwDocumentResponse
 // @Router /api/v1/document/schedule/{scheduleId} [get]
@@ -73,6 +73,7 @@ func (h *DocumentHandler) uploadHandler(c *fiber.Ctx) error {
 	if scheduleId == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Must have schedule id"})
 	}
+
 	wspUserId := c.FormValue("wspUserId")
 	if wspUserId == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Must have workspace user id"})

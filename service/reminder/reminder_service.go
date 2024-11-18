@@ -136,3 +136,28 @@ func (h *ReminderService) CreateReminderAllParticipant(scheduleDetail *models.Tw
 	}
 	return nil
 }
+func (h *ReminderService) CreateReminderAllParticipantWhenCreateSchedule(scheduleId int, scheduleStartTime time.Time, WorkspaceUser *models.TwWorkspaceUser, reminderTimeInt int) error {
+
+	var reminderRequests []models.TwReminder
+	startTime := scheduleStartTime
+	reminderTime := startTime.Add(-time.Duration(reminderTimeInt) * time.Minute)
+	//if reminder.Type == "only me" {
+	var reminderRequest = models.TwReminder{
+		ScheduleId:      scheduleId,
+		ReminderTime:    reminderTime,
+		Type:            "all participants",
+		Method:          strconv.Itoa(reminderTimeInt),
+		WorkspaceUserID: WorkspaceUser.ID,
+		IsSent:          false,
+	}
+	reminderRequests = append(reminderRequests, reminderRequest)
+
+	for _, reminderRequest1 := range reminderRequests {
+		_, err := h.CreateReminder(reminderRequest1)
+		if err != nil {
+			return err
+		}
+
+	}
+	return nil
+}

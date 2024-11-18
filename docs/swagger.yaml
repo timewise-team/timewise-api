@@ -1501,7 +1501,7 @@ paths:
       parameters:
       - description: Schedule ID
         in: path
-        name: schedule_id
+        name: scheduleId
         required: true
         type: string
       produces:
@@ -2114,6 +2114,16 @@ paths:
       - application/json
       description: Create a new schedule
       parameters:
+      - description: User email
+        in: header
+        name: X-User-Email
+        required: true
+        type: string
+      - description: Workspace ID
+        in: header
+        name: X-Workspace-Id
+        required: true
+        type: string
       - description: Schedule
         in: body
         name: schedule
@@ -2127,6 +2137,8 @@ paths:
           description: Created
           schema:
             $ref: '#/definitions/core_dtos.TwCreateShecduleResponse'
+      security:
+      - bearerToken: []
       summary: Create a new schedule
       tags:
       - schedule

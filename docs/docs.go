@@ -883,7 +883,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Schedule ID",
-                        "name": "schedule_id",
+                        "name": "scheduleId",
                         "in": "path",
                         "required": true
                     }
@@ -1807,6 +1807,11 @@ const docTemplate = `{
         },
         "/api/v1/schedules": {
             "post": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
                 "description": "Create a new schedule",
                 "consumes": [
                     "application/json"
@@ -1819,6 +1824,20 @@ const docTemplate = `{
                 ],
                 "summary": "Create a new schedule",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User email",
+                        "name": "X-User-Email",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "X-Workspace-Id",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "description": "Schedule",
                         "name": "schedule",
