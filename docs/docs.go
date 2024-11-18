@@ -787,6 +787,13 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "description": "Workspace user ID who uploads the file",
+                        "name": "wspUserId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
                         "description": "Name of the file to delete",
                         "name": "fileName",
                         "in": "query",
