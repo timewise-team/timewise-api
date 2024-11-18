@@ -2,6 +2,7 @@ package schedule
 
 import (
 	"api/dms"
+	"bytes"
 	"encoding/json"
 	"errors"
 	"github.com/gofiber/fiber/v2"
@@ -49,7 +50,6 @@ func (s *ScheduleFilterService) ScheduleFilter(c *fiber.Ctx) (*http.Response, er
 	for i, user := range userResponse {
 		user_email_id[i] = strconv.Itoa(user.ID)
 	}
-	// get user_email_id in user_email table by I
 
 	// Get workspace IDs for the user
 	resp, err = dms.CallAPI("POST", "/workspace_user/user_email_id", user_email_id, nil, nil, 120)
@@ -64,8 +64,9 @@ func (s *ScheduleFilterService) ScheduleFilter(c *fiber.Ctx) (*http.Response, er
 	if resp.StatusCode != fiber.StatusOK {
 		return nil, errors.New("error from external service: " + string(body))
 	}
-	var workspaceIdResponse []string
-	err = json.Unmarshal(body, &workspaceIdResponse)
+	// có chứa role rồi
+	var workspaceResponse []models.TwWorkspaceUser
+	err = json.Unmarshal(body, &workspaceResponse)
 	if err != nil {
 		return nil, errors.New("could not unmarshal response body: " + err.Error())
 	}
@@ -77,12 +78,17 @@ func (s *ScheduleFilterService) ScheduleFilter(c *fiber.Ctx) (*http.Response, er
 	}
 	var missingIds []string
 	for _, id := range wspIds {
-		if !contains(workspaceIdResponse, id) {
+		if !contains(workspaceResponse, id) {
 			missingIds = append(missingIds, id)
 		}
 	}
 	if len(missingIds) > 0 {
 		return nil, errors.New("some workspace IDs do not belong to the current user: " + strings.Join(missingIds, ", "))
+	}
+
+	userRoles := map[int]string{} // Map workspace_id -> role
+	for _, wsp := range workspaceResponse {
+		userRoles[wsp.WorkspaceId] = wsp.Role
 	}
 
 	// Construct queryParams
@@ -110,7 +116,7 @@ func (s *ScheduleFilterService) ScheduleFilter(c *fiber.Ctx) (*http.Response, er
 	if isDeleted := c.Query("is_deleted"); isDeleted != "" {
 		queryParams["is_deleted"] = isDeleted
 	} else if isDeleted == "" {
-		queryParams["is_deleted"] = "0"
+		queryParams["is_deleted"] = "false"
 	}
 	if assignedTo := c.Query("assigned_to"); assignedTo != "" {
 		queryParams["assigned_to"] = assignedTo
@@ -122,13 +128,76 @@ func (s *ScheduleFilterService) ScheduleFilter(c *fiber.Ctx) (*http.Response, er
 		return nil, err
 	}
 
-	return resp, nil
+	defer resp.Body.Close()
+	body, err = io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != fiber.StatusOK {
+		return nil, errors.New("error from external service: " + string(body))
+	}
+	var schedules []models.TwSchedule
+	err = json.Unmarshal(body, &schedules)
+	if err != nil {
+		return nil, errors.New("could not unmarshal response body: " + err.Error())
+	}
+
+	// Filter schedules with visibility "private"
+	filteredSchedules := []models.TwSchedule{}
+	for _, schedule := range schedules {
+		if schedule.Visibility == "private" {
+			role := userRoles[schedule.WorkspaceId]
+			if role == "admin" || role == "owner" {
+				// Admin/Owner can view all private schedules
+				filteredSchedules = append(filteredSchedules, schedule)
+			} else {
+				// Check if user is a participant in the schedule
+				resp, err := dms.CallAPI("GET", "/schedule/participants/"+strconv.Itoa(schedule.ID), nil, nil, nil, 120)
+				if err != nil {
+					return nil, err
+				}
+				defer resp.Body.Close()
+				body, err := io.ReadAll(resp.Body)
+				if err != nil {
+					return nil, err
+				}
+				if resp.StatusCode != fiber.StatusOK {
+					return nil, errors.New("error from external service: " + string(body))
+				}
+				var participants []models.TwScheduleParticipant
+				err = json.Unmarshal(body, &participants)
+				if err != nil {
+					return nil, errors.New("could not unmarshal response body: " + err.Error())
+				}
+				for _, participant := range participants {
+					if strconv.Itoa(participant.WorkspaceUserId) == wspId {
+						filteredSchedules = append(filteredSchedules, schedule)
+						break
+					}
+				}
+			}
+		} else {
+			// Public schedules are included
+			filteredSchedules = append(filteredSchedules, schedule)
+		}
+	}
+
+	// Return filtered schedules
+	responseBody, err := json.Marshal(filteredSchedules)
+	if err != nil {
+		return nil, err
+	}
+
+	return &http.Response{
+		StatusCode: fiber.StatusOK,
+		Body:       io.NopCloser(bytes.NewReader(responseBody)),
+	}, nil
 }
 
 // Helper function to check if a slice contains an item
-func contains(slice []string, item string) bool {
+func contains(slice []models.TwWorkspaceUser, item string) bool {
 	for _, s := range slice {
-		if strings.TrimSpace(s) == strings.TrimSpace(item) {
+		if strings.TrimSpace(strconv.Itoa(s.WorkspaceId)) == strings.TrimSpace(item) {
 			return true
 		}
 	}

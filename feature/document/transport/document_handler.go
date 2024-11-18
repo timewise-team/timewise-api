@@ -1,9 +1,13 @@
 package transport
 
 import (
+	"api/dms"
 	"api/service/document"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
+	"github.com/timewise-team/timewise-models/models"
 	"io"
 	"net/url"
 	"path/filepath"
@@ -61,6 +65,22 @@ func (h *DocumentHandler) GetDocumentByScheduleID(c *fiber.Ctx) error {
 // @Failure 500 {string} string "Internal Server Error - Something went wrong during file upload"
 // @Router /api/v1/document/upload [post]
 func (h *DocumentHandler) uploadHandler(c *fiber.Ctx) error {
+	scheduleId := c.FormValue("scheduleId")
+	if scheduleId == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Must have schedule id"})
+	}
+	wspUserId := c.FormValue("wspUserId")
+	if wspUserId == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Must have workspace user id"})
+	}
+	// get role to check permission
+	isEditable, err := checkRole(c, scheduleId, wspUserId)
+	if !isEditable {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "You do not have permission to upload file"})
+	}
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
 	file, err := c.FormFile("file")
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Unable to retrieve file"})
@@ -69,16 +89,6 @@ func (h *DocumentHandler) uploadHandler(c *fiber.Ctx) error {
 	if file.Size > maxFileSize {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "File size exceeds the 10MB limit"})
 	}
-	scheduleId := c.FormValue("scheduleId")
-	if scheduleId == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Must have schedule id"})
-	}
-
-	wspUserId := c.FormValue("wspUserId")
-	if wspUserId == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Must have workspace user id"})
-	}
-
 	bucketName := "timewise-docs"
 	originalFileName := file.Filename
 	objectName := fmt.Sprintf("%s/%s", scheduleId, originalFileName)
@@ -101,6 +111,88 @@ func (h *DocumentHandler) uploadHandler(c *fiber.Ctx) error {
 	return c.SendString("File uploaded successfully to Google Cloud Storage")
 }
 
+func checkRole(c *fiber.Ctx, scheduleId string, wspUserId string) (bool, error) {
+	// Get user_email_id by userId
+	userId := c.Locals("userid").(string)
+	resp, err := dms.CallAPI("GET", "/user_email/user/"+userId, nil, nil, nil, 120)
+	if err != nil {
+		return false, err
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return false, err
+	}
+	if resp.StatusCode != fiber.StatusOK {
+		return false, errors.New("error from external service: " + string(body))
+	}
+	var userResponse []models.TwUserEmail
+	err = json.Unmarshal(body, &userResponse)
+	if err != nil {
+		return false, errors.New("could not unmarshal response body: " + err.Error())
+	}
+	// parse userResponse to get list of user_email_id
+	user_email_id := make([]string, len(userResponse))
+	for i, user := range userResponse {
+		user_email_id[i] = strconv.Itoa(user.ID)
+	}
+
+	// Get workspace IDs for the user
+	resp, err = dms.CallAPI("POST", "/workspace_user/user_email_id", user_email_id, nil, nil, 120)
+	if err != nil {
+		return false, err
+	}
+	defer resp.Body.Close()
+	body, err = io.ReadAll(resp.Body)
+	if err != nil {
+		return false, err
+	}
+	if resp.StatusCode != fiber.StatusOK {
+		return false, errors.New("error from external service: " + string(body))
+	}
+	// có chứa role rồi
+	var workspaceResponse []models.TwWorkspaceUser
+	err = json.Unmarshal(body, &workspaceResponse)
+	if err != nil {
+		return false, errors.New("could not unmarshal response body: " + err.Error())
+	}
+	userRoles := map[int]string{} // Map workspace_id -> role
+	for _, wsp := range workspaceResponse {
+		userRoles[wsp.WorkspaceId] = wsp.Role
+	}
+	for _, wsp := range workspaceResponse {
+		if wsp.Role == "admin" || wsp.Role == "owner" {
+			// Admin/Owner can do anything with document of schedule
+			return true, nil
+		} else {
+			resp, err := dms.CallAPI("GET", "/schedule/participants/"+scheduleId, nil, nil, nil, 120)
+			if err != nil {
+				return false, err
+			}
+			defer resp.Body.Close()
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return false, err
+			}
+			if resp.StatusCode != fiber.StatusOK {
+				return false, errors.New("error from external service: " + string(body))
+			}
+			var participants []models.TwScheduleParticipant
+			err = json.Unmarshal(body, &participants)
+			if err != nil {
+				return false, errors.New("could not unmarshal response body: " + err.Error())
+			}
+			for _, participant := range participants {
+				if strconv.Itoa(participant.WorkspaceUserId) == wspUserId {
+					return true, nil
+				}
+			}
+		}
+	}
+
+	return false, errors.New("no role found for the user")
+}
+
 // @Summary Delete file
 // @Description Delete file from Google Cloud Storage
 // @Tags document
@@ -108,6 +200,7 @@ func (h *DocumentHandler) uploadHandler(c *fiber.Ctx) error {
 // @Security bearerToken
 // @Produce json
 // @Param scheduleId query string true "Schedule ID associated with the file"
+// @Param wspUserId query string true "Workspace user ID who uploads the file"
 // @Param fileName query string true "Name of the file to delete"
 // @Success 200 {string} string "File deleted successfully"
 // @Failure 400 {string} string "Bad Request - Missing or invalid parameters"
@@ -118,7 +211,18 @@ func (h *DocumentHandler) deleteHandler(c *fiber.Ctx) error {
 	if scheduleId == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Must have schedule id"})
 	}
-
+	wspUserId := c.FormValue("wspUserId")
+	if wspUserId == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Must have workspace user id"})
+	}
+	// get role to check permission
+	isEditable, err := checkRole(c, scheduleId, wspUserId)
+	if !isEditable {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "You do not have permission to upload file"})
+	}
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
 	fileName := c.Query("fileName")
 	if fileName == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Must have file name"})

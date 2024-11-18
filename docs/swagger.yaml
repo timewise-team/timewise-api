@@ -1439,6 +1439,11 @@ paths:
         name: scheduleId
         required: true
         type: string
+      - description: Workspace user ID who uploads the file
+        in: query
+        name: wspUserId
+        required: true
+        type: string
       - description: Name of the file to delete
         in: query
         name: fileName
