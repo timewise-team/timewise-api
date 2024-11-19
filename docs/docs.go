@@ -787,9 +787,16 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Workspace user ID who uploads the file",
-                        "name": "wspUserId",
-                        "in": "query",
+                        "description": "User Email",
+                        "name": "X-User-Email",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "X-Workspace-Id",
+                        "in": "header",
                         "required": true
                     },
                     {
@@ -943,9 +950,16 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Workspace user ID who uploads the file",
-                        "name": "wspUserId",
-                        "in": "formData",
+                        "description": "User Email",
+                        "name": "X-User-Email",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "X-Workspace-Id",
+                        "in": "header",
                         "required": true
                     }
                 ],

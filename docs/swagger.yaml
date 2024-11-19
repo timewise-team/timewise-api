@@ -1439,9 +1439,14 @@ paths:
         name: scheduleId
         required: true
         type: string
-      - description: Workspace user ID who uploads the file
-        in: query
-        name: wspUserId
+      - description: User Email
+        in: header
+        name: X-User-Email
+        required: true
+        type: string
+      - description: Workspace ID
+        in: header
+        name: X-Workspace-Id
         required: true
         type: string
       - description: Name of the file to delete
@@ -1540,9 +1545,14 @@ paths:
         name: scheduleId
         required: true
         type: string
-      - description: Workspace user ID who uploads the file
-        in: formData
-        name: wspUserId
+      - description: User Email
+        in: header
+        name: X-User-Email
+        required: true
+        type: string
+      - description: Workspace ID
+        in: header
+        name: X-Workspace-Id
         required: true
         type: string
       produces:

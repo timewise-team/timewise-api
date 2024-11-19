@@ -59,7 +59,8 @@ func (h *DocumentHandler) GetDocumentByScheduleID(c *fiber.Ctx) error {
 // @Produce json
 // @Param file formData file true "File to upload"
 // @Param scheduleId formData string true "Schedule ID associated with the file"
-// @Param wspUserId formData string true "Workspace user ID who uploads the file"
+// @Param X-User-Email header string true "User Email"
+// @Param X-Workspace-Id header string true "Workspace ID"
 // @Success 200 {string} string "File uploaded successfully"
 // @Failure 400 {string} string "Bad Request - Missing or invalid parameters"
 // @Failure 500 {string} string "Internal Server Error - Something went wrong during file upload"
@@ -69,18 +70,31 @@ func (h *DocumentHandler) uploadHandler(c *fiber.Ctx) error {
 	if scheduleId == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Must have schedule id"})
 	}
-	wspUserId := c.FormValue("wspUserId")
-	if wspUserId == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Must have workspace user id"})
+	workspaceUserLocal := c.Locals("workspace_user")
+	if workspaceUserLocal == nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Access denied",
+		})
 	}
+	workspaceUser, ok := workspaceUserLocal.(*models.TwWorkspaceUser)
+	if !ok {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Access denied",
+		})
+	}
+	wspUserId := workspaceUser.ID
+	if wspUserId == 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Could not get workspace user id"})
+	}
+	wspUserIdStr := strconv.Itoa(wspUserId)
 	// get role to check permission
-	isEditable, err := checkRole(c, scheduleId, wspUserId)
-	if !isEditable {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "You do not have permission to upload file"})
-	}
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
-	}
+	//isEditable, err := checkRole(c, scheduleId, wspUserIdStr)
+	//if !isEditable {
+	//	return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "You do not have permission to upload file"})
+	//}
+	//if err != nil {
+	//	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	//}
 	file, err := c.FormFile("file")
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Unable to retrieve file"})
@@ -104,7 +118,7 @@ func (h *DocumentHandler) uploadHandler(c *fiber.Ctx) error {
 		counter++
 	}
 
-	if err := h.service.UploadFileToGCS(file, bucketName, objectName, scheduleId, wspUserId, newFileName); err != nil {
+	if err := h.service.UploadFileToGCS(file, bucketName, objectName, scheduleId, wspUserIdStr, newFileName); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
@@ -200,7 +214,8 @@ func checkRole(c *fiber.Ctx, scheduleId string, wspUserId string) (bool, error) 
 // @Security bearerToken
 // @Produce json
 // @Param scheduleId query string true "Schedule ID associated with the file"
-// @Param wspUserId query string true "Workspace user ID who uploads the file"
+// @Param X-User-Email header string true "User Email"
+// @Param X-Workspace-Id header string true "Workspace ID"
 // @Param fileName query string true "Name of the file to delete"
 // @Success 200 {string} string "File deleted successfully"
 // @Failure 400 {string} string "Bad Request - Missing or invalid parameters"
@@ -211,17 +226,21 @@ func (h *DocumentHandler) deleteHandler(c *fiber.Ctx) error {
 	if scheduleId == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Must have schedule id"})
 	}
-	wspUserId := c.FormValue("wspUserId")
-	if wspUserId == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Must have workspace user id"})
+	workspaceUserLocal := c.Locals("workspace_user")
+	if workspaceUserLocal == nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Access denied",
+		})
 	}
-	// get role to check permission
-	isEditable, err := checkRole(c, scheduleId, wspUserId)
-	if !isEditable {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "You do not have permission to upload file"})
+	workspaceUser, ok := workspaceUserLocal.(*models.TwWorkspaceUser)
+	if !ok {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Access denied",
+		})
 	}
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	wspUserId := workspaceUser.ID
+	if wspUserId == 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Could not get workspace user id"})
 	}
 	fileName := c.Query("fileName")
 	if fileName == "" {

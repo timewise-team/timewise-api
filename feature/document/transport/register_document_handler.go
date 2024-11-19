@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"api/middleware"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -17,7 +18,7 @@ func RegisterDocumentHandler(router fiber.Router) {
 
 	// Register all endpoints here
 	router.Get("/schedule/:scheduleId", scheduleHandler.Handler.GetDocumentByScheduleID)
-	router.Post("/upload", scheduleHandler.Handler.uploadHandler)
-	router.Delete("/delete", scheduleHandler.Handler.deleteHandler)
+	router.Post("/upload", middleware.CheckWorkspaceRole([]string{"owner", "admin", "member", "guest"}), scheduleHandler.Handler.uploadHandler)
+	router.Delete("/delete", middleware.CheckWorkspaceRole([]string{"owner", "admin", "member", "guest"}), scheduleHandler.Handler.deleteHandler)
 	router.Get("/download/:documentId", scheduleHandler.Handler.downloadDocument)
 }
