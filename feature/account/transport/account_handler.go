@@ -8,6 +8,7 @@ import (
 	auth_utils "api/utils/auth"
 	"github.com/gofiber/fiber/v2"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos"
+	"github.com/timewise-team/timewise-models/models"
 	"strconv"
 )
 
@@ -143,7 +144,7 @@ func (h *AccountHandler) sendLinkEmailRequest(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err2.Error()})
 	}
 	// send notification
-	notificationDto := core_dtos.PushNotificationDto{
+	notificationDto := models.TwNotifications{
 		UserEmailId: userIdInt,
 		Type:        "link email",
 		Message: "A confirmation link has been successfully sent to " + email +
@@ -158,7 +159,7 @@ func (h *AccountHandler) sendLinkEmailRequest(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 	err = notification.PushNotifications(notificationDto)
-	notificationDto = core_dtos.PushNotificationDto{
+	notificationDto = models.TwNotifications{
 		UserEmailId:     userEmailResp.UserId,
 		Type:            "link email",
 		Message:         requestEmail,
@@ -313,7 +314,9 @@ func (h *AccountHandler) unlinkAnEmail(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid user ID format")
 	}
 	// send notification
-	notificationDto := core_dtos.PushNotificationDto{
+	notificationDto := models.TwNotifications{
+		Title:       "Email Removal",
+		Description: "Email " + targetEmail + " has been removed successfully",
 		UserEmailId: userIdInt,
 		Type:        "unlink email",
 		Message:     "Unlink to email: " + targetEmail + " successfully",
@@ -322,7 +325,7 @@ func (h *AccountHandler) unlinkAnEmail(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
-	notificationDto = core_dtos.PushNotificationDto{
+	notificationDto = models.TwNotifications{
 		UserEmailId: userResp.ID,
 		Type:        "unlink email",
 		Message:     "You have been unlinked from: " + targetEmail,

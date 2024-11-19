@@ -3,6 +3,7 @@ package schedule_participant
 import (
 	"api/config"
 	"api/dms"
+	"api/notification"
 	"api/service/auth"
 	"api/service/user_email"
 	"api/service/workspace_user"
@@ -151,6 +152,26 @@ func (h *ScheduleParticipantService) InviteToSchedule(
 		acceptLink, declineLink, InviteToScheduleDto.Email,
 	)
 
+	if err != nil {
+		return nil, err
+	}
+
+	// create json of link
+	link := map[string]string{
+		"accept":  acceptLink,
+		"decline": declineLink,
+	}
+	linkJson, _ := json.Marshal(link)
+
+	// send notification
+	notificationDto := models.TwNotifications{
+		Title:       fmt.Sprintf("Invitation to join schedule %s", schedule.Title),
+		Description: fmt.Sprintf("You have been invited to join schedule %s", schedule.Title),
+		Link:        string(linkJson),
+		UserEmailId: workspaceUserInvited.ID,
+		Type:        "schedule_invitation",
+	}
+	err = notification.PushNotifications(notificationDto)
 	if err != nil {
 		return nil, err
 	}

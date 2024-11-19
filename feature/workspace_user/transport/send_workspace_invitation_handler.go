@@ -2,10 +2,12 @@ package transport
 
 import (
 	"api/config"
+	"api/notification"
 	"api/service/auth"
 	"api/service/user_email"
 	"api/service/workspace"
 	"api/service/workspace_user"
+	"encoding/json"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos/workspace_user_dtos"
@@ -75,6 +77,9 @@ func (s *WorkspaceUserHandler) sendInvitation(c *fiber.Ctx) error {
 			if err := auth.SendInvitationEmail(cfg, userEmail.Email, content, subject); err != nil {
 				return c.Status(500).JSON(fiber.Map{"message": "Failed to send invitation email"})
 			}
+			if err := PushInvitationNotification(workspaceInfo.Title, acceptLink, declineLink, userEmail.ID); err != nil {
+				return c.Status(500).JSON(fiber.Map{"message": "Failed to send notification"})
+			}
 			return c.Status(200).JSON(fiber.Map{
 				"message": "Invitation sent successfully",
 			})
@@ -101,6 +106,9 @@ func (s *WorkspaceUserHandler) sendInvitation(c *fiber.Ctx) error {
 			if err := auth.SendInvitationEmail(cfg, userEmail.Email, content, subject); err != nil {
 				return c.Status(500).JSON(fiber.Map{"message": "Failed to send invitation email"})
 			}
+			if err := PushInvitationNotification(workspaceInfo.Title, acceptLink, declineLink, userEmail.ID); err != nil {
+				return c.Status(500).JSON(fiber.Map{"message": "Failed to send notification"})
+			}
 			return c.Status(200).JSON(fiber.Map{
 				"message": "Invitation sent successfully",
 			})
@@ -123,8 +131,35 @@ func (s *WorkspaceUserHandler) sendInvitation(c *fiber.Ctx) error {
 	if err := auth.SendInvitationEmail(cfg, userEmail.Email, content, subject); err != nil {
 		return c.Status(500).JSON(fiber.Map{"message": "Failed to send invitation email"})
 	}
+	if err := PushInvitationNotification(workspaceInfo.Title, acceptLink, declineLink, userEmail.ID); err != nil {
+		return c.Status(500).JSON(fiber.Map{"message": "Failed to send notification"})
+	}
 	return c.Status(200).JSON(fiber.Map{
 		"message": "Invitation sent successfully",
 	})
 
+}
+
+func PushInvitationNotification(workspaceTitle, acceptLink, declineLink string, userEmailId int) error {
+	// create json of link
+	link := map[string]string{
+		"accept":  acceptLink,
+		"decline": declineLink,
+	}
+	linkJson, _ := json.Marshal(link)
+
+	// send notification
+	notificationDto := models.TwNotifications{
+		Title:       fmt.Sprintf("Invitation to join workspace %s", workspaceTitle),
+		Description: fmt.Sprintf("You have been invited to join workspace %s", workspaceTitle),
+		Link:        string(linkJson),
+		UserEmailId: userEmailId,
+		Type:        "workspace_invitation",
+		Message:     "",
+	}
+	err := notification.PushNotifications(notificationDto)
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -2,7 +2,9 @@ package workspace
 
 import (
 	"api/dms"
+	"api/notification"
 	"encoding/json"
+	"fmt"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos/create_workspace_dtos"
 	"github.com/timewise-team/timewise-models/models"
 	"io/ioutil"
@@ -51,6 +53,21 @@ func (s *CreateWorkspaceService) InitWorkspace(workspaceRequest create_workspace
 	if err != nil {
 		return nil, err
 	}
+
+	// send notification
+	notificationDto := models.TwNotifications{
+		Title:       "New Workspace " + workspaceResult.Title + " created",
+		Description: "You have created new workspace" + workspaceResult.Title + "successfully",
+		Link:        fmt.Sprintf("/organization/%d", workspaceResult.ID),
+		UserEmailId: userEmail.ID,
+		Type:        "workspace",
+		Message:     "You have created new workspace" + workspaceResult.Title + "successfully",
+	}
+	err = notification.PushNotifications(notificationDto)
+	if err != nil {
+		return nil, err
+	}
+
 	return workspaceResult, nil
 }
 
