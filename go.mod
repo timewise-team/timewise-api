@@ -11,7 +11,7 @@ require (
 	github.com/streadway/amqp v1.1.0
 	github.com/stretchr/testify v1.9.0
 	github.com/swaggo/swag v1.16.3
-	github.com/timewise-team/timewise-models v0.0.0-20241119155348-df8a59696c5f
+	github.com/timewise-team/timewise-models v0.0.0-20241120030554-da75f68d3ba8
 	golang.org/x/oauth2 v0.23.0
 	google.golang.org/api v0.171.0
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df

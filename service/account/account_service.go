@@ -93,6 +93,7 @@ func (s *AccountService) GetLinkedUserEmails(userId string, status string) ([]co
 			emailStatus = *email.Status
 		}
 		emails = append(emails, core_dtos.EmailDto{
+			ID:     email.ID,
 			Email:  email.Email,
 			Status: emailStatus,
 		})
