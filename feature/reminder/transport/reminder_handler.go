@@ -319,6 +319,19 @@ func (h ReminderHandler) CreateReminderOnlyMe(ctx *fiber.Ctx) error {
 			"message": "Unauthorized",
 		})
 	}
+	reminderChecks, err := reminder.NewReminderService().GetRemindersByScheduleID(scheduleIdStr)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get reminders",
+		})
+	}
+	for _, reminderCheck := range reminderChecks {
+		if reminderCheck.Type == "only me" {
+			return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"message": "Reminder already exists",
+			})
+		}
+	}
 	startTime := scheduleDetail.StartTime
 	var reminder models.TwReminder
 	if startTime != nil {
