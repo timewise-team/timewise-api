@@ -386,7 +386,7 @@ func (h ReminderHandler) GetRemindersOnlyMe(ctx *fiber.Ctx) error {
 	}
 	var reminderResponse models.TwReminder
 	for _, reminder := range reminders {
-		if reminder.Type == "only me" && reminder.WorkspaceUserID == ctx.Locals("workspace_user").(*models.TwWorkspaceUser).ID {
+		if reminder.Type == "only me" {
 			reminderResponse = reminder
 		}
 	}
