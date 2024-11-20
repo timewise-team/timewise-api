@@ -114,18 +114,18 @@ func (h *ScheduleParticipantService) GetScheduleParticipantsByScheduleID(schedul
 func (h *ScheduleParticipantService) InviteToSchedule(
 	c *fiber.Ctx,
 	InviteToScheduleDto schedule_participant_dtos.InviteToScheduleRequest, check int,
-) (*schedule_participant_dtos.ScheduleParticipantResponse, error) {
+) (*schedule_participant_dtos.ScheduleParticipantResponse, string, error) {
 
 	workspaceUserInvite, err := h.getWorkspaceUserFromContext(c)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	workspaceUserInvited, err := h.GetWorkspaceUserByEmail(
 		InviteToScheduleDto.Email, workspaceUserInvite.WorkspaceId,
 	)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	//scheduleParticipant, err := h.getScheduleParticipantFromContext(c)
@@ -135,12 +135,12 @@ func (h *ScheduleParticipantService) InviteToSchedule(
 
 	schedule, err := h.getScheduleById(InviteToScheduleDto.ScheduleId)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		return nil, fiber.NewError(500, "Failed to load config")
+		return nil, "", fiber.NewError(500, "Failed to load config")
 	}
 
 	acceptLink, declineLink, _ := auth.GenerateInviteScheduleLinks(
@@ -153,7 +153,7 @@ func (h *ScheduleParticipantService) InviteToSchedule(
 	)
 
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	// create json of link
@@ -173,10 +173,10 @@ func (h *ScheduleParticipantService) InviteToSchedule(
 	}
 	err = notification.PushNotifications(notificationDto)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
-	return scheduleParticipantResponse, nil
+	return scheduleParticipantResponse, acceptLink, nil
 }
 
 // Hàm hỗ trợ lấy Workspace User từ context
@@ -347,17 +347,17 @@ func (h *ScheduleParticipantService) InviteOutsideWorkspace(
 	workspaceUserInvite models.TwWorkspaceUser,
 	scheduleParticipantInvite models.TwScheduleParticipant,
 	InviteToScheduleDto schedule_participant_dtos.InviteToScheduleRequest,
-) (*models.TwWorkspaceUser, *schedule_participant_dtos.ScheduleParticipantResponse, error) {
+) (*models.TwWorkspaceUser, *schedule_participant_dtos.ScheduleParticipantResponse, string, error) {
 
 	// Lấy thông tin email của người dùng
 	userEmail, errs := user_email.NewUserEmailService().GetUserEmail(InviteToScheduleDto.Email)
 	if userEmail == nil {
-		return nil, nil, c.Status(500).JSON(fiber.Map{
+		return nil, nil, "", c.Status(500).JSON(fiber.Map{
 			"message": "This email is not registered",
 		})
 	}
 	if errs != nil {
-		return nil, nil, c.Status(500).JSON(fiber.Map{
+		return nil, nil, "", c.Status(500).JSON(fiber.Map{
 			"message": "Internal server error",
 		})
 	}
@@ -365,6 +365,7 @@ func (h *ScheduleParticipantService) InviteOutsideWorkspace(
 	var workspaceUserResponse *models.TwWorkspaceUser
 	var scheduleParticipant *schedule_participant_dtos.ScheduleParticipantResponse
 	var err error
+	var AcceptLink string
 
 	// Kiểm tra vai trò của người dùng và thêm vào workspace
 	if workspaceUserInvite.Role == "admin" || workspaceUserInvite.Role == "owner" {
@@ -374,9 +375,11 @@ func (h *ScheduleParticipantService) InviteOutsideWorkspace(
 		workspaceUserResponse = &temp
 
 		// Mời người dùng tham gia lịch trình
-		scheduleParticipant, err = h.InviteToSchedule(c, InviteToScheduleDto, 0)
+		scheduleParticipantt, acceptLink, err := h.InviteToSchedule(c, InviteToScheduleDto, 0)
+		scheduleParticipant = scheduleParticipantt
+		AcceptLink = acceptLink
 		if err != nil {
-			return nil, nil, c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			return nil, nil, "", c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": err.Error(),
 			})
 		}
@@ -399,22 +402,22 @@ func (h *ScheduleParticipantService) InviteOutsideWorkspace(
 
 		resp, err := dms.CallAPI("POST", "/schedule_participant", newParticipant, nil, nil, 120)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, "", err
 		}
 		defer resp.Body.Close()
 
 		if err := json.NewDecoder(resp.Body).Decode(&scheduleParticipant); err != nil {
-			return nil, nil, err
+			return nil, nil, "", err
 		}
 	}
 
 	if err != nil {
-		return nil, nil, c.Status(500).JSON(fiber.Map{
+		return nil, nil, "", c.Status(500).JSON(fiber.Map{
 			"message": err.Error(),
 		})
 	}
 
-	return workspaceUserResponse, scheduleParticipant, nil
+	return workspaceUserResponse, scheduleParticipant, AcceptLink, nil
 }
 
 func (h *ScheduleParticipantService) AssignMember(
