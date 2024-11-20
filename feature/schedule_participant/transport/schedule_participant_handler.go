@@ -79,23 +79,26 @@ func (h *ScheduleParticipantHandler) InviteToSchedule(c *fiber.Ctx) error {
 	}
 
 	if workspaceUserInvited.ID != 0 {
-		scheduleParticipant, err1 := h.service.InviteToSchedule(c, InviteToScheduleDto, 0)
-		if err1 != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": err1.Error(),
-			})
-		}
-		return c.JSON(scheduleParticipant)
-	} else {
-		workspaceUserInvitedToSchedule, scheduleParticipantInvitedToSchedule, err1 := h.service.InviteOutsideWorkspace(c, *workspaceUser, participant, InviteToScheduleDto)
+		_, acceptLink, err1 := h.service.InviteToSchedule(c, InviteToScheduleDto, 0)
 		if err1 != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": err1.Error(),
 			})
 		}
 		return c.JSON(fiber.Map{
-			"workspaceUser":       workspaceUserInvitedToSchedule,
-			"scheduleParticipant": scheduleParticipantInvitedToSchedule,
+			"message":     "Invited to schedule",
+			"accept_link": acceptLink,
+		})
+	} else {
+		_, _, acceptLink, err1 := h.service.InviteOutsideWorkspace(c, *workspaceUser, participant, InviteToScheduleDto)
+		if err1 != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": err1.Error(),
+			})
+		}
+		return c.JSON(fiber.Map{
+			"message":     "Invited to schedule",
+			"accept_link": acceptLink,
 		})
 	}
 
