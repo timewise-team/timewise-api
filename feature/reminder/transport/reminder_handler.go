@@ -326,7 +326,7 @@ func (h ReminderHandler) CreateReminderOnlyMe(ctx *fiber.Ctx) error {
 		})
 	}
 	for _, reminderCheck := range reminderChecks {
-		if reminderCheck.Type == "only me" {
+		if reminderCheck.Type == "only me" && reminderCheck.WorkspaceUserID == WorkspaceUser.ID {
 			return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"message": "Reminder already exists",
 			})
@@ -386,7 +386,7 @@ func (h ReminderHandler) GetRemindersOnlyMe(ctx *fiber.Ctx) error {
 	}
 	var reminderResponse models.TwReminder
 	for _, reminder := range reminders {
-		if reminder.Type == "only me" {
+		if reminder.Type == "only me" && reminder.WorkspaceUserID == ctx.Locals("workspace_user").(*models.TwWorkspaceUser).ID {
 			reminderResponse = reminder
 		}
 	}
