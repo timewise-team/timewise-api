@@ -326,7 +326,7 @@ func (h ReminderHandler) CreateReminderOnlyMe(ctx *fiber.Ctx) error {
 		})
 	}
 	for _, reminderCheck := range reminderChecks {
-		if reminderCheck.Type == "only me" {
+		if reminderCheck.Type == "only me" && reminderCheck.WorkspaceUserID == WorkspaceUser.ID {
 			return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"message": "Reminder already exists",
 			})
