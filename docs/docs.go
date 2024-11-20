@@ -1024,6 +1024,37 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/notification": {
+            "get": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Get notifications",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notification"
+                ],
+                "summary": "Get notifications",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.TwNotifications"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/notification_setting": {
             "get": {
                 "security": [
@@ -2892,6 +2923,9 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
+                "id": {
+                    "type": "integer"
+                },
                 "status": {
                     "type": "string"
                 }
@@ -3513,6 +3547,62 @@ const docTemplate = `{
                     "$ref": "#/definitions/models.TwUser"
                 },
                 "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.TwNotifications": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "extra_data": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_read": {
+                    "type": "boolean"
+                },
+                "is_sent": {
+                    "type": "boolean"
+                },
+                "link": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "notified_at": {
+                    "type": "string"
+                },
+                "related_item_id": {
+                    "type": "integer"
+                },
+                "related_item_type": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "userEmail": {
+                    "$ref": "#/definitions/models.TwUserEmail"
+                },
+                "user_email_id": {
                     "type": "integer"
                 }
             }
