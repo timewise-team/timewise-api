@@ -13,6 +13,7 @@ import (
 	"github.com/timewise-team/timewise-models/dtos/core_dtos/schedule_participant_dtos"
 	"github.com/timewise-team/timewise-models/models"
 	"net/http"
+	"regexp"
 	"strconv"
 	"time"
 )
@@ -111,13 +112,24 @@ func (h *ScheduleParticipantService) GetScheduleParticipantsByScheduleID(schedul
 }
 
 func (h *ScheduleParticipantService) InviteToSchedule(
-	c *fiber.Ctx,
-	InviteToScheduleDto schedule_participant_dtos.InviteToScheduleRequest, check int,
+	workspaceUserInvite *models.TwWorkspaceUser,
+	InviteToScheduleDto schedule_participant_dtos.InviteToScheduleRequest,
 ) (*schedule_participant_dtos.ScheduleParticipantResponse, error) {
 
-	workspaceUserInvite, err := h.getWorkspaceUserFromContext(c)
+	if InviteToScheduleDto.Email == "" {
+		return nil, errors.New("email is required")
+	}
+
+	emailRegex := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
+	matched, err := regexp.MatchString(emailRegex, InviteToScheduleDto.Email)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("failed to validate email format")
+	}
+	if !matched {
+		return nil, errors.New("invalid email format")
+	}
+	if InviteToScheduleDto.ScheduleId == 0 || InviteToScheduleDto.ScheduleId == -1 {
+		return nil, errors.New("invalid schedule id")
 	}
 
 	workspaceUserInvited, err := h.GetWorkspaceUserByEmail(
@@ -322,8 +334,7 @@ func (h *ScheduleParticipantService) handleExistingInvitation(
 }
 
 func (h *ScheduleParticipantService) InviteOutsideWorkspace(
-	c *fiber.Ctx,
-	workspaceUserInvite models.TwWorkspaceUser,
+	workspaceUserInvite *models.TwWorkspaceUser,
 	scheduleParticipantInvite models.TwScheduleParticipant,
 	InviteToScheduleDto schedule_participant_dtos.InviteToScheduleRequest,
 ) (*models.TwWorkspaceUser, *schedule_participant_dtos.ScheduleParticipantResponse, error) {
@@ -331,14 +342,10 @@ func (h *ScheduleParticipantService) InviteOutsideWorkspace(
 	// Lấy thông tin email của người dùng
 	userEmail, errs := user_email.NewUserEmailService().GetUserEmail(InviteToScheduleDto.Email)
 	if userEmail == nil {
-		return nil, nil, c.Status(500).JSON(fiber.Map{
-			"message": "This email is not registered",
-		})
+		return nil, nil, fmt.Errorf("Failed to get user email")
 	}
 	if errs != nil {
-		return nil, nil, c.Status(500).JSON(fiber.Map{
-			"message": "Internal server error",
-		})
+		return nil, nil, fmt.Errorf("Failed to get user email: %v", errs)
 	}
 
 	var workspaceUserResponse *models.TwWorkspaceUser
@@ -353,11 +360,9 @@ func (h *ScheduleParticipantService) InviteOutsideWorkspace(
 		workspaceUserResponse = &temp
 
 		// Mời người dùng tham gia lịch trình
-		scheduleParticipant, err = h.InviteToSchedule(c, InviteToScheduleDto, 0)
+		scheduleParticipant, err = h.InviteToSchedule(workspaceUserInvite, InviteToScheduleDto)
 		if err != nil {
-			return nil, nil, c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": err.Error(),
-			})
+			return nil, nil, fmt.Errorf("Failed to invite to schedule: %v", err)
 		}
 	} else if workspaceUserInvite.Role == "member" && scheduleParticipantInvite.Status == "creator" {
 		var temp models.TwWorkspaceUser
@@ -388,9 +393,7 @@ func (h *ScheduleParticipantService) InviteOutsideWorkspace(
 	}
 
 	if err != nil {
-		return nil, nil, c.Status(500).JSON(fiber.Map{
-			"message": err.Error(),
-		})
+		return nil, nil, fmt.Errorf("Failed to invite to schedule: %v", err)
 	}
 
 	return workspaceUserResponse, scheduleParticipant, nil

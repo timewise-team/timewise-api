@@ -36,8 +36,12 @@ func (h *ScheduleHandler) CreateSchedule(c *fiber.Ctx) error {
 	if err := c.BodyParser(&CreateScheduleDto); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
+	workspaceUser, ok := c.Locals("workspace_user").(*models.TwWorkspaceUser)
+	if !ok {
+		return c.Status(fiber.StatusBadRequest).SendString("Failed to get workspace user")
+	}
+	result, statusCode, err := h.service.CreateSchedule(workspaceUser, CreateScheduleDto)
 
-	result, statusCode, err := h.service.CreateSchedule(c, CreateScheduleDto)
 	if err != nil {
 		if err.Error() == "permission denied" {
 			return c.Status(fiber.StatusForbidden).SendString(err.Error())
@@ -150,7 +154,14 @@ func (h *ScheduleHandler) UpdateSchedulePosition(c *fiber.Ctx) error {
 // @Router /api/v1/schedules/{schedule_id} [delete]
 func (h *ScheduleHandler) DeleteSchedule(c *fiber.Ctx) error {
 
-	err := h.service.DeleteSchedule(c)
+	scheduleID := c.Params("scheduleID")
+	workspaceUser, ok := c.Locals("workspace_user").(*models.TwWorkspaceUser)
+	if !ok {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to retrieve schedule participant",
+		})
+	}
+	err := h.service.DeleteSchedule(scheduleID, workspaceUser)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
