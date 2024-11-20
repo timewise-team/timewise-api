@@ -57,11 +57,11 @@ func (s *CreateWorkspaceService) InitWorkspace(workspaceRequest create_workspace
 	// send notification
 	notificationDto := models.TwNotifications{
 		Title:       "New Workspace " + workspaceResult.Title + " created",
-		Description: "You have created new workspace" + workspaceResult.Title + "successfully",
+		Description: "You have created new workspace " + workspaceResult.Title + " successfully",
 		Link:        fmt.Sprintf("/organization/%d", workspaceResult.ID),
 		UserEmailId: userEmail.ID,
 		Type:        "workspace",
-		Message:     "You have created new workspace" + workspaceResult.Title + "successfully",
+		Message:     "You have created new workspace " + workspaceResult.Title + " successfully",
 	}
 	err = notification.PushNotifications(notificationDto)
 	if err != nil {

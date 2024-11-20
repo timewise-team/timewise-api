@@ -74,7 +74,7 @@ func (s *ScheduleService) CreateSchedule(c *fiber.Ctx, CreateScheduleDto core_dt
 	notificationDto := models.TwNotifications{
 		Title:       "New Schedule created",
 		Description: fmt.Sprintf("You have created new schedule %s", scheduleDetail.Title),
-		Link:        fmt.Sprintf("/organization/%d?schedule_id=%d", CreateScheduleDto.WorkspaceID, intid),
+		Link:        fmt.Sprintf("/organization/%d?schedule_id=%d", *CreateScheduleDto.WorkspaceID, intid),
 		UserEmailId: workspaceUser.UserEmailId,
 		Type:        "schedule_created",
 	}
