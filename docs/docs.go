@@ -1953,6 +1953,11 @@ const docTemplate = `{
         },
         "/api/v1/schedules/{schedule_id}": {
             "get": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
                 "description": "Get schedule by ID",
                 "consumes": [
                     "application/json"
@@ -1965,6 +1970,20 @@ const docTemplate = `{
                 ],
                 "summary": "Get schedule by ID",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User email",
+                        "name": "X-User-Email",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "X-Workspace-Id",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "integer",
                         "description": "Schedule ID",
@@ -2302,6 +2321,11 @@ const docTemplate = `{
         },
         "/api/v1/workspace/get-workspaces-by-email/{email}": {
             "get": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
                 "description": "Get workspaces by email",
                 "consumes": [
                     "application/json"

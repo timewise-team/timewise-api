@@ -2239,6 +2239,16 @@ paths:
       - application/json
       description: Get schedule by ID
       parameters:
+      - description: User email
+        in: header
+        name: X-User-Email
+        required: true
+        type: string
+      - description: Workspace ID
+        in: header
+        name: X-Workspace-Id
+        required: true
+        type: string
       - description: Schedule ID
         in: path
         name: schedule_id
@@ -2251,6 +2261,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/core_dtos.TwScheduleResponse'
+      security:
+      - bearerToken: []
       summary: Get schedule by ID
       tags:
       - schedule
@@ -2486,6 +2498,8 @@ paths:
             items:
               $ref: '#/definitions/models.TwWorkspace'
             type: array
+      security:
+      - bearerToken: []
       summary: Get workspaces by email
       tags:
       - workspace

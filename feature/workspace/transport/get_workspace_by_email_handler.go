@@ -2,10 +2,12 @@ package transport
 
 import (
 	"api/service/workspace"
+	"api/service/workspace_user"
 	auth_utils "api/utils/auth"
 	"github.com/gofiber/fiber/v2"
 	"github.com/timewise-team/timewise-models/models"
 	"net/url"
+	"strconv"
 )
 
 type GetWorkspaceByEmailResponse struct {
@@ -18,6 +20,7 @@ type GetWorkspaceByEmailResponse struct {
 // @Tags workspace
 // @Accept json
 // @Produce json
+// @Security bearerToken
 // @Param email path string false "Email"
 // @Success 200 {array} models.TwWorkspace
 // @Router /api/v1/workspace/get-workspaces-by-email/{email} [get]
@@ -65,6 +68,15 @@ func (h *WorkspaceHandler) getWorkspacesByEmail(c *fiber.Ctx) error {
 		workspaces, err = workspace.NewWorkspaceService().GetWorkspacesByUserId(userIdStr)
 	} else {
 		workspaces, err = workspace.NewWorkspaceService().GetWorkspacesByEmail(emailFix)
+		for i := range workspaces {
+			workspaceUser, er := workspace_user.NewWorkspaceUserService().GetWorkspaceUserByEmailAndWorkspaceID(emailFix, strconv.Itoa(workspaces[i].ID))
+			if er != nil {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"error": er.Error(),
+				})
+			}
+			workspaces[i].ExtraData = workspaceUser.Role
+		}
 	}
 	// Call service
 	if err != nil {
