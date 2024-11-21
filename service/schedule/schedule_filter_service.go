@@ -70,7 +70,11 @@ func (s *ScheduleFilterService) ScheduleFilter(c *fiber.Ctx) (*http.Response, er
 	if err != nil {
 		return nil, errors.New("could not unmarshal response body: " + err.Error())
 	}
-
+	// get wsp_user_id from workspaceResponse
+	wspUserId := make([]string, len(workspaceResponse))
+	for i, wsp := range workspaceResponse {
+		wspUserId[i] = strconv.Itoa(wsp.ID)
+	}
 	// Validate workspace IDs
 	wspIds := strings.Split(wspId, ",")
 	for i, id := range wspIds {
@@ -152,7 +156,10 @@ func (s *ScheduleFilterService) ScheduleFilter(c *fiber.Ctx) (*http.Response, er
 				filteredSchedules = append(filteredSchedules, schedule)
 			} else {
 				// Check if user is a participant in the schedule
-				resp, err := dms.CallAPI("GET", "/schedule/participants/"+strconv.Itoa(schedule.ID), nil, nil, nil, 120)
+				queryParams := map[string]string{
+					"workspace_user_id": strings.Join(wspUserId, ","),
+				}
+				resp, err := dms.CallAPI("GET", "/schedule_participant/"+strconv.Itoa(schedule.ID)+"/participants", nil, nil, queryParams, 120)
 				if err != nil {
 					return nil, err
 				}
@@ -160,6 +167,9 @@ func (s *ScheduleFilterService) ScheduleFilter(c *fiber.Ctx) (*http.Response, er
 				body, err := io.ReadAll(resp.Body)
 				if err != nil {
 					return nil, err
+				}
+				if resp.StatusCode == fiber.StatusNotFound {
+					continue
 				}
 				if resp.StatusCode != fiber.StatusOK {
 					return nil, errors.New("error from external service: " + string(body))
@@ -170,9 +180,12 @@ func (s *ScheduleFilterService) ScheduleFilter(c *fiber.Ctx) (*http.Response, er
 					return nil, errors.New("could not unmarshal response body: " + err.Error())
 				}
 				for _, participant := range participants {
-					if strconv.Itoa(participant.WorkspaceUserId) == wspId {
-						filteredSchedules = append(filteredSchedules, schedule)
-						break
+					participantID := strconv.Itoa(participant.WorkspaceUserId)
+					for _, wspID := range wspUserId {
+						if participantID == wspID {
+							filteredSchedules = append(filteredSchedules, schedule)
+							break
+						}
 					}
 				}
 			}
