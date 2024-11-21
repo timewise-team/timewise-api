@@ -430,6 +430,32 @@ func (h *ScheduleParticipantService) AssignMember(
 		return nil, err
 	}
 
+	scheduleParticipants, err := h.GetScheduleParticipantsByScheduleID(memberAssigned.ScheduleId)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, participant := range scheduleParticipants {
+		if participant.Status == "assign to" {
+
+			participant.Status = "participant"
+
+			resp, err := dms.CallAPI(
+				"PUT", fmt.Sprintf("/schedule_participant/%d", participant.Id),
+				participant, nil, nil, 120,
+			)
+			if err != nil {
+				return nil, err
+			}
+			defer resp.Body.Close()
+
+			var updatedParticipant schedule_participant_dtos.ScheduleParticipantResponse
+			if err := json.NewDecoder(resp.Body).Decode(&updatedParticipant); err != nil {
+				return nil, err
+			}
+		}
+	}
+
 	now := time.Now()
 	updateScheduleParticipant := models.TwScheduleParticipant{
 		CreatedAt:        memberAssigned.CreatedAt,
