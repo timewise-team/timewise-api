@@ -2,10 +2,12 @@ package transport
 
 import (
 	"api/service/schedule"
+	"api/service/schedule_participant"
 	"errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos"
 	"github.com/timewise-team/timewise-models/models"
+	"strconv"
 )
 
 type ScheduleHandler struct {
@@ -54,6 +56,9 @@ func (h *ScheduleHandler) CreateSchedule(c *fiber.Ctx) error {
 // @Tags schedule
 // @Accept json
 // @Produce json
+// @Security bearerToken
+// @Param X-User-Email header string true "User email"
+// @Param X-Workspace-Id header string true "Workspace ID"
 // @Param schedule_id path int true "Schedule ID"
 // @Success 200 {object} core_dtos.TwScheduleResponse
 // @Router /api/v1/schedules/{schedule_id} [get]
@@ -65,7 +70,25 @@ func (h *ScheduleHandler) GetScheduleByID(c *fiber.Ctx) error {
 			"error": err.Error(),
 		})
 	}
-
+	workspaceUser := c.Locals("workspace_user").(*models.TwWorkspaceUser)
+	if workspaceUser == nil {
+		return c.Status(fiber.StatusUnauthorized).SendString("Unauthorized")
+	}
+	participant, err := schedule_participant.NewScheduleParticipantService().GetScheduleParticipantsByScheduleAndWorkspaceUser(scheduleID, strconv.Itoa(workspaceUser.ID))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	if workspaceUser.Role == "owner" || workspaceUser.Role == "admin" {
+		schedule.ExtraData = "full-access"
+	}else{
+		if participant == nil {
+			schedule.ExtraData = "view-only"
+		}else{
+			schedule.ExtraData = participant.Status
+		}
+	}
 	return c.JSON(schedule)
 }
 
