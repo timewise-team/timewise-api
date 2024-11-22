@@ -116,6 +116,36 @@ func (s *WorkspaceUserService) GetWorkspaceUserList(workspaceID string) ([]works
 	return workspaceUserList, nil
 }
 
+func (s *WorkspaceUserService) GetWorkspaceUserListForManage(workspaceID string) ([]workspace_user_dtos.GetWorkspaceUserListResponse, error) {
+	// Call API
+	resp, err := dms.CallAPI(
+		"GET",
+		"/workspace_user/manage/workspace/"+workspaceID,
+		nil,
+		nil,
+		nil,
+		120,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil || resp.StatusCode != http.StatusOK {
+		return nil, err
+	}
+
+	var workspaceUserList []workspace_user_dtos.GetWorkspaceUserListResponse
+	err = json.Unmarshal(body, &workspaceUserList)
+	if err != nil {
+		return nil, err
+	}
+
+	return workspaceUserList, nil
+}
+
 func (s *WorkspaceUserService) GetWorkspaceUserInvitationList(workspaceID string) ([]workspace_user_dtos.GetWorkspaceUserListResponse, error) {
 	// Call API
 	resp, err := dms.CallAPI(
