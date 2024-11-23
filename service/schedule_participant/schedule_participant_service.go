@@ -86,6 +86,9 @@ func (h *ScheduleParticipantService) GetScheduleParticipantsByScheduleAndWorkspa
 }
 
 func (h *ScheduleParticipantService) GetScheduleParticipantsByScheduleID(scheduleId int) ([]schedule_participant_dtos.ScheduleParticipantInfo, error) {
+	if scheduleId == 0 || scheduleId == -1 {
+		return nil, fmt.Errorf("schedule not found")
+	}
 	scheduleIdStr := strconv.Itoa(scheduleId)
 	if scheduleIdStr == "" {
 		return nil, nil

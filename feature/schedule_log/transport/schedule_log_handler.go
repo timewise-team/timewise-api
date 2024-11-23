@@ -3,7 +3,6 @@ package transport
 import (
 	"api/service/schedule_log"
 	"github.com/gofiber/fiber/v2"
-	"strconv"
 )
 
 type ScheduleLogHandler struct {
@@ -28,11 +27,8 @@ func NewScheduleLogHandler() *ScheduleLogHandler {
 // @Router /api/v1/schedule_log/schedule/{scheduleId} [get]
 func (h *ScheduleLogHandler) GetScheduleLogByScheduleID(c *fiber.Ctx) error {
 	scheduleIDStr := c.Params("scheduleID")
-	scheduleID, err := strconv.Atoi(scheduleIDStr)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString("Invalid schedule ID")
-	}
-	scheduleLog, err := h.service.GetScheduleLogsByScheduleID(scheduleID)
+
+	scheduleLog, err := h.service.GetScheduleLogsByScheduleID(scheduleIDStr)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),

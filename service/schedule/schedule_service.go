@@ -367,7 +367,12 @@ func (s *ScheduleService) DeleteSchedule(scheduleID string, workspaceUser *model
 }
 
 func (h *ScheduleService) GetSchedulesByBoardColumn(workspaceID string, boardColumnId int) ([]models.TwSchedule, error) {
-	// Call API
+	if workspaceID == "" || workspaceID == "0" {
+		return nil, fmt.Errorf("workspace id is required")
+	}
+	if boardColumnId == 0 || boardColumnId == -1 {
+		return nil, fmt.Errorf("board column id is required")
+	}
 	resp, err := dms.CallAPI(
 		"GET",
 		"/schedule/workspace/"+workspaceID+"/board_column/"+strconv.Itoa(boardColumnId),

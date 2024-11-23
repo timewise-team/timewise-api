@@ -2,12 +2,10 @@ package unit_test_test
 
 import (
 	"api/service/schedule"
-	"api/service/schedule_participant"
 	"api/unit_test/utils"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos"
-	"github.com/timewise-team/timewise-models/dtos/core_dtos/schedule_participant_dtos"
 	"github.com/timewise-team/timewise-models/models"
 	"testing"
 	"time"
@@ -549,106 +547,57 @@ func TestFunc34_UTCID04(t *testing.T) {
 	mockDMS.AssertExpectations(t)
 }
 
-func TestFunc35_UTCID01(t *testing.T) {
+func TestFunc37_UTCID01(t *testing.T) {
 	utils.InitConfig()
 	mockDMS := new(MockDMSClient)
-	service := schedule_participant.NewScheduleParticipantService()
+	service := schedule.NewScheduleService()
 
-	workspaceUser := models.TwWorkspaceUser{
-		ID: 2,
-	}
+	schedules, _ := service.GetSchedulesByBoardColumn("1", 1)
 
-	invitedMember := schedule_participant_dtos.InviteToScheduleRequest{
-		ScheduleId: 97,
-		Email:      "",
-	}
-
-	_, _, err := service.InviteToSchedule(&workspaceUser, invitedMember)
-
-	assert.Equal(t, "email is required", err.Error())
+	assert.Equal(t, 4, len(schedules))
 	mockDMS.AssertExpectations(t)
 }
 
-func TestFunc35_UTCID02(t *testing.T) {
+func TestFunc37_UTCID02(t *testing.T) {
 	utils.InitConfig()
 	mockDMS := new(MockDMSClient)
-	service := schedule_participant.NewScheduleParticipantService()
+	service := schedule.NewScheduleService()
 
-	workspaceUser := models.TwWorkspaceUser{
-		ID: 2,
-	}
+	_, err := service.GetSchedulesByBoardColumn("1", 0)
 
-	invitedMember := schedule_participant_dtos.InviteToScheduleRequest{
-		ScheduleId: 97,
-		Email:      "123123",
-	}
-
-	_, _, err := service.InviteToSchedule(&workspaceUser, invitedMember)
-
-	assert.Equal(t, "invalid email format", err.Error())
+	assert.Equal(t, "board column id is required", err.Error())
 	mockDMS.AssertExpectations(t)
 }
 
-func TestFunc35_UTCID03(t *testing.T) {
+func TestFunc37_UTCID03(t *testing.T) {
 	utils.InitConfig()
 	mockDMS := new(MockDMSClient)
-	service := schedule_participant.NewScheduleParticipantService()
+	service := schedule.NewScheduleService()
 
-	workspaceUser := models.TwWorkspaceUser{
-		ID:          2,
-		WorkspaceId: 1,
-	}
+	_, err := service.GetSchedulesByBoardColumn("1", -1)
 
-	invitedMember := schedule_participant_dtos.InviteToScheduleRequest{
-		ScheduleId: 97,
-		Email:      "quangthuan210103@gmail.com",
-	}
-
-	scheduleParticipant, _, err := service.InviteToSchedule(&workspaceUser, invitedMember)
-
-	assert.NoError(t, err)
-	assert.Equal(t, "pending", scheduleParticipant.InvitationStatus)
+	assert.Equal(t, "board column id is required", err.Error())
 	mockDMS.AssertExpectations(t)
 }
 
-func TestFunc35_UTCID04(t *testing.T) {
+func TestFunc37_UTCID04(t *testing.T) {
 	utils.InitConfig()
 	mockDMS := new(MockDMSClient)
-	service := schedule_participant.NewScheduleParticipantService()
+	service := schedule.NewScheduleService()
 
-	workspaceUser := models.TwWorkspaceUser{
-		ID:          2,
-		WorkspaceId: 1,
-	}
+	_, err := service.GetSchedulesByBoardColumn("", -1)
 
-	invitedMember := schedule_participant_dtos.InviteToScheduleRequest{
-		ScheduleId: 0,
-		Email:      "quangthuan210103@gmail.com",
-	}
-
-	_, _, err := service.InviteToSchedule(&workspaceUser, invitedMember)
-
-	assert.Equal(t, "invalid schedule id", err.Error())
+	assert.Equal(t, "workspace id is required", err.Error())
 	mockDMS.AssertExpectations(t)
 }
 
-func TestFunc35_UTCID05(t *testing.T) {
+func TestFunc37_UTCID05(t *testing.T) {
 	utils.InitConfig()
 	mockDMS := new(MockDMSClient)
-	service := schedule_participant.NewScheduleParticipantService()
+	service := schedule.NewScheduleService()
 
-	workspaceUser := models.TwWorkspaceUser{
-		ID:          2,
-		WorkspaceId: 1,
-	}
+	_, err := service.GetSchedulesByBoardColumn("0", -1)
 
-	invitedMember := schedule_participant_dtos.InviteToScheduleRequest{
-		ScheduleId: -1,
-		Email:      "quangthuan210103@gmail.com",
-	}
-
-	_, _, err := service.InviteToSchedule(&workspaceUser, invitedMember)
-
-	assert.Equal(t, "invalid schedule id", err.Error())
+	assert.Equal(t, "workspace id is required", err.Error())
 	mockDMS.AssertExpectations(t)
 }
