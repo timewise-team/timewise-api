@@ -85,7 +85,7 @@ func (h *ScheduleHandler) GetScheduleByID(c *fiber.Ctx) error {
 	if workspaceUser.Role == "owner" || workspaceUser.Role == "admin" {
 		schedule.ExtraData = "full-access"
 	} else {
-		if participant == nil {
+		if participant.ID == 0 {
 			schedule.ExtraData = "view-only"
 		} else {
 			schedule.ExtraData = participant.Status
