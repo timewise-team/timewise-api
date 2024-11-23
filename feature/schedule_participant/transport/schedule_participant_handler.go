@@ -78,8 +78,10 @@ func (h *ScheduleParticipantHandler) InviteToSchedule(c *fiber.Ctx) error {
 		return err
 	}
 
+	workspaceUser = c.Locals("workspace_user").(*models.TwWorkspaceUser)
+
 	if workspaceUserInvited.ID != 0 {
-		_, acceptLink, err1 := h.service.InviteToSchedule(c, InviteToScheduleDto, 0)
+		_, acceptLink, err1 := h.service.InviteToSchedule(workspaceUser, InviteToScheduleDto)
 		if err1 != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": err1.Error(),
@@ -90,7 +92,7 @@ func (h *ScheduleParticipantHandler) InviteToSchedule(c *fiber.Ctx) error {
 			"accept_link": acceptLink,
 		})
 	} else {
-		_, _, acceptLink, err1 := h.service.InviteOutsideWorkspace(c, *workspaceUser, participant, InviteToScheduleDto)
+		_, _, acceptLink, err1 := h.service.InviteOutsideWorkspace(workspaceUser, participant, InviteToScheduleDto)
 		if err1 != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": err1.Error(),

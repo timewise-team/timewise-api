@@ -3,8 +3,8 @@ package schedule_log
 import (
 	"api/dms"
 	"encoding/json"
+	"errors"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos/schedule_log_dtos"
-	"strconv"
 )
 
 type ScheduleLogService struct {
@@ -14,14 +14,14 @@ func NewScheduleLogService() *ScheduleLogService {
 	return &ScheduleLogService{}
 }
 
-func (h *ScheduleLogService) GetScheduleLogsByScheduleID(scheduleId int) ([]schedule_log_dtos.TwScheduleLogResponse, error) {
-	scheduleIdStr := strconv.Itoa(scheduleId)
-	if scheduleIdStr == "" {
-		return nil, nil
+func (h *ScheduleLogService) GetScheduleLogsByScheduleID(scheduleId string) ([]schedule_log_dtos.TwScheduleLogResponse, error) {
+
+	if scheduleId == "" || scheduleId == "0" {
+		return nil, errors.New("schedule id is required")
 	}
 	resp, err := dms.CallAPI(
 		"GET",
-		"/schedule_log/schedule/"+scheduleIdStr,
+		"/schedule_log/schedule/"+scheduleId,
 		nil,
 		nil,
 		nil,
