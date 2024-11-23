@@ -68,6 +68,11 @@ func (s *WorkspaceUserHandler) sendInvitation(c *fiber.Ctx) error {
 	}
 
 	if workspaceUserCheck != nil {
+		if workspaceUserCheck.Status == "joined" {
+			return c.Status(200).JSON(fiber.Map{
+				"message": "This user is already a member of this workspace",
+			})
+		}
 		if workspaceUserCheck.Status == "pending" {
 			worspaceIdStr := strconv.Itoa(workspaceUser.WorkspaceId)
 			workspaceInfo := workspace.NewWorkspaceService().GetWorkspaceById(worspaceIdStr)
@@ -84,11 +89,6 @@ func (s *WorkspaceUserHandler) sendInvitation(c *fiber.Ctx) error {
 				"message":      "Invitation sent successfully",
 				"accept_link":  acceptLink,
 				"decline_link": declineLink,
-			})
-		}
-		if workspaceUserCheck.Status == "accepted" {
-			return c.Status(200).JSON(fiber.Map{
-				"message": "This user is already a member of this workspace",
 			})
 		}
 		if workspaceUserCheck.Status == "declined" || workspaceUserCheck.Status == "removed" {

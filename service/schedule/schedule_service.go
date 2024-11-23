@@ -24,12 +24,17 @@ func NewScheduleService() *ScheduleService {
 	return &ScheduleService{}
 }
 
-func (s *ScheduleService) CreateSchedule(c *fiber.Ctx, CreateScheduleDto core_dtos.TwCreateScheduleRequest) (interface{}, int, error) {
-	workspaceUser, ok := c.Locals("workspace_user").(*models.TwWorkspaceUser)
-	if !ok {
-		return nil, fiber.StatusInternalServerError, errors.New("Failed to retrieve schedule participant")
-	}
+func (s *ScheduleService) CreateSchedule(workspaceUser *models.TwWorkspaceUser, CreateScheduleDto core_dtos.TwCreateScheduleRequest) (*core_dtos.TwCreateShecduleResponse, int, error) {
 
+	if CreateScheduleDto.BoardColumnID == nil || *CreateScheduleDto.BoardColumnID == 0 {
+		return nil, http.StatusBadRequest, errors.New("Invalid board column id")
+	}
+	if CreateScheduleDto.WorkspaceID == nil || *CreateScheduleDto.WorkspaceID == 0 {
+		return nil, http.StatusBadRequest, errors.New("Invalid workspace id")
+	}
+	if *CreateScheduleDto.Title == "" {
+		return nil, http.StatusBadRequest, errors.New("Invalid title")
+	}
 	newSchedule := core_dtos.TwCreateScheduleRequest{
 		WorkspaceID:     CreateScheduleDto.WorkspaceID,
 		BoardColumnID:   CreateScheduleDto.BoardColumnID,
@@ -51,20 +56,18 @@ func (s *ScheduleService) CreateSchedule(c *fiber.Ctx, CreateScheduleDto core_dt
 	}
 	defer resp1.Body.Close()
 
-	var result map[string]interface{}
-	if err := json.NewDecoder(resp1.Body).Decode(&result); err != nil {
-		return nil, fiber.StatusInternalServerError, err
+	var createdSchedule core_dtos.TwCreateShecduleResponse
+	if err := json.NewDecoder(resp1.Body).Decode(&createdSchedule); err != nil {
+		return nil, 500, fmt.Errorf("error decoding schedule response: %v", err)
 	}
 
-	id := result["id"].(float64)
-	intid := int(id)
-	scheduleDetail, err := s.GetScheduleDetailByID(strconv.Itoa(intid))
+	scheduleDetail, err := s.GetScheduleDetailByID(strconv.Itoa(createdSchedule.ID))
 	if err != nil {
 		return nil, fiber.StatusInternalServerError, err
 	}
 	if scheduleDetail.StartTime != nil {
 		startTime := *scheduleDetail.StartTime
-		err1 := reminder.NewReminderService().CreateReminderAllParticipantWhenCreateSchedule(intid, startTime, workspaceUser, 0)
+		err1 := reminder.NewReminderService().CreateReminderAllParticipantWhenCreateSchedule(createdSchedule.ID, startTime, workspaceUser, 0)
 		if err1 != nil {
 			return nil, fiber.StatusInternalServerError, err
 		}
@@ -74,7 +77,7 @@ func (s *ScheduleService) CreateSchedule(c *fiber.Ctx, CreateScheduleDto core_dt
 	notificationDto := models.TwNotifications{
 		Title:       "New Schedule created",
 		Description: fmt.Sprintf("You have created new schedule %s", scheduleDetail.Title),
-		Link:        fmt.Sprintf("/organization/%d?schedule_id=%d", *CreateScheduleDto.WorkspaceID, intid),
+		Link:        fmt.Sprintf("/organization/%d?schedule_id=%d", *CreateScheduleDto.WorkspaceID, createdSchedule.ID),
 		UserEmailId: workspaceUser.UserEmailId,
 		Type:        "schedule_created",
 	}
@@ -83,7 +86,7 @@ func (s *ScheduleService) CreateSchedule(c *fiber.Ctx, CreateScheduleDto core_dt
 		return nil, fiber.StatusInternalServerError, err
 	}
 
-	return result, resp1.StatusCode, nil
+	return &createdSchedule, resp1.StatusCode, nil
 }
 
 func fetchSchedule(scheduleID string) (models.TwSchedule, error) {
@@ -156,8 +159,8 @@ func applyUpdateFields(baseSchedule, updateSchedule models.TwSchedule, dto core_
 			return updateSchedule, fmt.Errorf("error parsing end time: %v", err)
 		}
 		// Kiểm tra EndTime không được nhỏ hơn StartTime
-		if updateSchedule.StartTime != nil && parsedEndTime.Before(*updateSchedule.StartTime) {
-			return updateSchedule, fmt.Errorf("end time cannot be earlier than start time")
+		if parsedEndTime.Before(*updateSchedule.StartTime) || parsedEndTime.Equal(*updateSchedule.StartTime) {
+			return updateSchedule, fmt.Errorf("Invalid Endtime")
 		}
 		updateSchedule.EndTime = &parsedEndTime
 	}
@@ -197,6 +200,9 @@ func (s *ScheduleService) UpdateSchedule(
 	workspaceUser *models.TwWorkspaceUser,
 	UpdateScheduleDto core_dtos.TwUpdateScheduleRequest) (*models.TwSchedule, error) {
 
+	if scheduleID == "" || scheduleID == "0" {
+		return nil, fmt.Errorf("schedule id is required")
+	}
 	schedule, err := fetchSchedule(scheduleID)
 	if err != nil {
 		return nil, err
@@ -275,7 +281,9 @@ func (s *ScheduleService) UpdateSchedulePosition(scheduleId string, workspaceUse
 }
 
 func (s *ScheduleService) GetScheduleByID(scheduleID string) (*models.TwSchedule, error) {
-
+	if scheduleID == "" {
+		return nil, fmt.Errorf("schedule id is required")
+	}
 	resp, err := dms.CallAPI(
 		"GET",
 		"/schedule/"+scheduleID,
@@ -330,14 +338,9 @@ func (s *ScheduleService) GetScheduleById(scheduleID string) (*core_dtos.TwSched
 	return &schedule, nil
 }
 
-func (s *ScheduleService) DeleteSchedule(c *fiber.Ctx) error {
-
-	scheduleID := c.Params("scheduleID")
-	workspaceUser, ok := c.Locals("workspace_user").(*models.TwWorkspaceUser)
-	if !ok {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to retrieve schedule participant",
-		})
+func (s *ScheduleService) DeleteSchedule(scheduleID string, workspaceUser *models.TwWorkspaceUser) error {
+	if scheduleID == "" || scheduleID == "0" || scheduleID == "-1" {
+		return fmt.Errorf("schedule not found")
 	}
 	resp, err := dms.CallAPI(
 		"DELETE",
@@ -364,7 +367,12 @@ func (s *ScheduleService) DeleteSchedule(c *fiber.Ctx) error {
 }
 
 func (h *ScheduleService) GetSchedulesByBoardColumn(workspaceID string, boardColumnId int) ([]models.TwSchedule, error) {
-	// Call API
+	if workspaceID == "" || workspaceID == "0" {
+		return nil, fmt.Errorf("workspace id is required")
+	}
+	if boardColumnId == 0 || boardColumnId == -1 {
+		return nil, fmt.Errorf("board column id is required")
+	}
 	resp, err := dms.CallAPI(
 		"GET",
 		"/schedule/workspace/"+workspaceID+"/board_column/"+strconv.Itoa(boardColumnId),

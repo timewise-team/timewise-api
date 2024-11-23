@@ -2695,6 +2695,21 @@ paths:
         X-Workspace-Id required)
       tags:
       - WorkspaceUser
+  /api/v1/workspace_user/manage/wsp_user_list:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/workspace_user_dtos.GetWorkspaceUserListResponse'
+            type: array
+      summary: Get workspace user list for manage (X-User-Email required, X-Workspace-Id
+        required)
+      tags:
+      - WorkspaceUser
   /api/v1/workspace_user/send-invitation:
     post:
       consumes:
