@@ -2634,6 +2634,28 @@
                 }
             }
         },
+        "/api/v1/workspace_user/manage/wsp_user_list": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkspaceUser"
+                ],
+                "summary": "Get workspace user list for manage (X-User-Email required, X-Workspace-Id required)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/workspace_user_dtos.GetWorkspaceUserListResponse"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/workspace_user/send-invitation": {
             "post": {
                 "description": "Send invitation to user (X-User-Email required, X-Workspace-Id required)",
