@@ -505,6 +505,46 @@
                 }
             }
         },
+        "/api/v1/board_columns/workspace_id/{workspace_id}": {
+            "get": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Get board columns by workspace ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "board_columns"
+                ],
+                "summary": "Get board columns by workspace ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.TwBoardColumn"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/board_columns/{board_column_id}": {
             "put": {
                 "security": [
