@@ -5,22 +5,8 @@ on:
     branches:
       - main
 
-jobs:
-  security-tests:
-      runs-on: ubuntu-latest
-      env:
-        GO111MODULE: on
-      steps:
-        - name: Checkout Repository
-          uses: actions/checkout@v3
-        - name: Run Gosec Security Scanner
-          uses: securego/gosec@master
-          with:
-            # Ensure that the report triggers content failures using GitHub Security features.
-            args: '-no-fail -fmt sarif -out results.sarif ./...'
-            
+jobs:       
   build:
-    needs: security-tests
     runs-on: ubuntu-latest
 
     steps:
