@@ -4,6 +4,7 @@ import (
 	"api/service/workspace_user"
 	"github.com/gofiber/fiber/v2"
 	"github.com/timewise-team/timewise-models/models"
+	"strconv"
 )
 
 // deleteWorkspaceUser godoc
@@ -31,6 +32,13 @@ func (h *WorkspaceUserHandler) deleteWorkspaceUser(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{
 			"message": "member is required",
 		})
+	}
+
+	if workspaceUser.Role != "owner" && workspaceUser.Role != "admin" && strconv.Itoa(workspaceUser.ID) != workspaceUserMember {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"message": "Access denied",
+		})
+
 	}
 	err := workspace_user.NewWorkspaceUserService().DeleteWorkspaceUser(workspaceUser, workspaceUserMember)
 	if err != nil {

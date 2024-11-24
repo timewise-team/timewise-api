@@ -39,5 +39,5 @@ func RegisterWorkspaceUserHandler(router fiber.Router) {
 	//decline invitation via email
 	router.Get("/decline-invitation-via-email/token/:token?", workspaceUserHandler.declineInvitationViaEmail)
 
-	router.Delete("/delete-workspace_user/workspace_user_id/:workspace_user_id?", middleware.CheckWorkspaceRole([]string{"owner", "admin"}), workspaceUserHandler.deleteWorkspaceUser)
+	router.Delete("/delete-workspace_user/workspace_user_id/:workspace_user_id?", middleware.CheckWorkspaceRole([]string{"owner", "admin", "member"}), workspaceUserHandler.deleteWorkspaceUser)
 }

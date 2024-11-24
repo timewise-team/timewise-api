@@ -14,6 +14,7 @@ import (
 	"github.com/timewise-team/timewise-models/dtos/core_dtos/schedule_participant_dtos"
 	"github.com/timewise-team/timewise-models/models"
 	"net/http"
+	"regexp"
 	"strconv"
 	"time"
 )
@@ -85,6 +86,9 @@ func (h *ScheduleParticipantService) GetScheduleParticipantsByScheduleAndWorkspa
 }
 
 func (h *ScheduleParticipantService) GetScheduleParticipantsByScheduleID(scheduleId int) ([]schedule_participant_dtos.ScheduleParticipantInfo, error) {
+	if scheduleId == 0 || scheduleId == -1 {
+		return nil, fmt.Errorf("schedule not found")
+	}
 	scheduleIdStr := strconv.Itoa(scheduleId)
 	if scheduleIdStr == "" {
 		return nil, nil
@@ -112,15 +116,24 @@ func (h *ScheduleParticipantService) GetScheduleParticipantsByScheduleID(schedul
 }
 
 func (h *ScheduleParticipantService) InviteToSchedule(
-	c *fiber.Ctx,
-	InviteToScheduleDto schedule_participant_dtos.InviteToScheduleRequest, check int,
+	workspaceUserInvite *models.TwWorkspaceUser,
+	InviteToScheduleDto schedule_participant_dtos.InviteToScheduleRequest,
 ) (*schedule_participant_dtos.ScheduleParticipantResponse, string, error) {
 
-	workspaceUserInvite, err := h.getWorkspaceUserFromContext(c)
-	if err != nil {
-		return nil, "", err
+	if InviteToScheduleDto.ScheduleId == 0 || InviteToScheduleDto.ScheduleId == -1 {
+		return nil, "", fmt.Errorf("invalid schedule id")
 	}
-
+	if InviteToScheduleDto.Email == "" {
+		return nil, "", fmt.Errorf("email is required")
+	}
+	emailRegex := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
+	matched, err := regexp.MatchString(emailRegex, InviteToScheduleDto.Email)
+	if err != nil {
+		return nil, "", fmt.Errorf("error validating email format")
+	}
+	if !matched {
+		return nil, "", fmt.Errorf("invalid email format")
+	}
 	workspaceUserInvited, err := h.GetWorkspaceUserByEmail(
 		InviteToScheduleDto.Email, workspaceUserInvite.WorkspaceId,
 	)
@@ -343,8 +356,7 @@ func (h *ScheduleParticipantService) handleExistingInvitation(
 }
 
 func (h *ScheduleParticipantService) InviteOutsideWorkspace(
-	c *fiber.Ctx,
-	workspaceUserInvite models.TwWorkspaceUser,
+	workspaceUserInvite *models.TwWorkspaceUser,
 	scheduleParticipantInvite models.TwScheduleParticipant,
 	InviteToScheduleDto schedule_participant_dtos.InviteToScheduleRequest,
 ) (*models.TwWorkspaceUser, *schedule_participant_dtos.ScheduleParticipantResponse, string, error) {
@@ -352,14 +364,10 @@ func (h *ScheduleParticipantService) InviteOutsideWorkspace(
 	// Lấy thông tin email của người dùng
 	userEmail, errs := user_email.NewUserEmailService().GetUserEmail(InviteToScheduleDto.Email)
 	if userEmail == nil {
-		return nil, nil, "", c.Status(500).JSON(fiber.Map{
-			"message": "This email is not registered",
-		})
+		return nil, nil, "", fmt.Errorf("Internal server error")
 	}
 	if errs != nil {
-		return nil, nil, "", c.Status(500).JSON(fiber.Map{
-			"message": "Internal server error",
-		})
+		return nil, nil, "", fmt.Errorf("Internal server error")
 	}
 
 	var workspaceUserResponse *models.TwWorkspaceUser
@@ -375,13 +383,11 @@ func (h *ScheduleParticipantService) InviteOutsideWorkspace(
 		workspaceUserResponse = &temp
 
 		// Mời người dùng tham gia lịch trình
-		scheduleParticipantt, acceptLink, err := h.InviteToSchedule(c, InviteToScheduleDto, 0)
+		scheduleParticipantt, acceptLink, err := h.InviteToSchedule(workspaceUserInvite, InviteToScheduleDto)
 		scheduleParticipant = scheduleParticipantt
 		AcceptLink = acceptLink
 		if err != nil {
-			return nil, nil, "", c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": err.Error(),
-			})
+			return nil, nil, "", fmt.Errorf("Internal server error")
 		}
 	} else if workspaceUserInvite.Role == "member" && scheduleParticipantInvite.Status == "creator" {
 		var temp models.TwWorkspaceUser
@@ -412,9 +418,7 @@ func (h *ScheduleParticipantService) InviteOutsideWorkspace(
 	}
 
 	if err != nil {
-		return nil, nil, "", c.Status(500).JSON(fiber.Map{
-			"message": err.Error(),
-		})
+		return nil, nil, "", fmt.Errorf("Internal server error")
 	}
 
 	return workspaceUserResponse, scheduleParticipant, AcceptLink, nil
