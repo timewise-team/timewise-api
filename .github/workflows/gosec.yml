@@ -7,6 +7,10 @@ on:
   schedule:
     - cron: '* * * * *'
 
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
   security_scan:
     runs-on: ubuntu-latest
@@ -21,7 +25,7 @@ jobs:
           # Ensure that the report triggers content failures using GitHub Security features.
           args: '-no-fail -fmt sarif -out results.sarif ./...'
       - name: Upload SARIF Results
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         with:
           # Specify the path to the SARIF file relative to the root of the repository.
           sarif_file: results.sarif
