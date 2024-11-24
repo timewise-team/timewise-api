@@ -3,9 +3,9 @@ name: "Security Scan Workflow"
 # Trigger the workflow on code pushes and scheduled runs.
 # Scheduled runs occur every Sunday at 00:00 UTC.
 on:
-  push:
+  workflow_dispatch:
   schedule:
-    - cron: '* * * * *'
+    - cron: '0 0 * * 5'
 
 permissions:
   actions: read
