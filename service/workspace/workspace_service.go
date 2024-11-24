@@ -2,6 +2,7 @@ package workspace
 
 import (
 	"api/dms"
+	"api/service/account"
 	auth_utils "api/utils/auth"
 	"encoding/json"
 	"errors"
@@ -60,6 +61,16 @@ func (s *WorkspaceService) GetWorkspacesByUserId(userId string) ([]models.TwWork
 	_, err := strconv.Atoi(userId)
 	if err != nil {
 		return nil, errors.New("Invalid user id")
+	}
+	check, err := account.NewAccountService().GetUserByUserId(userId)
+	if err != nil {
+		return nil, errors.New("User not found")
+	}
+	if check.DeletedAt != nil {
+		return nil, errors.New("User not found")
+	}
+	if check.ID == 0 {
+		return nil, errors.New("User not found")
 	}
 	// Call API
 	resp, err := dms.CallAPI(

@@ -286,3 +286,25 @@ func (s *AccountService) DeactivateAccount(userId string) error {
 	}
 	return nil
 }
+
+func (s *AccountService) GetUserByUserId(userId string) (models.TwUser, error) {
+	resp, err := dms.CallAPI("GET", "/user/"+userId, nil, nil, nil, 120)
+	if err != nil {
+		return models.TwUser{}, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return models.TwUser{}, errors.New("failed to get user")
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return models.TwUser{}, err
+	}
+	var user models.TwUser
+	if err := json.Unmarshal(body, &user); err != nil {
+		return models.TwUser{}, err
+	}
+	return user, nil
+
+}

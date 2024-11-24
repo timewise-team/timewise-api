@@ -581,6 +581,25 @@ func (s *WorkspaceUserService) AcceptInvitation(workspaceUser *models.TwWorkspac
 	if workspaceIDStr == "" {
 		return errors.New("workspace id not found")
 	}
+	check, err := s.GetWorkspaceUserInformation(strconv.Itoa(workspaceUser.ID))
+	if err != nil {
+		return err
+	}
+	if check.ID == 0 {
+		return errors.New("workspace user not found")
+	}
+	if check.Status != "pending" {
+		return errors.New("workspace user is not pending")
+	}
+	if check.IsActive == true {
+		return errors.New("workspace user is already active")
+	}
+	if check.IsVerified == false {
+		return errors.New("workspace user is not verified")
+	}
+	if check.WorkspaceId != workspaceID {
+		return errors.New("workspace user is not in this workspace")
+	}
 	// Call API
 	resp, err := dms.CallAPI(
 		"PUT",
