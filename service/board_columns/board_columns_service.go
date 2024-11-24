@@ -64,7 +64,7 @@ func (s *BoardColumnsService) GetBoardColumnsByWorkspace(workspaceID string) ([]
 		return nil, fmt.Errorf("invalid workspace id")
 	}
 	result := workspace.NewWorkspaceService().GetWorkspaceById(workspaceID)
-	if result.ID == 0 {
+	if result == nil {
 		return nil, fmt.Errorf("workspace not found")
 	}
 	// Call API
@@ -98,7 +98,7 @@ func (h *BoardColumnsService) InitBoardColumns(workspaceID int) error {
 	// workspace_service
 	workspaceIDStr := fmt.Sprintf("%d", workspaceID)
 	workspaceCheck := workspace.NewWorkspaceService().GetWorkspaceById(workspaceIDStr)
-	if workspaceCheck.ID == 0 {
+	if workspaceCheck == nil {
 		return fmt.Errorf("workspace not found")
 	}
 
@@ -255,7 +255,7 @@ func (s *BoardColumnsService) UpdatePositionsAfterDeletion(position int, id int)
 	if id < 0 {
 		return fmt.Errorf("invalid workspace id")
 	}
-	if result := workspace.NewWorkspaceService().GetWorkspaceById(fmt.Sprintf("%d", id)); result.ID == 0 {
+	if result := workspace.NewWorkspaceService().GetWorkspaceById(fmt.Sprintf("%d", id)); result == nil {
 		return fmt.Errorf("workspace not found")
 	}
 

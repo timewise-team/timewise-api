@@ -182,7 +182,7 @@ func applyUpdateFields(baseSchedule, updateSchedule models.TwSchedule, dto core_
 		updateSchedule.Visibility = *dto.Visibility
 	}
 	if dto.ExtraData != nil {
-		updateSchedule.ExtraData = *dto.ExtraData
+		updateSchedule.ExtraData = ""
 	}
 	if dto.RecurrencePattern != nil {
 		updateSchedule.RecurrencePattern = *dto.RecurrencePattern
@@ -220,7 +220,7 @@ func (s *ScheduleService) UpdateSchedule(
 		updateSchedule.Location = schedule.Location
 		updateSchedule.Visibility = schedule.Visibility
 		updateSchedule.VideoTranscript = schedule.VideoTranscript
-		updateSchedule.ExtraData = schedule.ExtraData
+		updateSchedule.ExtraData = ""
 		updateSchedule.RecurrencePattern = schedule.RecurrencePattern
 		updateSchedule.StartTime = schedule.StartTime
 		updateSchedule.EndTime = schedule.EndTime
