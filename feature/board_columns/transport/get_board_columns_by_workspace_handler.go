@@ -63,11 +63,17 @@ func (h *BoardColumnsHandler) getBoardColumnsByWorkspace(c *fiber.Ctx) error {
 
 	if membersParam != "" {
 		members := strings.Split(membersParam, ",")
-		filters["members"] = members
+		filters["member"] = members
 	}
 
 	if dueParam == "day" {
-		filters["dueDay"] = true
+		filters["due"] = "day"
+	}
+	if dueParam == "week" {
+		filters["due"] = "week"
+	}
+	if dueParam == "month" {
+		filters["due"] = "month"
 	}
 
 	if dueCompleteParam == "true" {
