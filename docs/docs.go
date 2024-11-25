@@ -3934,6 +3934,50 @@ const docTemplate = `{
                 }
             }
         },
+        "models.TwWorkspaceLog": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "field_changed": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "new_value": {
+                    "type": "string"
+                },
+                "old_value": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "workspace": {
+                    "$ref": "#/definitions/models.TwWorkspace"
+                },
+                "workspaceUser": {
+                    "$ref": "#/definitions/models.TwWorkspaceUser"
+                },
+                "workspace_id": {
+                    "type": "integer"
+                },
+                "workspace_user_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "models.TwWorkspaceUser": {
             "type": "object",
             "properties": {

@@ -709,6 +709,35 @@ definitions:
       updated_at:
         type: string
     type: object
+  models.TwWorkspaceLog:
+    properties:
+      action:
+        type: string
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      description:
+        type: string
+      field_changed:
+        type: string
+      id:
+        type: integer
+      new_value:
+        type: string
+      old_value:
+        type: string
+      updated_at:
+        type: string
+      workspace:
+        $ref: '#/definitions/models.TwWorkspace'
+      workspace_id:
+        type: integer
+      workspace_user_id:
+        type: integer
+      workspaceUser:
+        $ref: '#/definitions/models.TwWorkspaceUser'
+    type: object
   models.TwWorkspaceUser:
     properties:
       created_at:

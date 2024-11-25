@@ -17,6 +17,7 @@ import (
 	scheduleParticipant "api/feature/schedule_participant/transport"
 	userEmailTransport "api/feature/user_email/transport"
 	workspaceTransport "api/feature/workspace/transport"
+	workspaceLogTransport "api/feature/workspace_log/transport"
 	workspaceUserTransport "api/feature/workspace_user/transport"
 	"api/middleware"
 	"github.com/gofiber/fiber/v2"
@@ -80,5 +81,6 @@ func RegisterHandlerV1() *fiber.App {
 	notificationSettingTransport.RegisterNotificationSettingHandler(v1.Group("/notification_setting"))
 	notificationTransport.RegisterNotificationHandler(v1.Group("/notification"))
 	meetingBotTransport.RegisterMeetingBotHandler(v1.Group("/meeting_bot"))
+	workspaceLogTransport.RegisterWorkspaceLogeHandler(v1.Group("/workspace_log"))
 	return router
 }
