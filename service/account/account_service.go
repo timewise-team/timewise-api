@@ -57,9 +57,81 @@ func convertToUserResponseDto(userResponse models.TwUser) core_dtos.GetUserRespo
 	}
 }
 
+func (s *AccountService) updateEmailStatus(email, userId, status string) error {
+	query := map[string]string{"email": email, "status": status, "target_user_id": userId}
+	_, err := dms.CallAPI("PATCH", "/user_email/status", nil, nil, query, 120)
+	return err
+}
+
+func (s *AccountService) checkIfUserExists(email string) (bool, error) {
+	resp, err := dms.CallAPI("GET", "/user/get", nil, nil, map[string]string{"email": email}, 120)
+	if err != nil {
+		return false, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func (s *AccountService) checkIfEmailLinked(email string) (bool, error) {
+	resp, err := dms.CallAPI("GET", "/user_email/check", nil, nil, map[string]string{"email": email}, 120)
+	if err != nil {
+		return false, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNotFound {
+		return true, nil // Email đã liên kết
+	}
+
+	return false, nil
+}
+
+func (s *AccountService) getEmailDetails(email string) (models.TwUserEmail, error) {
+	resp, err := dms.CallAPI("GET", "/user_email/email/"+email, nil, nil, nil, 120)
+	if err != nil {
+		return models.TwUserEmail{}, err
+	}
+	defer resp.Body.Close()
+
+	var userEmail models.TwUserEmail
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil || resp.StatusCode != http.StatusOK {
+		return models.TwUserEmail{}, errors.New("failed to fetch email details")
+	}
+	if err := json.Unmarshal(body, &userEmail); err != nil {
+		return models.TwUserEmail{}, err
+	}
+
+	return userEmail, nil
+}
+
+func (s *AccountService) fetchUserByEmail(email string) (models.TwUser, error) {
+	resp, err := dms.CallAPI("GET", "/user/get", nil, nil, map[string]string{"email": email}, 120)
+	if err != nil {
+		return models.TwUser{}, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return models.TwUser{}, errors.New("failed to fetch user by email")
+	}
+
+	var user models.TwUser
+	if err := parseResponseBody(resp, &user); err != nil {
+		return models.TwUser{}, err
+	}
+
+	return user, nil
+}
+
 func (s *AccountService) GetUserInfoByUserId(userId string, status string) (core_dtos.GetUserResponseDto, error) {
 	var userResponse models.TwUser
-	resp, err := dms.CallAPI("GET", "/user/"+userId, nil, nil, nil, 120) // Keeping the existing CallAPI method
+	resp, err := dms.CallAPI("GET", "/user/"+userId, nil, nil, nil, 120)
 	if err != nil {
 		return core_dtos.GetUserResponseDto{}, err
 	}
@@ -118,66 +190,10 @@ func (s *AccountService) UpdateUserInfo(userId string, request core_dtos.UpdateP
 
 	return convertToUserResponseDto(userResponse), nil
 }
-func (s *AccountService) CheckIfUserExists(email string) (bool, error) {
-	resp, err := dms.CallAPI("GET", "/user/get", nil, nil, map[string]string{"email": email}, 120)
-	if err != nil {
-		return false, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode == http.StatusNotFound {
-		return false, nil // Email không phải là người dùng
-	}
-
-	return true, nil // Email là người dùng
-}
-
-func (s *AccountService) CheckIfEmailLinked(email string) (bool, error) {
-	resp, err := dms.CallAPI("GET", "/user_email/check", nil, nil, map[string]string{"email": email}, 120)
-	if err != nil {
-		return false, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusNotFound {
-		return true, nil // Email đã liên kết
-	}
-
-	return false, nil // Email chưa liên kết
-}
-
-func (s *AccountService) GetEmailDetails(email string) (models.TwUserEmail, error) {
-	resp, err := dms.CallAPI("GET", "/user_email/email/"+email, nil, nil, nil, 120)
-	if err != nil {
-		return models.TwUserEmail{}, err
-	}
-	defer resp.Body.Close()
-
-	var userEmail models.TwUserEmail
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil || resp.StatusCode != http.StatusOK {
-		return models.TwUserEmail{}, errors.New("failed to fetch email details")
-	}
-	if err := json.Unmarshal(body, &userEmail); err != nil {
-		return models.TwUserEmail{}, err
-	}
-
-	return userEmail, nil
-}
-
-func (s *AccountService) UpdateEmailStatus(email string, userId string) error {
-	query := map[string]string{"email": email, "status": "pending", "target_user_id": userId}
-	_, err := dms.CallAPI("PATCH", "/user_email/status", nil, nil, query, 120)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
 
 func (s *AccountService) SendLinkAnEmailRequest(userId string, email string) (models.TwUserEmail, error) {
 	// Check if the email is already a user.
-	isUser, err := s.CheckIfUserExists(email)
+	isUser, err := s.checkIfUserExists(email)
 	if err != nil {
 		return models.TwUserEmail{}, err
 	}
@@ -185,7 +201,7 @@ func (s *AccountService) SendLinkAnEmailRequest(userId string, email string) (mo
 		return models.TwUserEmail{}, errors.New("email is not a user")
 	}
 	// Check if email is already linked.
-	isLinked, err := s.CheckIfEmailLinked(email)
+	isLinked, err := s.checkIfEmailLinked(email)
 	if err != nil {
 		return models.TwUserEmail{}, err
 	}
@@ -194,13 +210,13 @@ func (s *AccountService) SendLinkAnEmailRequest(userId string, email string) (mo
 	}
 
 	// Fetch user email details.
-	userEmail, err := s.GetEmailDetails(email)
+	userEmail, err := s.getEmailDetails(email)
 	if err != nil {
 		return models.TwUserEmail{}, err
 	}
 
 	// Update status to "pending."
-	err = s.UpdateEmailStatus(email, userId)
+	err = s.updateEmailStatus(email, userId, "pending")
 	if err != nil {
 		return models.TwUserEmail{}, err
 	}
@@ -226,60 +242,23 @@ func (s *AccountService) UpdateStatusLinkEmailRequest(userId string, email strin
 }
 
 func (s *AccountService) UnlinkAnEmail(email string) (core_dtos.GetUserResponseDto, error) {
-	// check if email is already is linked to a user
-	respUserEmail, err := dms.CallAPI("GET", "/user_email/email/"+email, nil, nil, nil, 120)
+	userEmail, err := s.getEmailDetails(email)
 	if err != nil {
 		return core_dtos.GetUserResponseDto{}, err
 	}
-	defer respUserEmail.Body.Close()
-	body, err := ioutil.ReadAll(respUserEmail.Body)
-	if err != nil || respUserEmail.StatusCode != http.StatusOK {
-		return core_dtos.GetUserResponseDto{}, err
-	}
-	// marshal response body
-	var userEmailResp models.TwUserEmail
-	err = json.Unmarshal(body, &userEmailResp)
-	if err != nil {
-		return core_dtos.GetUserResponseDto{}, err
-	}
-	if userEmailResp.Status == nil || *userEmailResp.Status != "linked" {
-		return core_dtos.GetUserResponseDto{}, errors.New("Email is not linked to any user")
+	if userEmail.Status == nil || *userEmail.Status != "linked" {
+		return core_dtos.GetUserResponseDto{}, errors.New("email is not linked to any user")
 	}
 	// call dms to get user_id by email in user_email
-	queryParam := map[string]string{
-		"email": email,
-	}
-	resp, err := dms.CallAPI("GET", "/user/get", nil, nil, queryParam, 120)
+	user, err := s.fetchUserByEmail(email)
 	if err != nil {
 		return core_dtos.GetUserResponseDto{}, err
 	}
-	defer resp.Body.Close()
-	body, err = ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return core_dtos.GetUserResponseDto{}, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return core_dtos.GetUserResponseDto{}, errors.New("Can not get user_id by email")
-	}
-	// marshal response body
-	var usersResp models.TwUser
-	err = json.Unmarshal(body, &usersResp)
-	if err != nil {
-		return core_dtos.GetUserResponseDto{}, err
-	}
-	userId := usersResp.ID
-	userIdStr := strconv.Itoa(userId)
-	// call dms to change current user_id to user_id got from above api in user_email
-	queryParams := map[string]string{
-		"email":  email,
-		"status": "",
-	}
-	_, err = dms.CallAPI("PATCH", "/user_email", nil, nil, queryParams, 120)
-	if err != nil {
+	if err := s.updateEmailStatus(email, strconv.Itoa(user.ID), ""); err != nil {
 		return core_dtos.GetUserResponseDto{}, err
 	}
 	// return user info
-	return s.GetUserInfoByUserId(userIdStr, "")
+	return s.GetUserInfoByUserId(strconv.Itoa(user.ID), "")
 }
 
 func (s *AccountService) DeactivateAccount(userId string) error {
