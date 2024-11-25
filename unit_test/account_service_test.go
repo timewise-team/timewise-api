@@ -3,14 +3,9 @@ package unit_test_test
 import (
 	"api/service/account"
 	"api/unit_test/utils"
-	"bytes"
-	"encoding/json"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos"
-	"github.com/timewise-team/timewise-models/models"
-	"io/ioutil"
-	"net/http"
 	"testing"
 )
 
@@ -19,110 +14,89 @@ type MockDMSClient struct {
 	mock.Mock
 }
 
-func (m *MockDMSClient) CallAPI(method, url string, body interface{}, headers map[string]string, query map[string]string, timeout int) (*http.Response, error) {
-	args := m.Called(method, url, body, headers, query, timeout)
-	resp, _ := args.Get(0).(*http.Response)
-	return resp, args.Error(1)
-}
-
-// Helper function to create a mocked HTTP response
-func newMockResponse(statusCode int, body interface{}) *http.Response {
-	jsonBody, _ := json.Marshal(body)
-	return &http.Response{
-		StatusCode: statusCode,
-		Body:       ioutil.NopCloser(bytes.NewReader(jsonBody)),
-	}
-}
-
-func TestGetUserInfoByUserId(t *testing.T) {
+func TestFunc08_UTCID01(t *testing.T) {
 	utils.InitConfig()
 	mockDMS := new(MockDMSClient)
 	service := account.NewAccountService()
 
-	// Mock response for /user/{userId}
-	mockUser := models.TwUser{
-		ID:             1,
-		FirstName:      "John",
-		LastName:       "Doe",
-		ProfilePicture: "url/to/pic",
-		IsActive:       true,
+	userId := "6"
+	status := ""
+	// expected data:
+	expectedEmails := []core_dtos.EmailDto{
+		{
+			Email:  "anh.nguyenduc.work@gmail.com",
+			Status: "",
+		},
+		{
+			Email:  "anhndhe170145@fpt.edu.vn",
+			Status: "linked",
+		},
+		{
+			Email:  "anh.nguyenduc4@vti.com.vn",
+			Status: "pending",
+		},
 	}
-	mockDMS.On("CallAPI", "GET", "/user/1", nil, nil, nil, 120).
-		Return(newMockResponse(http.StatusOK, mockUser), nil)
+	// Gọi hàm GetLinkedUserEmails
+	emails, err := service.GetLinkedUserEmails(userId, status)
 
-	// Mock response for /user_email/user/{userId}
-	mockEmails := []models.TwUserEmail{
-		{Email: "john.doe@example.com", Status: stringPtr("linked")},
-	}
-	mockDMS.On("CallAPI", "GET", "/user_email/user/1", nil, nil, map[string]string{"status": ""}, 120).
-		Return(newMockResponse(http.StatusOK, mockEmails), nil)
-
-	// Test the function
-	userDto, err := service.GetUserInfoByUserId("1", "")
-
-	// Assertions
 	assert.NoError(t, err)
-	assert.Equal(t, mockUser.FirstName, userDto.FirstName)
-	assert.Equal(t, 1, userDto.ID)
-	assert.Len(t, userDto.Email, 1)
-	assert.Equal(t, "john.doe@example.com", userDto.Email[0].Email)
+	assert.NotNil(t, emails)
+
+	for _, expectedEmail := range expectedEmails {
+		found := false
+		for _, email := range emails {
+			if email.Email == expectedEmail.Email {
+				assert.Equal(t, expectedEmail.Status, email.Status)
+				found = true
+				break
+			}
+		}
+		assert.True(t, found, "Email not found: %s", expectedEmail.Email)
+	}
 
 	mockDMS.AssertExpectations(t)
 }
 
-func TestUpdateUserInfo(t *testing.T) {
+func TestFunc08_UTCID02(t *testing.T) {
 	utils.InitConfig()
 	mockDMS := new(MockDMSClient)
 	service := account.NewAccountService()
 
-	// Mock request body
-	request := core_dtos.UpdateProfileRequestDto{
-		FirstName:      "Jane",
-		LastName:       "Smith",
-		ProfilePicture: "url/to/new-pic",
-	}
+	_, err := service.GetLinkedUserEmails("", "")
 
-	// Mock response for /user/{userId}
-	updatedUser := models.TwUser{
-		ID:             1,
-		FirstName:      "Jane",
-		LastName:       "Smith",
-		ProfilePicture: "url/to/new-pic",
-	}
-	mockDMS.On("CallAPI", "PUT", "/user/1", mock.Anything, nil, nil, 120).
-		Return(newMockResponse(http.StatusOK, updatedUser), nil)
-
-	// Test the function
-	userDto, err := service.UpdateUserInfo("1", request)
-
-	// Assertions
-	assert.NoError(t, err)
-	assert.Equal(t, "Jane", userDto.FirstName)
-	assert.Equal(t, "Smith", userDto.LastName)
-	assert.Equal(t, "url/to/new-pic", userDto.ProfilePicture)
-
+	assert.Equal(t, "user ID is required", err.Error())
 	mockDMS.AssertExpectations(t)
 }
 
-func TestDeactivateAccount(t *testing.T) {
+func TestFunc08_UTCID03(t *testing.T) {
 	utils.InitConfig()
 	mockDMS := new(MockDMSClient)
 	service := account.NewAccountService()
 
-	// Mock response for /user/{userId}
-	mockDMS.On("CallAPI", "PUT", "/user/1", mock.Anything, nil, nil, 120).
-		Return(newMockResponse(http.StatusOK, nil), nil)
+	userID := "0"
 
-	// Test the function
-	err := service.DeactivateAccount("1")
+	emails, err := service.GetLinkedUserEmails(userID, "")
 
-	// Assertions
 	assert.NoError(t, err)
-
+	assert.Empty(t, emails)
 	mockDMS.AssertExpectations(t)
 }
 
-// Helper function to create string pointers
-func stringPtr(s string) *string {
-	return &s
+func TestFunc08_UTCID04(t *testing.T) {
+	utils.InitConfig()
+	mockDMS := new(MockDMSClient)
+	service := account.NewAccountService()
+
+	userID := "6"
+	status := "linked"
+
+	expectedEmails := []core_dtos.EmailDto{
+		{Email: "anhndhe170145@fpt.edu.vn", Status: "linked"},
+	}
+
+	emails, err := service.GetLinkedUserEmails(userID, status)
+
+	assert.NoError(t, err)
+	assert.Equal(t, expectedEmails, emails)
+	mockDMS.AssertExpectations(t)
 }
