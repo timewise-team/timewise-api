@@ -152,9 +152,11 @@ func (h *AccountHandler) sendLinkEmailRequest(c *fiber.Ctx) error {
 			"If you don’t see the email, check your Spam or Promotions folder.",
 		RelatedItemId:   userEmailResp.ID,
 		RelatedItemType: "user_email",
+		Title:           "Link Email Request",
+		Description:     "A confirmation link has been successfully sent to " + email,
 	}
-	//currentEmail := c.Locals("email")
-	requestEmail, err := generateMessageEmail(userIdStr, email)
+	currentEmail := c.Locals("email").(string)
+	requestEmail, acceptLink, rejectLink, err := generateMessageEmail(userIdStr, email)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -165,6 +167,9 @@ func (h *AccountHandler) sendLinkEmailRequest(c *fiber.Ctx) error {
 		Message:         requestEmail,
 		RelatedItemId:   userEmailResp.ID,
 		RelatedItemType: "user_email",
+		Title:           "Link Email Request",
+		Description:     "You have received a request to link your email address to account: " + currentEmail,
+		Link:            "Click here to approve: " + acceptLink + "<br>Click here to reject: " + rejectLink,
 	}
 	err = notification.PushNotifications(notificationDto)
 	if err != nil {
@@ -173,20 +178,20 @@ func (h *AccountHandler) sendLinkEmailRequest(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Link email request sent"})
 }
 
-func generateMessageEmail(userId string, email string) (string, error) {
+func generateMessageEmail(userId string, email string) (string, string, string, error) {
 	cfg, err1 := config.LoadConfig()
 	if err1 != nil {
-		return "", err1
+		return "", "", "", err1
 	}
 
 	accptLink, err := auth.GenerateLinkEmailLinks(cfg, userId, email, "linked")
 	if err != nil {
-		return "", err
+		return "", "", "", err
 	}
 
 	rejectLink, err := auth.GenerateLinkEmailLinks(cfg, userId, email, "rejected")
 	if err != nil {
-		return "", err
+		return "", "", "", err
 	}
 
 	// Nội dung email HTML
@@ -206,7 +211,7 @@ func generateMessageEmail(userId string, email string) (string, error) {
 		</body>
 	</html>
 `
-	return emailContent, nil
+	return emailContent, accptLink, rejectLink, nil
 }
 
 // actionEmailLinkRequest godoc
