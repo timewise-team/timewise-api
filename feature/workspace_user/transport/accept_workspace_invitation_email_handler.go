@@ -45,6 +45,16 @@ func (h *WorkspaceUserHandler) acceptInvitationViaEmail(c *fiber.Ctx) error {
 			"message": "workspace user not found",
 		})
 	}
+	if workspaceUser == nil {
+		return c.Status(404).JSON(fiber.Map{
+			"message": "workspace user not found",
+		})
+	}
+	if workspaceUser.IsVerified == true && workspaceUser.Status == "joined" && workspaceUser.IsActive == true {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "User has already joined the workspace",
+		})
+	}
 	if err2 != nil {
 		if errors.Is(err2, jwt.ErrTokenExpired) {
 			if workspaceUser.Status == "pending" {

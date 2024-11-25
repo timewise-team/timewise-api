@@ -35,6 +35,17 @@ func (h *WorkspaceUserHandler) declineInvitationViaEmail(c *fiber.Ctx) error {
 
 	workspaceIdStr := fmt.Sprintf("%.0f", workspaceId)
 	workspaceUser, err3 := workspace_user.NewWorkspaceUserService().GetWorkspaceUserByEmailAndWorkspaceID(claims["email"].(string), workspaceIdStr)
+
+	if workspaceUser == nil {
+		return c.Status(404).JSON(fiber.Map{
+			"message": "workspace user not found",
+		})
+	}
+	if workspaceUser.IsVerified == true && workspaceUser.Status == "joined" && workspaceUser.IsActive == true {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "User has already joined the workspace",
+		})
+	}
 	if err3 != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"message": err3.Error(),
