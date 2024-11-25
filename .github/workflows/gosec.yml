@@ -1,0 +1,26 @@
+name: "Security Scan Workflow"
+
+# Trigger the workflow on code pushes and scheduled runs.
+# Scheduled runs occur every Sunday at 00:00 UTC.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 5'
+
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
+jobs:
+  security_scan:
+    runs-on: ubuntu-latest
+    env:
+      GO111MODULE: on
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      - name: Run Gosec Security Scanner
+        uses: securego/gosec@master
+        with:
+          args: ./...
