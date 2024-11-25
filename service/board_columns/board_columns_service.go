@@ -23,6 +23,25 @@ func (s *BoardColumnsService) CreateBoardColumn(request dtos.BoardColumnsRequest
 	if err := board_columns_utils.ValidateBoardColumn(request); err != nil {
 		return nil, fmt.Errorf("invalid request: %v", err)
 	}
+	if result := workspace.NewWorkspaceService().GetWorkspaceById(fmt.Sprintf("%d", request.WorkspaceId)); result == nil {
+		return nil, fmt.Errorf("workspace not found")
+
+	}
+	if request.Name == "" {
+		return nil, fmt.Errorf("name is required")
+	}
+	if request.Position < 0 {
+		return nil, fmt.Errorf("position is invalid")
+	}
+	boardColumns, err := s.GetBoardColumnsByWorkspace(fmt.Sprintf("%d", request.WorkspaceId))
+	if err != nil {
+		return nil, fmt.Errorf("failed to get board columns: %v", err)
+	}
+	for _, boardColumn := range boardColumns {
+		if boardColumn.Position == request.Position {
+			return nil, fmt.Errorf("position is invalid")
+		}
+	}
 	// Call API
 	boardColumnRequest := models.TwBoardColumn{
 		Name:        request.Name,
@@ -141,9 +160,12 @@ func (h *BoardColumnsService) DeleteBoardColumn(boardColumnId string) error {
 	if _, err := strconv.Atoi(boardColumnId); err != nil {
 		return fmt.Errorf("invalid board column id")
 	}
-	_, err := h.GetBoardColumnById(boardColumnId)
+	a, err := h.GetBoardColumnById(boardColumnId)
 	if err != nil {
 		return fmt.Errorf("failed to get board column: %v", err)
+	}
+	if a == nil {
+		return fmt.Errorf("board column not found")
 	}
 
 	// Call API
@@ -183,7 +205,13 @@ func (h *BoardColumnsService) UpdateBoardColumn(boardColumnId string, request st
 	if err != nil {
 		return nil, fmt.Errorf("board column not found: %v", err)
 	}
-
+	check, err := h.GetBoardColumnById(boardColumnId)
+	if err != nil {
+		return nil, fmt.Errorf("board column not found: %v", err)
+	}
+	if check == nil {
+		return nil, fmt.Errorf("board column not found")
+	}
 	// Call API
 	boardColumnRequest := models.TwBoardColumn{
 		Name: request,

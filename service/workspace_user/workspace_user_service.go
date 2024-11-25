@@ -76,7 +76,9 @@ func (s *WorkspaceUserService) GetWorkspaceUserByEmailAndWorkspaceID(email strin
 	if _, err := strconv.Atoi(workspaceID); err != nil {
 		return nil, errors.New("Invalid workspace ID")
 	}
-
+	if workspace.NewWorkspaceService().GetWorkspaceById(workspaceID) == nil {
+		return nil, errors.New("Workspace not found")
+	}
 	// Call API
 	resp, err := dms.CallAPI(
 		"GET",
@@ -113,7 +115,7 @@ func (s *WorkspaceUserService) GetWorkspaceUserList(workspaceID string) ([]works
 	if _, err := strconv.Atoi(workspaceID); err != nil {
 		return nil, errors.New("workspace id is invalid")
 	}
-	if workspace.NewWorkspaceService().GetWorkspaceById(workspaceID).ID == 0 {
+	if workspace.NewWorkspaceService().GetWorkspaceById(workspaceID) == nil {
 		return nil, errors.New("workspace not found")
 	}
 	// Call API
@@ -182,6 +184,9 @@ func (s *WorkspaceUserService) GetWorkspaceUserInvitationList(workspaceID string
 	if _, err := strconv.Atoi(workspaceID); err != nil {
 		return nil, errors.New("workspace id is invalid")
 	}
+	if workspace.NewWorkspaceService().GetWorkspaceById(workspaceID) == nil {
+		return nil, errors.New("workspace not found")
+	}
 	// Call API
 	resp, err := dms.CallAPI(
 		"GET",
@@ -215,13 +220,22 @@ func (s *WorkspaceUserService) DeleteWorkspaceUser(workspaceUser *models.TwWorks
 	workspaceID := workspaceUser.WorkspaceId
 	var workspaceIDStr = strconv.Itoa(workspaceID)
 	if workspaceUserMemberId == "" {
-		return nil
+		return errors.New("workspace user id not found")
 	}
 	_, err := strconv.Atoi(workspaceUserMemberId)
 	if err != nil {
 		return errors.New("workspace user is unvalid")
 	}
-
+	if workspace.NewWorkspaceService().GetWorkspaceById(workspaceIDStr) == nil {
+		return errors.New("workspace not found")
+	}
+	check, err := s.GetWorkspaceUserInformation(workspaceUserMemberId)
+	if err != nil {
+		return errors.New("workspace user not found")
+	}
+	if check.ID == 0 {
+		return errors.New("workspace user not found")
+	}
 	// Call API
 	resp, err := dms.CallAPI(
 		"DELETE",
@@ -295,7 +309,7 @@ func (s *WorkspaceUserService) GetWorkspaceUserInvitationNotVerifiedList(workspa
 	if _, err := strconv.Atoi(workspaceID); err != nil {
 		return nil, errors.New("workspace id is invalid")
 	}
-	if workspace.NewWorkspaceService().GetWorkspaceById(workspaceID).ID == 0 {
+	if workspace.NewWorkspaceService().GetWorkspaceById(workspaceID) == nil {
 		return nil, errors.New("workspace not found")
 	}
 	// Call API
@@ -333,6 +347,28 @@ func (s *WorkspaceUserService) UpdateWorkspaceUserRole(workspaceUser *models.TwW
 	if workspaceIdStr == "" {
 		return errors.New("workspace id not found")
 	}
+	if workspace.NewWorkspaceService().GetWorkspaceById(workspaceIdStr) == nil {
+		return errors.New("workspace not found")
+	}
+	if request.Role == "" {
+		return errors.New("role is required")
+	}
+	if request.Email == "" {
+		return errors.New("email is required")
+	}
+	if !auth_utils.IsValidEmail(request.Email) {
+		return errors.New("email is invalid")
+	}
+	if request.Role != "admin" && request.Role != "guest" && request.Role != "member" {
+		return errors.New("role is invalid")
+	}
+	check, err := s.GetWorkspaceUserByEmailAndWorkspaceID(request.Email, workspaceIdStr)
+	if err != nil {
+		return errors.New("workspace user not found")
+	}
+	if check.ID == 0 {
+		return errors.New("workspace user not found")
+	}
 	// Call API
 	resp, err := dms.CallAPI(
 		"PUT",
@@ -367,8 +403,18 @@ func (s *WorkspaceUserService) VerifyWorkspaceUserInvitation(workspaceUser *mode
 	if workspaceIdStr == "" {
 		return errors.New("workspace id not found")
 	}
-	if workspace.NewWorkspaceService().GetWorkspaceById(workspaceIdStr).ID == 0 {
+	if workspace.NewWorkspaceService().GetWorkspaceById(workspaceIdStr) == nil {
 		return errors.New("workspace not found")
+	}
+	check, err := s.GetWorkspaceUserByEmailAndWorkspaceID(email, workspaceIdStr)
+	if err != nil {
+		return errors.New("workspace user not found")
+	}
+	if check.ID == 0 {
+		return errors.New("workspace user not found")
+	}
+	if check.Status != "pending" && check.IsVerified == true && check.IsActive == true {
+		return errors.New("workspace user is not pending")
 	}
 	// Call API
 	resp, err := dms.CallAPI(
@@ -397,8 +443,30 @@ func (s *WorkspaceUserService) DisproveWorkspaceUserInvitation(workspaceUser *mo
 	if workspaceIdStr == "" {
 		return errors.New("workspace id not found")
 	}
-	if workspace.NewWorkspaceService().GetWorkspaceById(workspaceIdStr).ID == 0 {
+	if !auth_utils.IsValidEmail(email) {
+		return errors.New("email is invalid")
+	}
+	if workspace.NewWorkspaceService().GetWorkspaceById(workspaceIdStr) == nil {
 		return errors.New("workspace not found")
+	}
+	check, err := s.GetWorkspaceUserByEmailAndWorkspaceID(email, workspaceIdStr)
+	if err != nil {
+		return errors.New("workspace user not found")
+	}
+	if check.ID == 0 {
+		return errors.New("workspace user not found")
+	}
+	if check.IsVerified == true {
+		return errors.New("workspace user is verified")
+	}
+	if check.Status != "pending" && check.IsVerified == true && check.IsActive == true {
+		return errors.New("workspace user is not pending")
+	}
+	if check.Status == "declined" {
+		return errors.New("workspace user is already declined")
+	}
+	if check.Status == "removed" {
+		return errors.New("workspace user is already removed")
 	}
 	// Call API
 	resp, err := dms.CallAPI(
@@ -627,6 +695,23 @@ func (s *WorkspaceUserService) UpdateStatusByEmailAndWorkspace(email string, wor
 	if workspaceIDStr == "" {
 		return errors.New("workspace id not found")
 	}
+	if !auth_utils.IsValidEmail(email) {
+		return errors.New("email is invalid")
+	}
+	if status == "" {
+		return errors.New("status is required")
+	}
+	if workspace.NewWorkspaceService().GetWorkspaceById(workspaceIDStr) == nil {
+		return errors.New("workspace not found")
+	}
+	workspace_user, err := s.GetWorkspaceUserByEmailAndWorkspaceID(email, workspaceIDStr)
+	if err != nil {
+		return errors.New("workspace user not found")
+	}
+	if workspace_user == nil {
+		return errors.New("workspace user not found")
+	}
+
 	// Call API
 	resp, err := dms.CallAPI(
 		"PUT",
