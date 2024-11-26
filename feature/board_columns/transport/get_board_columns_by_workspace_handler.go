@@ -9,6 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	schedule_dtos "github.com/timewise-team/timewise-models/dtos/core_dtos"
 	dtos "github.com/timewise-team/timewise-models/dtos/core_dtos/board_columns_dtos"
+	"github.com/timewise-team/timewise-models/dtos/core_dtos/schedule_participant_dtos"
 	"github.com/timewise-team/timewise-models/models"
 	"strconv"
 	"strings"
@@ -161,6 +162,12 @@ func (h *BoardColumnsHandler) getBoardColumnsByWorkspace(c *fiber.Ctx) error {
 				schedulesList.Position = schedule.Position
 				schedulesList.Priority = schedule.Priority
 				scheduleParticipants, err := schedule_participant.NewScheduleParticipantService().GetScheduleParticipantsBySchedule(schedule.ID, workspaceID)
+				var scheduleParticipantHasJoined []schedule_participant_dtos.ScheduleParticipantInfo
+				for _, scheduleParticipant := range scheduleParticipants {
+					if scheduleParticipant.InvitationStatus == "joined" && scheduleParticipant.IsVerified == true {
+						scheduleParticipantHasJoined = append(scheduleParticipantHasJoined, scheduleParticipant)
+					}
+				}
 				if err != nil {
 					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 						"message": "The server failed to respond",
@@ -178,7 +185,7 @@ func (h *BoardColumnsHandler) getBoardColumnsByWorkspace(c *fiber.Ctx) error {
 						"message": "The server failed to respond",
 					})
 				}
-				schedulesList.ScheduleParticipants = scheduleParticipants
+				schedulesList.ScheduleParticipants = scheduleParticipantHasJoined
 				schedulesList.Documents = len(Documents)
 				schedulesList.Comments = len(Comments)
 
@@ -223,6 +230,12 @@ func (h *BoardColumnsHandler) getBoardColumnsByWorkspace(c *fiber.Ctx) error {
 							"message": "The server failed to respond",
 						})
 					}
+					var scheduleParticipantHasJoined []schedule_participant_dtos.ScheduleParticipantInfo
+					for _, scheduleParticipant := range scheduleParticipants {
+						if scheduleParticipant.InvitationStatus == "joined" && scheduleParticipant.IsVerified == true {
+							scheduleParticipantHasJoined = append(scheduleParticipantHasJoined, scheduleParticipant)
+						}
+					}
 					Documents, err := document.NewDocumentService().GetDocumentsBySchedule(schedule.ID)
 					if err != nil {
 						return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -235,7 +248,7 @@ func (h *BoardColumnsHandler) getBoardColumnsByWorkspace(c *fiber.Ctx) error {
 							"message": "The server failed to respond",
 						})
 					}
-					schedulesList.ScheduleParticipants = scheduleParticipants
+					schedulesList.ScheduleParticipants = scheduleParticipantHasJoined
 					schedulesList.Documents = len(Documents)
 					schedulesList.Comments = len(Comments)
 
@@ -291,6 +304,12 @@ func (h *BoardColumnsHandler) getBoardColumnsByWorkspace(c *fiber.Ctx) error {
 								"message": "The server failed to respond",
 							})
 						}
+						var scheduleParticipantHasJoined []schedule_participant_dtos.ScheduleParticipantInfo
+						for _, scheduleParticipant := range scheduleParticipants {
+							if scheduleParticipant.InvitationStatus == "joined" && scheduleParticipant.IsVerified == true {
+								scheduleParticipantHasJoined = append(scheduleParticipantHasJoined, scheduleParticipant)
+							}
+						}
 						Documents, err := document.NewDocumentService().GetDocumentsBySchedule(schedule.ID)
 						if err != nil {
 							return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -303,7 +322,7 @@ func (h *BoardColumnsHandler) getBoardColumnsByWorkspace(c *fiber.Ctx) error {
 								"message": "The server failed to respond",
 							})
 						}
-						schedulesList.ScheduleParticipants = scheduleParticipants
+						schedulesList.ScheduleParticipants = scheduleParticipantHasJoined
 						schedulesList.Documents = len(Documents)
 						schedulesList.Comments = len(Comments)
 
@@ -375,6 +394,12 @@ func (h *BoardColumnsHandler) getBoardColumnsByWorkspace(c *fiber.Ctx) error {
 							"message": "The server failed to respond",
 						})
 					}
+					var scheduleParticipantHasJoined []schedule_participant_dtos.ScheduleParticipantInfo
+					for _, scheduleParticipant := range scheduleParticipants {
+						if scheduleParticipant.InvitationStatus == "joined" && scheduleParticipant.IsVerified == true {
+							scheduleParticipantHasJoined = append(scheduleParticipantHasJoined, scheduleParticipant)
+						}
+					}
 					Documents, err := document.NewDocumentService().GetDocumentsBySchedule(schedule.ID)
 					if err != nil {
 						return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -387,7 +412,7 @@ func (h *BoardColumnsHandler) getBoardColumnsByWorkspace(c *fiber.Ctx) error {
 							"message": "The server failed to respond",
 						})
 					}
-					schedulesList.ScheduleParticipants = scheduleParticipants
+					schedulesList.ScheduleParticipants = scheduleParticipantHasJoined
 					schedulesList.Documents = len(Documents)
 					schedulesList.Comments = len(Comments)
 
