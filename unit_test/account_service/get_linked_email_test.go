@@ -9,13 +9,13 @@ import (
 	"testing"
 )
 
-type MockDMSClient struct {
+type mockDMSClientGetLinked struct {
 	mock.Mock
 }
 
 func TestFunc08_UTCID01(t *testing.T) {
 	utils.InitConfig()
-	mockDMS := new(MockDMSClient)
+	mockDMS := new(mockDMSClientGetLinked)
 	service := account.NewAccountService()
 
 	userId := "6"
@@ -57,7 +57,7 @@ func TestFunc08_UTCID01(t *testing.T) {
 
 func TestFunc08_UTCID02(t *testing.T) {
 	utils.InitConfig()
-	mockDMS := new(MockDMSClient)
+	mockDMS := new(mockDMSClientGetLinked)
 	service := account.NewAccountService()
 
 	userId := "6"
@@ -91,7 +91,7 @@ func TestFunc08_UTCID02(t *testing.T) {
 
 func TestFunc08_UTCID03(t *testing.T) {
 	utils.InitConfig()
-	mockDMS := new(MockDMSClient)
+	mockDMS := new(mockDMSClientGetLinked)
 	service := account.NewAccountService()
 
 	userId := "6"
@@ -125,7 +125,7 @@ func TestFunc08_UTCID03(t *testing.T) {
 
 func TestFunc08_UTCID04(t *testing.T) {
 	utils.InitConfig()
-	mockDMS := new(MockDMSClient)
+	mockDMS := new(mockDMSClientGetLinked)
 	service := account.NewAccountService()
 
 	userId := "6"
@@ -140,7 +140,7 @@ func TestFunc08_UTCID04(t *testing.T) {
 
 func TestFunc08_UTCID05(t *testing.T) {
 	utils.InitConfig()
-	mockDMS := new(MockDMSClient)
+	mockDMS := new(mockDMSClientGetLinked)
 	service := account.NewAccountService()
 
 	userID := "abcxyz"
@@ -154,7 +154,7 @@ func TestFunc08_UTCID05(t *testing.T) {
 
 func TestFunc08_UTCID06(t *testing.T) {
 	utils.InitConfig()
-	mockDMS := new(MockDMSClient)
+	mockDMS := new(mockDMSClientGetLinked)
 	service := account.NewAccountService()
 
 	userID := ""

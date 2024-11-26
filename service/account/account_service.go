@@ -225,6 +225,9 @@ func (s *AccountService) SendLinkAnEmailRequest(userId string, email string) (mo
 }
 
 func (s *AccountService) UpdateStatusLinkEmailRequest(userId string, email string, status string) (core_dtos.GetUserResponseDto, error) {
+	if status != "pending" && status != "linked" && status != "rejected" && status != "" {
+		return s.GetUserInfoByUserId(userId, "invalid status")
+	}
 	queryParams := map[string]string{
 		"email":  email,
 		"status": status,
