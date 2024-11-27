@@ -2443,6 +2443,60 @@
                 }
             }
         },
+        "/api/v1/workspace_log/get-workspace-logs/workspace/{workspace_id}": {
+            "get": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
+                "description": "Get workspace logs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workspace_log"
+                ],
+                "summary": "Get workspace logs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User email",
+                        "name": "X-User-Email",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "X-Workspace-Id",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.TwWorkspaceLog"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/workspace_user/accept-invitation-via-email/token/{token}": {
             "get": {
                 "description": "Accept invitation via email",
