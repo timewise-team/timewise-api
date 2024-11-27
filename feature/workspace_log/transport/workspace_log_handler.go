@@ -16,6 +16,7 @@ import (
 // @Param X-User-Email header string true "User email"
 // @Param X-Workspace-Id header string true "Workspace ID"
 // @Success 200 {array} models.TwWorkspaceLog
+// @Router /api/v1/workspace_log/get-workspace-logs/workspace/{workspace_id} [get]
 func (h WorkspaceLogHandler) getWorkspaceLogs(ctx *fiber.Ctx) error {
 	id := ctx.Params("workspace_id")
 	if id == "" {
