@@ -237,9 +237,9 @@ func TestFunc32_UTCID04(t *testing.T) {
 	mockDMS := new(MockDMSClient)
 	service := schedule.NewScheduleService()
 
-	_, err := service.GetScheduleByID("-1")
+	_, err := service.GetScheduleByID("999")
 
-	assert.Equal(t, "GET /schedule/-1 returned status 404: Schedule not found", err.Error())
+	assert.Equal(t, "GET /schedule/999 returned status 404: Schedule not found", err.Error())
 	mockDMS.AssertExpectations(t)
 	mockDMS.AssertExpectations(t)
 }
@@ -302,7 +302,7 @@ func TestFunc33_UTCID02(t *testing.T) {
 
 	_, err := service.UpdateSchedule("5", schedulePartipant, &workspaceUser, request)
 
-	assert.Equal(t, "Bad Request: Invalid StartTime", err.Error())
+	assert.Equal(t, "Bad Request: start time cannot be in the past", err.Error())
 	mockDMS.AssertExpectations(t)
 }
 
@@ -547,7 +547,7 @@ func TestFunc34_UTCID04(t *testing.T) {
 	mockDMS.AssertExpectations(t)
 }
 
-func TestFunc37_UTCID01(t *testing.T) {
+func TestFunc36_UTCID01(t *testing.T) {
 	utils.InitConfig()
 	mockDMS := new(MockDMSClient)
 	service := schedule.NewScheduleService()
@@ -558,7 +558,7 @@ func TestFunc37_UTCID01(t *testing.T) {
 	mockDMS.AssertExpectations(t)
 }
 
-func TestFunc37_UTCID02(t *testing.T) {
+func TestFunc36_UTCID02(t *testing.T) {
 	utils.InitConfig()
 	mockDMS := new(MockDMSClient)
 	service := schedule.NewScheduleService()
@@ -569,7 +569,7 @@ func TestFunc37_UTCID02(t *testing.T) {
 	mockDMS.AssertExpectations(t)
 }
 
-func TestFunc37_UTCID03(t *testing.T) {
+func TestFunc36_UTCID03(t *testing.T) {
 	utils.InitConfig()
 	mockDMS := new(MockDMSClient)
 	service := schedule.NewScheduleService()
@@ -580,7 +580,7 @@ func TestFunc37_UTCID03(t *testing.T) {
 	mockDMS.AssertExpectations(t)
 }
 
-func TestFunc37_UTCID04(t *testing.T) {
+func TestFunc36_UTCID04(t *testing.T) {
 	utils.InitConfig()
 	mockDMS := new(MockDMSClient)
 	service := schedule.NewScheduleService()
@@ -591,7 +591,7 @@ func TestFunc37_UTCID04(t *testing.T) {
 	mockDMS.AssertExpectations(t)
 }
 
-func TestFunc37_UTCID05(t *testing.T) {
+func TestFunc36_UTCID05(t *testing.T) {
 	utils.InitConfig()
 	mockDMS := new(MockDMSClient)
 	service := schedule.NewScheduleService()
@@ -599,5 +599,121 @@ func TestFunc37_UTCID05(t *testing.T) {
 	_, err := service.GetSchedulesByBoardColumn("0", -1)
 
 	assert.Equal(t, "workspace id is required", err.Error())
+	mockDMS.AssertExpectations(t)
+}
+
+func TestFunc35_UTCID01(t *testing.T) {
+	utils.InitConfig()
+	mockDMS := new(MockDMSClient)
+	service := schedule.NewScheduleService()
+
+	position := 4
+	boardColumnId := 4
+
+	workspaceUser := models.TwWorkspaceUser{
+		ID: 2,
+	}
+
+	updatePositionDto := core_dtos.TwUpdateSchedulePosition{
+		Position:      &position,
+		BoardColumnID: &boardColumnId,
+	}
+
+	schedules, _ := service.UpdateSchedulePosition("102", &workspaceUser, updatePositionDto)
+
+	assert.Equal(t, 4, schedules.BoardColumnID)
+	assert.Equal(t, 4, schedules.Position)
+	mockDMS.AssertExpectations(t)
+}
+
+func TestFunc35_UTCID02(t *testing.T) {
+	utils.InitConfig()
+	mockDMS := new(MockDMSClient)
+	service := schedule.NewScheduleService()
+
+	position := 0
+	boardColumnId := 4
+
+	workspaceUser := models.TwWorkspaceUser{
+		ID: 2,
+	}
+
+	updatePositionDto := core_dtos.TwUpdateSchedulePosition{
+		Position:      &position,
+		BoardColumnID: &boardColumnId,
+	}
+
+	_, err := service.UpdateSchedulePosition("102", &workspaceUser, updatePositionDto)
+
+	assert.Equal(t, "invalid position", err.Error())
+	mockDMS.AssertExpectations(t)
+}
+
+func TestFunc35_UTCID03(t *testing.T) {
+	utils.InitConfig()
+	mockDMS := new(MockDMSClient)
+	service := schedule.NewScheduleService()
+
+	position := -1
+	boardColumnId := 4
+
+	workspaceUser := models.TwWorkspaceUser{
+		ID: 2,
+	}
+
+	updatePositionDto := core_dtos.TwUpdateSchedulePosition{
+		Position:      &position,
+		BoardColumnID: &boardColumnId,
+	}
+
+	_, err := service.UpdateSchedulePosition("102", &workspaceUser, updatePositionDto)
+
+	assert.Equal(t, "invalid position", err.Error())
+	mockDMS.AssertExpectations(t)
+}
+
+func TestFunc35_UTCID04(t *testing.T) {
+	utils.InitConfig()
+	mockDMS := new(MockDMSClient)
+	service := schedule.NewScheduleService()
+
+	position := 5
+	boardColumnId := 0
+
+	workspaceUser := models.TwWorkspaceUser{
+		ID: 2,
+	}
+
+	updatePositionDto := core_dtos.TwUpdateSchedulePosition{
+		Position:      &position,
+		BoardColumnID: &boardColumnId,
+	}
+
+	_, err := service.UpdateSchedulePosition("102", &workspaceUser, updatePositionDto)
+
+	assert.Equal(t, "invalid board column id", err.Error())
+	mockDMS.AssertExpectations(t)
+}
+
+func TestFunc35_UTCID05(t *testing.T) {
+	utils.InitConfig()
+	mockDMS := new(MockDMSClient)
+	service := schedule.NewScheduleService()
+
+	position := 5
+	boardColumnId := -1
+
+	workspaceUser := models.TwWorkspaceUser{
+		ID: 2,
+	}
+
+	updatePositionDto := core_dtos.TwUpdateSchedulePosition{
+		Position:      &position,
+		BoardColumnID: &boardColumnId,
+	}
+
+	_, err := service.UpdateSchedulePosition("102", &workspaceUser, updatePositionDto)
+
+	assert.Equal(t, "invalid board column id", err.Error())
 	mockDMS.AssertExpectations(t)
 }

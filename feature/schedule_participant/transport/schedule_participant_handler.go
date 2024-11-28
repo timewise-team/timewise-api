@@ -147,7 +147,10 @@ func (h *ScheduleParticipantHandler) AssignMember(c *fiber.Ctx) error {
 			"error": "member does not exist in schedule",
 		})
 	}
-	scheduleParticipant, err1 := h.service.AssignMember(c, scheduleParticipantInvited)
+
+	workspaceUser = c.Locals("workspace_user").(*models.TwWorkspaceUser)
+
+	scheduleParticipant, err1 := h.service.AssignMember(workspaceUser, scheduleParticipantInvited)
 	if err1 != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err1.Error(),

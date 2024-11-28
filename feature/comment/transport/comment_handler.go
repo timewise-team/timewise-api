@@ -4,6 +4,7 @@ import (
 	"api/service/comment"
 	"github.com/gofiber/fiber/v2"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos/comment_dtos"
+	"github.com/timewise-team/timewise-models/models"
 	"strconv"
 )
 
@@ -58,7 +59,9 @@ func (h *CommentHandler) CreateComment(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	result, err := h.service.CreateComment(c, CreateCommentDto)
+	workspaceUser := c.Locals("workspace_user").(*models.TwWorkspaceUser)
+
+	result, err := h.service.CreateComment(workspaceUser, CreateCommentDto)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}
@@ -81,8 +84,8 @@ func (h *CommentHandler) UpdateComment(c *fiber.Ctx) error {
 	if err := c.BodyParser(&UpdateCommentDto); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
-
-	result, err := h.service.UpdateComment(c, UpdateCommentDto)
+	commentId := c.Params("id")
+	result, err := h.service.UpdateComment(commentId, UpdateCommentDto)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}
@@ -100,7 +103,8 @@ func (h *CommentHandler) UpdateComment(c *fiber.Ctx) error {
 // @Success 204 "No Content"
 // @Router /api/v1/comment/{comment_id} [delete]
 func (h *CommentHandler) DeleteComment(c *fiber.Ctx) error {
-	result, err := h.service.DeleteComment(c)
+	commentId := c.Params("id")
+	result, err := h.service.DeleteComment(commentId)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}

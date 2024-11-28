@@ -4,6 +4,7 @@ import (
 	"api/dms"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos/schedule_log_dtos"
 )
 
@@ -16,7 +17,7 @@ func NewScheduleLogService() *ScheduleLogService {
 
 func (h *ScheduleLogService) GetScheduleLogsByScheduleID(scheduleId string) ([]schedule_log_dtos.TwScheduleLogResponse, error) {
 
-	if scheduleId == "" || scheduleId == "0" {
+	if scheduleId == "" || scheduleId == "0" || scheduleId == "-1" {
 		return nil, errors.New("schedule id is required")
 	}
 	resp, err := dms.CallAPI(
@@ -28,7 +29,7 @@ func (h *ScheduleLogService) GetScheduleLogsByScheduleID(scheduleId string) ([]s
 		120,
 	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("schedule not found")
 	}
 	defer resp.Body.Close()
 

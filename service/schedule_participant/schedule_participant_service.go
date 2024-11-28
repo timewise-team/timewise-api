@@ -425,13 +425,15 @@ func (h *ScheduleParticipantService) InviteOutsideWorkspace(
 }
 
 func (h *ScheduleParticipantService) AssignMember(
-	c *fiber.Ctx,
+	workspaceUserInvite *models.TwWorkspaceUser,
 	memberAssigned *models.TwScheduleParticipant,
 ) (*schedule_participant_dtos.ScheduleParticipantResponse, error) {
 
-	workspaceUserInvite, err := h.getWorkspaceUserFromContext(c)
-	if err != nil {
-		return nil, err
+	if memberAssigned.Status == "" || memberAssigned.InvitationStatus != "joined" {
+		return nil, fmt.Errorf("member can't be assign")
+	}
+	if workspaceUserInvite.ID == 0 || workspaceUserInvite.ID == -1 {
+		return nil, fmt.Errorf("invalid workspace user id")
 	}
 
 	scheduleParticipants, err := h.GetScheduleParticipantsByScheduleID(memberAssigned.ScheduleId)
