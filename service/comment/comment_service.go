@@ -45,6 +45,9 @@ func (h *CommentService) GetCommentsBySchedule(scheduleId int) ([]models.TwComme
 }
 
 func (h *CommentService) GetCommentsByScheduleID(scheduleId int) ([]comment_dtos.TwCommentResponse, error) {
+	if scheduleId <= 0 {
+		return nil, errors.New("schedule id must be greater than zero")
+	}
 	scheduleIdStr := strconv.Itoa(scheduleId)
 	if scheduleIdStr == "" {
 		return nil, nil
@@ -70,13 +73,14 @@ func (h *CommentService) GetCommentsByScheduleID(scheduleId int) ([]comment_dtos
 	return comments, nil
 }
 
-func (s *CommentService) CreateComment(c *fiber.Ctx, CommentRequestDto comment_dtos.CommentRequestDTO) (*comment_dtos.CommentResponseDTO, error) {
+func (s *CommentService) CreateComment(workspaceUser *models.TwWorkspaceUser, CommentRequestDto comment_dtos.CommentRequestDTO) (*comment_dtos.CommentResponseDTO, error) {
 
-	workspaceUser, ok := c.Locals("workspace_user").(*models.TwWorkspaceUser)
-	if !ok {
-		return nil, c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to retrieve schedule participant",
-		})
+	if *CommentRequestDto.ScheduleId <= 0 {
+		return nil, errors.New("schedule id must be greater than zero")
+	}
+
+	if *CommentRequestDto.Content == "" {
+		return nil, errors.New("content is required")
 	}
 
 	newComment := models.TwComment{
@@ -119,8 +123,16 @@ func (s *CommentService) CreateComment(c *fiber.Ctx, CommentRequestDto comment_d
 	return &newCommentResponse, nil
 }
 
-func (s *CommentService) UpdateComment(c *fiber.Ctx, CommentRequestDto comment_dtos.CommentRequestDTO) (*comment_dtos.CommentResponseDTO, error) {
-	commentId := c.Params("id")
+func (s *CommentService) UpdateComment(commentId string, CommentRequestDto comment_dtos.CommentRequestDTO) (*comment_dtos.CommentResponseDTO, error) {
+
+	commentIdInt, err := strconv.Atoi(commentId)
+	if commentIdInt <= 0 {
+		return nil, errors.New("comment id must be greater than zero")
+	}
+	if *CommentRequestDto.Content == "" {
+		return nil, errors.New("content is required")
+	}
+
 	resp1, err1 := dms.CallAPI(
 		"GET",
 		"/comment/"+commentId,
@@ -183,8 +195,13 @@ func (s *CommentService) UpdateComment(c *fiber.Ctx, CommentRequestDto comment_d
 	return &newCommentResponse, nil
 }
 
-func (s *CommentService) DeleteComment(c *fiber.Ctx) (*comment_dtos.CommentResponseDTO, error) {
-	commentId := c.Params("id")
+func (s *CommentService) DeleteComment(commentId string) (*comment_dtos.CommentResponseDTO, error) {
+
+	commentIdInt, err := strconv.Atoi(commentId)
+	if commentIdInt <= 0 {
+		return nil, errors.New("comment id must be greater than zero")
+	}
+	
 	resp1, err1 := dms.CallAPI(
 		"GET",
 		"/comment/"+commentId,

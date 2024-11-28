@@ -139,14 +139,9 @@ func applyUpdateFields(baseSchedule, updateSchedule models.TwSchedule, dto core_
 	}
 
 	if dto.StartTime != nil {
-		// Parse StartTime
 		parsedStartTime, err := time.Parse("2006-01-02 15:04:05.000", *dto.StartTime)
 		if err != nil {
 			return updateSchedule, fmt.Errorf("error parsing start time: %v", err)
-		}
-		// Kiểm tra StartTime không được nhỏ hơn time.Now()
-		if parsedStartTime.Before(time.Now()) {
-			return updateSchedule, fmt.Errorf("start time cannot be in the past")
 		}
 		updateSchedule.StartTime = &parsedStartTime
 	}
@@ -257,6 +252,12 @@ func (s *ScheduleService) UpdateSchedule(
 
 func (s *ScheduleService) UpdateSchedulePosition(scheduleId string, workspaceUser *models.TwWorkspaceUser, UpdateScheduleDto core_dtos.TwUpdateSchedulePosition) (*core_dtos.TwUpdateScheduleResponse, error) {
 
+	if *UpdateScheduleDto.Position == 0 || *UpdateScheduleDto.Position == -1 {
+		return nil, fmt.Errorf("invalid position")
+	}
+	if *UpdateScheduleDto.BoardColumnID == 0 || *UpdateScheduleDto.BoardColumnID == -1 {
+		return nil, fmt.Errorf("invalid board column id")
+	}
 	resp, err := dms.CallAPI("PUT", "/schedule/position/"+scheduleId+"/workspace_user/"+strconv.Itoa(workspaceUser.ID), UpdateScheduleDto, nil, nil, 120)
 	if err != nil {
 		return nil, err
