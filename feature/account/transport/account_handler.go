@@ -162,10 +162,10 @@ func (h *AccountHandler) sendLinkEmailRequest(c *fiber.Ctx) error {
 	}
 	err = notification.PushNotifications(notificationDto)
 	notificationDto = models.TwNotifications{
-		UserEmailId:     userEmailResp.UserId,
+		UserEmailId:     userEmailResp.ID,
 		Type:            "link email",
 		Message:         requestEmail,
-		RelatedItemId:   userEmailResp.ID,
+		RelatedItemId:   userIdInt,
 		RelatedItemType: "user_email",
 		Title:           "Link Email Request",
 		Description:     "You have received a request to link your email address to account: " + currentEmail,
