@@ -28,7 +28,7 @@ func (s *ScheduleFilterService) ScheduleFilter(c *fiber.Ctx) (*http.Response, er
 
 	// Get user_email_id by userId
 	userId := c.Locals("userid").(string)
-	resp, err := dms.CallAPI("GET", "/user_email/user/"+userId, nil, nil, map[string]string{"status": "linked"}, 120)
+	resp, err := dms.CallAPI("GET", "/user_email/user/"+userId, nil, nil, map[string]string{"status": ""}, 120)
 	if err != nil {
 		return nil, err
 	}
