@@ -175,7 +175,7 @@ func (h *AccountHandler) sendLinkEmailRequest(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Link email request sent"})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Link email request sent", "acceptLink": acceptLink})
 }
 
 func generateMessageEmail(userId string, email string) (string, string, string, error) {
