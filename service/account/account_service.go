@@ -173,13 +173,8 @@ func (s *AccountService) GetLinkedUserEmails(userId string, status string) ([]co
 
 func (s *AccountService) UpdateUserInfo(userId string, request core_dtos.UpdateProfileRequestDto) (core_dtos.GetUserResponseDto, error) {
 	// call dms to update user info
-	reqBody, err := json.Marshal(request)
-	if err != nil {
-		return core_dtos.GetUserResponseDto{}, err
-	}
-
 	var userResponse models.TwUser
-	resp, err := dms.CallAPI("PUT", "/user/"+userId, reqBody, nil, nil, 120)
+	resp, err := dms.CallAPI("PUT", "/user/"+userId, request, nil, nil, 120)
 	if err != nil {
 		return core_dtos.GetUserResponseDto{}, err
 	}
