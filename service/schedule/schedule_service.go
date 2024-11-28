@@ -154,7 +154,7 @@ func applyUpdateFields(baseSchedule, updateSchedule models.TwSchedule, dto core_
 			return updateSchedule, fmt.Errorf("error parsing end time: %v", err)
 		}
 		// Kiểm tra EndTime không được nhỏ hơn StartTime
-		if parsedEndTime.Before(*updateSchedule.StartTime) || parsedEndTime.Equal(*updateSchedule.StartTime) {
+		if parsedEndTime.Before(*updateSchedule.StartTime) {
 			return updateSchedule, fmt.Errorf("Invalid Endtime")
 		}
 		updateSchedule.EndTime = &parsedEndTime
