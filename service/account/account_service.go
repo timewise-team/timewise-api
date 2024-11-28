@@ -32,11 +32,11 @@ func parseResponseBody(resp *http.Response, v interface{}) error {
 	return json.Unmarshal(body, v)
 }
 
-func (s AccountService) convertToUserResponseDto(userResponse models.TwUser) core_dtos.GetUserResponseDto {
+func (s AccountService) convertToUserResponseDto(userResponse models.TwUser, status string) core_dtos.GetUserResponseDto {
 	if userResponse.DeletedAt == nil {
 		userResponse.DeletedAt = new(time.Time)
 	}
-	emails, err := s.GetLinkedUserEmails(strconv.Itoa(userResponse.ID), "")
+	emails, err := s.GetLinkedUserEmails(strconv.Itoa(userResponse.ID), status)
 	if err != nil {
 		return core_dtos.GetUserResponseDto{}
 	}
@@ -147,7 +147,7 @@ func (s *AccountService) GetUserInfoByUserId(userId string, status string) (core
 		return core_dtos.GetUserResponseDto{}, err
 	}
 
-	return s.convertToUserResponseDto(userResponse), nil
+	return s.convertToUserResponseDto(userResponse, "pending"), nil
 }
 
 func (s *AccountService) GetLinkedUserEmails(userId string, status string) ([]core_dtos.EmailDto, error) {
@@ -195,7 +195,7 @@ func (s *AccountService) UpdateUserInfo(userId string, request core_dtos.UpdateP
 		return core_dtos.GetUserResponseDto{}, err
 	}
 
-	return s.convertToUserResponseDto(userResponse), nil
+	return s.convertToUserResponseDto(userResponse, "pending"), nil
 }
 
 func (s *AccountService) SendLinkAnEmailRequest(userId string, email string) (models.TwUserEmail, error) {
