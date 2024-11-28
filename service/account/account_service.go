@@ -32,11 +32,14 @@ func parseResponseBody(resp *http.Response, v interface{}) error {
 	return json.Unmarshal(body, v)
 }
 
-func convertToUserResponseDto(userResponse models.TwUser) core_dtos.GetUserResponseDto {
+func (s AccountService) convertToUserResponseDto(userResponse models.TwUser) core_dtos.GetUserResponseDto {
 	if userResponse.DeletedAt == nil {
 		userResponse.DeletedAt = new(time.Time)
 	}
-
+	emails, err := s.GetLinkedUserEmails(strconv.Itoa(userResponse.ID), "")
+	if err != nil {
+		return core_dtos.GetUserResponseDto{}
+	}
 	return core_dtos.GetUserResponseDto{
 		ID:                   userResponse.ID,
 		CreatedAt:            userResponse.CreatedAt,
@@ -54,6 +57,7 @@ func convertToUserResponseDto(userResponse models.TwUser) core_dtos.GetUserRespo
 		NotificationSettings: userResponse.NotificationSettings,
 		CalendarSettings:     userResponse.CalendarSettings,
 		Role:                 userResponse.Role,
+		Email:                emails,
 	}
 }
 
@@ -140,7 +144,7 @@ func (s *AccountService) GetUserInfoByUserId(userId string, status string) (core
 		return core_dtos.GetUserResponseDto{}, err
 	}
 
-	return convertToUserResponseDto(userResponse), nil
+	return s.convertToUserResponseDto(userResponse), nil
 }
 
 func (s *AccountService) GetLinkedUserEmails(userId string, status string) ([]core_dtos.EmailDto, error) {
@@ -172,9 +176,14 @@ func (s *AccountService) GetLinkedUserEmails(userId string, status string) ([]co
 }
 
 func (s *AccountService) UpdateUserInfo(userId string, request core_dtos.UpdateProfileRequestDto) (core_dtos.GetUserResponseDto, error) {
+	requestBody := core_dtos.UpdateUserRequest{
+		FirstName:      &request.FirstName,
+		LastName:       &request.LastName,
+		ProfilePicture: &request.ProfilePicture,
+	}
 	// call dms to update user info
 	var userResponse models.TwUser
-	resp, err := dms.CallAPI("PUT", "/user/"+userId, request, nil, nil, 120)
+	resp, err := dms.CallAPI("PUT", "/user/"+userId, requestBody, nil, nil, 120)
 	if err != nil {
 		return core_dtos.GetUserResponseDto{}, err
 	}
@@ -183,7 +192,7 @@ func (s *AccountService) UpdateUserInfo(userId string, request core_dtos.UpdateP
 		return core_dtos.GetUserResponseDto{}, err
 	}
 
-	return convertToUserResponseDto(userResponse), nil
+	return s.convertToUserResponseDto(userResponse), nil
 }
 
 func (s *AccountService) SendLinkAnEmailRequest(userId string, email string) (models.TwUserEmail, error) {
