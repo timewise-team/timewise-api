@@ -147,7 +147,7 @@ func (s *AccountService) GetUserInfoByUserId(userId string, status string) (core
 		return core_dtos.GetUserResponseDto{}, err
 	}
 
-	return s.convertToUserResponseDto(userResponse, "pending"), nil
+	return s.convertToUserResponseDto(userResponse, status), nil
 }
 
 func (s *AccountService) GetLinkedUserEmails(userId string, status string) ([]core_dtos.EmailDto, error) {
