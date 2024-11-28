@@ -62,6 +62,9 @@ func (s AccountService) convertToUserResponseDto(userResponse models.TwUser) cor
 }
 
 func (s *AccountService) updateEmailStatus(email, userId, status string) error {
+	if status == "" {
+		userId = ""
+	}
 	query := map[string]string{"email": email, "status": status, "target_user_id": userId}
 	_, err := dms.CallAPI("PATCH", "/user_email/status", nil, nil, query, 120)
 	return err
