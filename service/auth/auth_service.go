@@ -449,25 +449,45 @@ func BuildScheduleInvitationContent(info *models.TwSchedule, acceptLink, decline
 }
 
 func SendInvitationEmail(cfg *config.Config, email string, content string, subject string) error {
-	// Cấu hình SMTP
-	dialer := ConfigSMTP(cfg)
-	if dialer == nil {
-		return errors.New("failed to configure SMTP dialer")
+	for _, smtpConfig := range smtpConfigs {
+		// Cấu hình SMTP
+		dialer := gomail.NewDialer(smtpConfig.Host, smtpConfig.Port, smtpConfig.Email, smtpConfig.Password)
+		if dialer == nil {
+			log.Printf("Failed to configure SMTP dialer for %s", smtpConfig.Email)
+			continue
+		}
+
+		// Tạo message mới
+		message := gomail.NewMessage()
+		message.SetHeader("From", smtpConfig.Email)
+		message.SetHeader("To", email)
+		message.SetHeader("Subject", subject)
+		message.SetBody("text/html", content)
+
+		// Gửi email
+		if err := dialer.DialAndSend(message); err != nil {
+			log.Printf("Failed to send email using %s: %v", smtpConfig.Email, err)
+			continue
+		}
+
+		log.Println("Invitation email sent successfully")
+		return nil
 	}
 
-	// Tạo message mới
-	message := gomail.NewMessage()
-	message.SetHeader("From", cfg.SMTPEmail)
-	message.SetHeader("To", email)
-	message.SetHeader("Subject", subject)
-	message.SetBody("text/html", content)
+	return errors.New("failed to send invitation email with all SMTP configurations")
+}
 
-	// Gửi email
-	if err := dialer.DialAndSend(message); err != nil {
-		log.Printf("Failed to send email: %v", err)
-		return fmt.Errorf("failed to send invitation email: %v", err)
-	}
-
-	log.Println("Invitation email sent successfully")
-	return nil
+var smtpConfigs = []struct {
+	Host     string
+	Port     int
+	Email    string
+	Password string
+}{
+	{"smtp.gmail.com", 587, "timewise.space@gmail.com", "dczt wlvd eisn cixf"},
+	{"smtp.gmail.com", 587, "khanhhnhe170088@fpt.edu.vn", "cddn ujge aqlm xmjb"},
+	{"smtp.gmail.com", 587, "khanhhn.hoang@gmail.com", "dgbx xyvw ciqg txbl"},
+	{"smtp.gmail.com", 587, "khanhhnhe170088@fpt.edu.vn", "iaqw vmoj fxgb zzne"},
+	{"smtp.gmail.com", 587, "thuandqhe170881@fpt.edu.vn", "whzq ivlb hevo jhdi"},
+	{"smtp.gmail.com", 587, "builanviet@gmail.com", "lowo laid zgda chnc"},
+	{"smtp.gmail.com", 587, "ngkkhanh006@gmail.com", "soet mdxg doio fmrt"},
 }
