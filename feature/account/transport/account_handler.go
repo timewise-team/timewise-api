@@ -154,6 +154,7 @@ func (h *AccountHandler) sendLinkEmailRequest(c *fiber.Ctx) error {
 		RelatedItemType: "user_email",
 		Title:           "Link Email Request",
 		Description:     "A confirmation link has been successfully sent to " + email,
+		IsSent:          true,
 	}
 	currentEmail := c.Locals("email").(string)
 	requestEmail, acceptLink, rejectLink, err := generateMessageEmail(userIdStr, email)

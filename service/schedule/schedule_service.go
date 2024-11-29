@@ -80,6 +80,7 @@ func (s *ScheduleService) CreateSchedule(workspaceUser *models.TwWorkspaceUser, 
 		Link:        fmt.Sprintf("/organization/%d?schedule_id=%d", *CreateScheduleDto.WorkspaceID, createdSchedule.ID),
 		UserEmailId: workspaceUser.UserEmailId,
 		Type:        "schedule_created",
+		IsSent:      true,
 	}
 	err = notification.PushNotifications(notificationDto)
 	if err != nil {

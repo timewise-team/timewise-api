@@ -2,8 +2,8 @@ package workspace
 
 import (
 	"api/dms"
-	auth_utils "api/utils/auth"
 	"api/notification"
+	auth_utils "api/utils/auth"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -83,8 +83,9 @@ func (s *CreateWorkspaceService) InitWorkspace(workspaceRequest create_workspace
 		Description: "You have created new workspace " + workspaceResult.Title + " successfully",
 		Link:        fmt.Sprintf("/organization/%d", workspaceResult.ID),
 		UserEmailId: userEmail.ID,
-		Type:        "workspace",
+		Type:        "workspace_created",
 		Message:     "You have created new workspace " + workspaceResult.Title + " successfully",
+		IsSent:      true,
 	}
 	err = notification.PushNotifications(notificationDto)
 	if err != nil {
