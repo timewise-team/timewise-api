@@ -6,6 +6,7 @@ import (
 	"api/service/account"
 	"api/service/auth"
 	auth_utils "api/utils/auth"
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos"
 	"github.com/timewise-team/timewise-models/models"
@@ -183,6 +184,16 @@ func (h *AccountHandler) sendLinkEmailRequest(c *fiber.Ctx) error {
 }
 
 func generateMessageEmail(userId string, email string, exprireAt *time.Time) (string, string, string, error) {
+	exprireTime := "NULL"
+	if exprireAt != nil {
+		loc, err := time.LoadLocation("Asia/Ho_Chi_Minh")
+		if err != nil {
+			return "", "", "", fmt.Errorf("Error loading location: %v", err)
+		}
+		exprireAtTemp := exprireAt.In(loc)
+
+		exprireTime = exprireAtTemp.Format("2006-01-02 15:04")
+	}
 	cfg, err1 := config.LoadConfig()
 	if err1 != nil {
 		return "", "", "", err1
@@ -205,7 +216,7 @@ func generateMessageEmail(userId string, email string, exprireAt *time.Time) (st
 		<body>
 			<p>Hello,</p>
 			<p>You have requested to register the email address ` + email + `.</p>
-			<p><strong>This request will be expired after 10 minutes. Please decide before: ` + exprireAt.Format("2006-01-02 15:04") + `</strong></p>
+			<p><strong>This request will be expired after 10 minutes. Please decide before: ` + exprireTime + `</strong></p>
 			<p>Please confirm or decline this request by clicking on one of the links below:</p>
 			<p>
 				<a href="` + accptLink + `">Confirm Registration</a><br>

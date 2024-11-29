@@ -216,14 +216,13 @@ func (s *AccountService) SendLinkAnEmailRequest(userId string, email string) (mo
 		return models.TwUserEmail{}, errors.New("email is already linked or pending")
 	}
 
-	// Fetch user email details.
-	userEmail, err := s.getEmailDetails(email)
+	// Update status to "pending."
+	err = s.updateEmailStatus(email, userId, "pending")
 	if err != nil {
 		return models.TwUserEmail{}, err
 	}
-
-	// Update status to "pending."
-	err = s.updateEmailStatus(email, userId, "pending")
+	// Fetch user email details.
+	userEmail, err := s.getEmailDetails(email)
 	if err != nil {
 		return models.TwUserEmail{}, err
 	}
