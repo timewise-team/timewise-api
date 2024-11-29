@@ -181,7 +181,7 @@ func (h *ScheduleParticipantService) InviteToSchedule(
 		Title:       fmt.Sprintf("Invitation to join schedule %s", schedule.Title),
 		Description: fmt.Sprintf("You have been invited to join schedule %s", schedule.Title),
 		Link:        string(linkJson),
-		UserEmailId: workspaceUserInvited.ID,
+		UserEmailId: workspaceUserInvited.UserEmailId,
 		Type:        "schedule_invitation",
 		IsSent:      true,
 	}
