@@ -3,6 +3,7 @@ package rabbitmq
 import (
 	"github.com/spf13/viper"
 	"github.com/streadway/amqp"
+	"log"
 )
 
 type RabbitMQConfig struct {
@@ -62,6 +63,14 @@ func (client *RabbitMQClient) Publish(queueName string, message []byte) error {
 }
 
 func (client *RabbitMQClient) Close() {
-	client.channel.Close()
-	client.conn.Close()
+	err := client.channel.Close()
+	if err != nil {
+		log.Print(err)
+		return
+	}
+	err = client.conn.Close()
+	if err != nil {
+		log.Print(err)
+		return
+	}
 }
