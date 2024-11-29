@@ -10,6 +10,7 @@ import (
 	"github.com/timewise-team/timewise-models/dtos/core_dtos"
 	"github.com/timewise-team/timewise-models/models"
 	"strconv"
+	"time"
 )
 
 type AccountHandler struct {
@@ -149,6 +150,8 @@ func (h *AccountHandler) sendLinkEmailRequest(c *fiber.Ctx) error {
 		Type:        "link email",
 		Message: "A confirmation link has been successfully sent to " + email +
 			". Please check your inbox and click the link to confirm your request. " +
+			"Your request will be expired after 10 minutes." +
+			"Please confirm of reject it before that time." +
 			"If you don’t see the email, check your Spam or Promotions folder.",
 		RelatedItemId:   userEmailResp.ID,
 		RelatedItemType: "user_email",
@@ -157,7 +160,7 @@ func (h *AccountHandler) sendLinkEmailRequest(c *fiber.Ctx) error {
 		IsSent:          true,
 	}
 	currentEmail := c.Locals("email").(string)
-	requestEmail, acceptLink, rejectLink, err := generateMessageEmail(userIdStr, email)
+	requestEmail, acceptLink, rejectLink, err := generateMessageEmail(userIdStr, email, userEmailResp.ExpiresAt)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -179,7 +182,7 @@ func (h *AccountHandler) sendLinkEmailRequest(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Link email request sent", "acceptLink": acceptLink})
 }
 
-func generateMessageEmail(userId string, email string) (string, string, string, error) {
+func generateMessageEmail(userId string, email string, exprireAt *time.Time) (string, string, string, error) {
 	cfg, err1 := config.LoadConfig()
 	if err1 != nil {
 		return "", "", "", err1
@@ -202,6 +205,7 @@ func generateMessageEmail(userId string, email string) (string, string, string, 
 		<body>
 			<p>Hello,</p>
 			<p>You have requested to register the email address ` + email + `.</p>
+			<p><strong>This request will be expired after 10 minutes. Please decide before: ` + exprireAt.Format("2006-01-02 15:04") + `</strong></p>
 			<p>Please confirm or decline this request by clicking on one of the links below:</p>
 			<p>
 				<a href="` + accptLink + `">Confirm Registration</a><br>
