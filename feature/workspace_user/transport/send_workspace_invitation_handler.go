@@ -162,6 +162,7 @@ func PushInvitationNotification(workspaceTitle, acceptLink, declineLink string, 
 		UserEmailId: userEmailId,
 		Type:        "workspace_invitation",
 		Message:     "",
+		IsSent:      true,
 	}
 	err := notification.PushNotifications(notificationDto)
 	if err != nil {

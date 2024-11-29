@@ -183,6 +183,7 @@ func (h *ScheduleParticipantService) InviteToSchedule(
 		Link:        string(linkJson),
 		UserEmailId: workspaceUserInvited.ID,
 		Type:        "schedule_invitation",
+		IsSent:      true,
 	}
 	err = notification.PushNotifications(notificationDto)
 	if err != nil {
