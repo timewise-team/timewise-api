@@ -321,7 +321,7 @@ func (s *AccountService) GetParentLinkedEmails(email string) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusNotFound && resp.StatusCode != http.StatusOK {
 		return "", errors.New("failed to get parent linked email")
 	}
 	body, err := ioutil.ReadAll(resp.Body)
