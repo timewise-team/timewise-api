@@ -136,12 +136,17 @@ func (h *AccountHandler) sendLinkEmailRequest(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid user ID format")
 	}
 	// get email from request
-	email := c.Query("email")
-	if email == "" {
+	targetEmail := c.Query("email")
+	if targetEmail == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Email is required"})
 	}
+	// get current email from context
+	currentEmail := c.Locals("email")
+	if currentEmail == nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid session email"})
+	}
 	// call service
-	userEmailResp, err2 := h.service.SendLinkAnEmailRequest(userIdStr, email)
+	userEmailResp, err2 := h.service.SendLinkAnEmailRequest(userIdStr, targetEmail, currentEmail.(string))
 	if err2 != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err2.Error()})
 	}

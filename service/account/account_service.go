@@ -198,9 +198,9 @@ func (s *AccountService) UpdateUserInfo(userId string, request core_dtos.UpdateP
 	return s.convertToUserResponseDto(userResponse, "pending"), nil
 }
 
-func (s *AccountService) SendLinkAnEmailRequest(userId string, email string) (models.TwUserEmail, error) {
+func (s *AccountService) SendLinkAnEmailRequest(userId string, targetEmail string, currentEmail string) (models.TwUserEmail, error) {
 	// Check if the email is already a user.
-	isUser, err := s.checkIfUserExists(email)
+	isUser, err := s.checkIfUserExists(targetEmail)
 	if err != nil {
 		return models.TwUserEmail{}, err
 	}
@@ -208,7 +208,7 @@ func (s *AccountService) SendLinkAnEmailRequest(userId string, email string) (mo
 		return models.TwUserEmail{}, errors.New("email is not a user")
 	}
 	// Check if email is already linked.
-	isLinked, err := s.checkIfEmailLinked(email)
+	isLinked, err := s.checkIfEmailLinked(targetEmail)
 	if err != nil {
 		return models.TwUserEmail{}, err
 	}
@@ -217,21 +217,21 @@ func (s *AccountService) SendLinkAnEmailRequest(userId string, email string) (mo
 	}
 
 	// check if email is request to link to parents
-	parentEmail, err := s.GetParentLinkedEmails(email)
+	parentEmail, err := s.GetParentLinkedEmails(currentEmail)
 	if err != nil {
 		return models.TwUserEmail{}, err
 	}
-	if parentEmail == email {
+	if parentEmail != "" && parentEmail == targetEmail {
 		return models.TwUserEmail{}, errors.New("you are already be linked to: " + parentEmail)
 	}
 
 	// Update status to "pending."
-	err = s.updateEmailStatus(email, userId, "pending")
+	err = s.updateEmailStatus(targetEmail, userId, "pending")
 	if err != nil {
 		return models.TwUserEmail{}, err
 	}
 	// Fetch user email details.
-	userEmail, err := s.getEmailDetails(email)
+	userEmail, err := s.getEmailDetails(currentEmail)
 	if err != nil {
 		return models.TwUserEmail{}, err
 	}
@@ -333,7 +333,7 @@ func (s *AccountService) GetParentLinkedEmails(email string) (string, error) {
 		return "", err
 	}
 	if currentIsLinkTo.IsLinkedTo == nil {
-		return "", errors.New("email is not linked to any user")
+		return "", nil
 	}
 	resp, err = dms.CallAPI("GET", "/user_email/user_id"+strconv.Itoa(*currentIsLinkTo.IsLinkedTo), nil, nil, nil, 120)
 	if err != nil {
