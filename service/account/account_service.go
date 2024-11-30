@@ -304,3 +304,43 @@ func (s *AccountService) GetUserByUserId(userId string) (models.TwUser, error) {
 	return user, nil
 
 }
+
+func (s *AccountService) GetParentLinkedEmails(email string) (string, error) {
+	resp, err := dms.CallAPI("GET", "/user_email/email/"+email, nil, nil, nil, 120)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", errors.New("failed to get parent linked email")
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	var currentIsLinkTo models.TwUserEmail
+	if err := json.Unmarshal(body, &currentIsLinkTo); err != nil {
+		return "", err
+	}
+	if currentIsLinkTo.IsLinkedTo == nil {
+		return "", errors.New("email is not linked to any user")
+	}
+	resp, err = dms.CallAPI("GET", "/user_email/user_id"+strconv.Itoa(*currentIsLinkTo.IsLinkedTo), nil, nil, nil, 120)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return "", errors.New("failed to get parent linked email")
+	}
+	body, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	var parentEmail models.TwUserEmail
+	if err := json.Unmarshal(body, &parentEmail); err != nil {
+		return "", err
+	}
+	return parentEmail.Email, nil
+}

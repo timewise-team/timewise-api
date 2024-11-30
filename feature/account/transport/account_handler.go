@@ -382,3 +382,27 @@ func (h *AccountHandler) deactivateAccount(c *fiber.Ctx) error {
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Account deactivated"})
 }
+
+// getParentLinkedEmails godoc
+// @Summary Get parent linked emails
+// @Description Get parent linked emails
+// @Tags account
+// @Security bearerToken
+// @Accept json
+// @Produce json
+// @Success 200 {array} string
+// @Router /api/v1/account/user/emails/parent [get]
+func (h *AccountHandler) getParentLinkedEmails(c *fiber.Ctx) error {
+	// get userId from context
+	currentEmail := c.Locals("email")
+	if currentEmail == nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid userId"})
+	}
+	// call service to query database
+	userEmails, err := h.service.GetParentLinkedEmails(currentEmail.(string))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err})
+	}
+	// return parent email
+	return c.Status(fiber.StatusOK).JSON(userEmails)
+}
