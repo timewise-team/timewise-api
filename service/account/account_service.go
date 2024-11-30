@@ -216,6 +216,15 @@ func (s *AccountService) SendLinkAnEmailRequest(userId string, email string) (mo
 		return models.TwUserEmail{}, errors.New("email is already linked or pending")
 	}
 
+	// check if email is request to link to parents
+	parentEmail, err := s.GetParentLinkedEmails(email)
+	if err != nil {
+		return models.TwUserEmail{}, err
+	}
+	if parentEmail == email {
+		return models.TwUserEmail{}, errors.New("you are already be linked to: " + parentEmail)
+	}
+
 	// Update status to "pending."
 	err = s.updateEmailStatus(email, userId, "pending")
 	if err != nil {
