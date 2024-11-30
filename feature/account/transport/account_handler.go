@@ -154,7 +154,7 @@ func (h *AccountHandler) sendLinkEmailRequest(c *fiber.Ctx) error {
 	notificationDto := models.TwNotifications{
 		UserEmailId: userIdInt,
 		Type:        "link email",
-		Message: "A confirmation link has been successfully sent to " + email +
+		Message: "A confirmation link has been successfully sent to " + targetEmail +
 			". Please check your inbox and click the link to confirm your request. " +
 			"Your request will be expired after 10 minutes." +
 			"Please confirm of reject it before that time." +
@@ -162,11 +162,10 @@ func (h *AccountHandler) sendLinkEmailRequest(c *fiber.Ctx) error {
 		RelatedItemId:   userEmailResp.ID,
 		RelatedItemType: "user_email",
 		Title:           "Link Email Request",
-		Description:     "A confirmation link has been successfully sent to " + email,
+		Description:     "A confirmation link has been successfully sent to " + targetEmail,
 		IsSent:          true,
 	}
-	currentEmail := c.Locals("email").(string)
-	requestEmail, acceptLink, rejectLink, err := generateMessageEmail(userIdStr, email, userEmailResp.ExpiresAt)
+	requestEmail, acceptLink, rejectLink, err := generateMessageEmail(userIdStr, targetEmail, userEmailResp.ExpiresAt)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -178,7 +177,7 @@ func (h *AccountHandler) sendLinkEmailRequest(c *fiber.Ctx) error {
 		RelatedItemId:   userIdInt,
 		RelatedItemType: "user_email",
 		Title:           "Link Email Request",
-		Description:     "You have received a request to link your email address to account: " + currentEmail,
+		Description:     "You have received a request to link your email address to account: " + currentEmail.(string),
 		Link:            "Click here to approve: " + acceptLink + "<br>Click here to reject: " + rejectLink,
 	}
 	err = notification.PushNotifications(notificationDto)
