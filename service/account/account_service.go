@@ -335,7 +335,7 @@ func (s *AccountService) GetParentLinkedEmails(email string) (string, error) {
 	if currentIsLinkTo.IsLinkedTo == nil {
 		return "", nil
 	}
-	resp, err = dms.CallAPI("GET", "/user_email/user_id"+strconv.Itoa(*currentIsLinkTo.IsLinkedTo), nil, nil, nil, 120)
+	resp, err = dms.CallAPI("GET", "/user_email/user_id/"+strconv.Itoa(*currentIsLinkTo.IsLinkedTo), nil, nil, nil, 120)
 	if err != nil {
 		return "", err
 	}
