@@ -13,7 +13,6 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
-	"net/url"
 	"path/filepath"
 	"strconv"
 	"time"
@@ -249,23 +248,10 @@ func (s *DocumentService) DownloadDocuments(documentId string) (*http.Response, 
 	if err := json.Unmarshal(body, &document); err != nil {
 		return nil, "", errors.New("failed to unmarshal document")
 	}
-	// Sử dụng FilePath hoặc DownloadUrl từ document
 	downloadURL := document.DownloadUrl
 	if downloadURL == "" {
 		return nil, "", errors.New("no download URL available")
 	}
-
-	// Validate the download URL
-	parsedURL, err := url.Parse(downloadURL)
-	if err != nil || !parsedURL.IsAbs() {
-		return nil, "", errors.New("invalid download URL")
-	}
-
-	// Ensure the URL uses HTTPS
-	if parsedURL.Scheme != "https" {
-		return nil, "", errors.New("download URL must use HTTPS")
-	}
-
 	// Tải file từ URL đã ký
 	resp, err = http.Get(downloadURL)
 	if err != nil {
