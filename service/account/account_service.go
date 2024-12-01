@@ -231,7 +231,7 @@ func (s *AccountService) SendLinkAnEmailRequest(userId string, targetEmail strin
 		return models.TwUserEmail{}, err
 	}
 	// Fetch user email details.
-	userEmail, err := s.getEmailDetails(currentEmail)
+	userEmail, err := s.getEmailDetails(targetEmail)
 	if err != nil {
 		return models.TwUserEmail{}, err
 	}
