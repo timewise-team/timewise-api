@@ -218,6 +218,7 @@ func (h ReminderHandler) UpdateReminderAllParticipant(ctx *fiber.Ctx) error {
 		})
 	}
 	reminderRequest.ReminderTime = reminderTime
+	reminderRequest.Method = reminder.ReminderTime
 	reminderRequest.IsSent = false
 	err = h.service.UpdateReminder(reminderId, reminderRequest)
 	if err != nil {
