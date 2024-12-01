@@ -243,6 +243,14 @@ func (s *AccountService) UpdateStatusLinkEmailRequest(userId string, email strin
 	if status != "pending" && status != "linked" && status != "rejected" && status != "" {
 		return s.GetUserInfoByUserId(userId, "invalid status")
 	}
+	// check if email is pending or not
+	userEmail, err := s.getEmailDetails(email)
+	if err != nil {
+		return core_dtos.GetUserResponseDto{}, err
+	}
+	if userEmail.Status == nil || *userEmail.Status != "pending" {
+		return core_dtos.GetUserResponseDto{}, errors.New("email is not pending")
+	}
 	queryParams := map[string]string{
 		"email":  email,
 		"status": status,

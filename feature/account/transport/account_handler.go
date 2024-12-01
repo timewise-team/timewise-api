@@ -221,6 +221,7 @@ func generateMessageEmail(userId string, email string, exprireAt *time.Time) (st
 			<p>Hello,</p>
 			<p>You have requested to register the email address ` + email + `.</p>
 			<p><strong>This request will be expired after 10 minutes. Please decide before: ` + exprireTime + `</strong></p>
+			<p><strong>Please consider carefully, because these links cannot be use after once you clicked!!!</strong></p>
 			<p>Please confirm or decline this request by clicking on one of the links below:</p>
 			<p>
 				<a href="` + accptLink + `">Confirm Registration</a><br>
@@ -263,6 +264,10 @@ func (h *AccountHandler) actionEmailLinkRequest(c *fiber.Ctx) error {
 	// call service to send mail
 	_, err := h.service.UpdateStatusLinkEmailRequest(userId, email, action)
 	if err != nil {
+		if err.Error() == "email is not pending" {
+			c.Set("Content-Type", "text/html")
+			return c.SendString(errorHtml())
+		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 	htmlContent := `
@@ -302,6 +307,67 @@ func (h *AccountHandler) actionEmailLinkRequest(c *fiber.Ctx) error {
 	// Send HTML content as response
 	c.Set("Content-Type", "text/html")
 	return c.SendString(htmlContent)
+}
+
+func errorHtml() string {
+	return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Invalid Email Request</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f8f9fa;
+                color: #343a40;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+            }
+            .container {
+                text-align: center;
+                max-width: 500px;
+                background: #fff;
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            h1 {
+                color: #e74c3c;
+                font-size: 24px;
+            }
+            p {
+                font-size: 16px;
+                line-height: 1.5;
+                margin: 10px 0;
+            }
+            a {
+                display: inline-block;
+                margin-top: 20px;
+                padding: 10px 20px;
+                background-color: #007bff;
+                color: white;
+                text-decoration: none;
+                border-radius: 5px;
+            }
+            a:hover {
+                background-color: #0056b3;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Oops! Invalid Request</h1>
+            <p>The email request you are trying to access is no longer valid or has already been processed.</p>
+            <p>If you think this is a mistake, please contact support for further assistance.</p>
+        </div>
+    </body>
+    </html>
+    `
 }
 
 // unlinkAnEmail godoc
