@@ -1893,6 +1893,47 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/schedule_participant/remove/{id}": {
+            "put": {
+                "description": "Remove participant (X-User-Email required, X-Workspace-Id required)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ScheduleParticipant"
+                ],
+                "summary": "Remove member from schedule",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "schedule_participant",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schedule_participant_dtos.RemoveMemberRequest"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Participant ID",
+                        "name": "participant_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schedule_participant_dtos.ScheduleParticipantResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/schedule_participant/schedule/{scheduleId}": {
             "get": {
                 "description": "Get schedule participants by schedule ID",
@@ -1923,6 +1964,47 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/schedule_participant_dtos.ScheduleParticipantInfo"
                             }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/schedule_participant/unassign/{id}": {
+            "put": {
+                "description": "Unassign member (X-User-Email required, X-Workspace-Id required)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ScheduleParticipant"
+                ],
+                "summary": "Unassign member",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "schedule_participant",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schedule_participant_dtos.RemoveMemberRequest"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Participant ID",
+                        "name": "participant_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schedule_participant_dtos.ScheduleParticipantResponse"
                         }
                     }
                 }
@@ -4178,6 +4260,14 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
+                "schedule_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "schedule_participant_dtos.RemoveMemberRequest": {
+            "type": "object",
+            "properties": {
                 "schedule_id": {
                     "type": "integer"
                 }

@@ -660,3 +660,49 @@ func (h *ScheduleParticipantService) DeclineInvite(scheduleId, workspaceUserId s
 	return &updateScheduleParticipants, nil
 
 }
+
+func (h *ScheduleParticipantService) RemoveParticipant(participantID string) (*schedule_participant_dtos.ScheduleParticipantResponse, error) {
+
+	resp, err := dms.CallAPI(
+		"PUT",
+		"/schedule_participant/remove/"+participantID,
+		nil,
+		nil,
+		nil,
+		120,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var updateScheduleParticipants schedule_participant_dtos.ScheduleParticipantResponse
+	if err := json.NewDecoder(resp.Body).Decode(&updateScheduleParticipants); err != nil {
+		return nil, err
+	}
+
+	return &updateScheduleParticipants, nil
+}
+
+func (h *ScheduleParticipantService) UnassignMember(participantID string) (*schedule_participant_dtos.ScheduleParticipantResponse, error) {
+
+	resp, err := dms.CallAPI(
+		"PUT",
+		"/schedule_participant/unassign/"+participantID,
+		nil,
+		nil,
+		nil,
+		120,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var updateScheduleParticipants schedule_participant_dtos.ScheduleParticipantResponse
+	if err := json.NewDecoder(resp.Body).Decode(&updateScheduleParticipants); err != nil {
+		return nil, err
+	}
+
+	return &updateScheduleParticipants, nil
+}

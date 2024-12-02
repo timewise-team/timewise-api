@@ -234,3 +234,49 @@ func (h *ScheduleParticipantHandler) DeclineInvite(c *fiber.Ctx) error {
 	}
 	return c.JSON(scheduleParticipant)
 }
+
+// removeParticipant godoc
+// @Summary Remove member from schedule
+// @Description Remove participant (X-User-Email required, X-Workspace-Id required)
+// @Tags ScheduleParticipant
+// @Accept json
+// @Produce json
+// @Param schedule_participant body schedule_participant_dtos.RemoveMemberRequest true "Request body"
+// @Param participant_id path string true "Participant ID"
+// @Success 200 {object} schedule_participant_dtos.ScheduleParticipantResponse
+// @Router /api/v1/schedule_participant/remove/{id} [put]
+func (h *ScheduleParticipantHandler) RemoveParticipant(c *fiber.Ctx) error {
+	participantId := c.Params("id")
+
+	scheduleParticipant, err := h.service.RemoveParticipant(participantId)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.JSON(scheduleParticipant)
+}
+
+// unassignMember godoc
+// @Summary Unassign member
+// @Description Unassign member (X-User-Email required, X-Workspace-Id required)
+// @Tags ScheduleParticipant
+// @Accept json
+// @Produce json
+// @Param schedule_participant body schedule_participant_dtos.RemoveMemberRequest true "Request body"
+// @Param participant_id path string true "Participant ID"
+// @Success 200 {object} schedule_participant_dtos.ScheduleParticipantResponse
+// @Router /api/v1/schedule_participant/unassign/{id} [put]
+func (h *ScheduleParticipantHandler) UnassignParticipant(c *fiber.Ctx) error {
+	participantId := c.Params("id")
+
+	scheduleParticipant, err := h.service.UnassignMember(participantId)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.JSON(scheduleParticipant)
+}

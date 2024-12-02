@@ -29,4 +29,12 @@ func RegisterScheduleParticipantHandler(router fiber.Router) {
 		middleware.CheckWorkspaceRole([]string{"owner", "admin", "member"}),
 		middleware.CheckScheduleStatus([]string{"creator"}),
 		scheduleParticipantHandler.Handler.AssignMember)
+	router.Put("/remove/:id",
+		middleware.CheckWorkspaceRole([]string{"owner", "admin", "member"}),
+		middleware.CheckScheduleStatus([]string{"creator"}),
+		scheduleParticipantHandler.Handler.RemoveParticipant)
+	router.Put("/unassign/:id",
+		middleware.CheckWorkspaceRole([]string{"owner", "admin", "member"}),
+		middleware.CheckScheduleStatus([]string{"creator"}),
+		scheduleParticipantHandler.Handler.UnassignParticipant)
 }
