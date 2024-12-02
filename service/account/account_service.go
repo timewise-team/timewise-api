@@ -92,7 +92,18 @@ func (s *AccountService) checkIfEmailLinked(email string) (bool, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusNotFound {
-		return true, nil // Email đã liên kết
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return false, err
+		}
+		var userEmail models.TwUserEmail
+		if err := json.Unmarshal(body, &userEmail); err != nil {
+			return false, err
+		}
+		if userEmail.Status != nil && *userEmail.Status == "rejected" {
+			return true, nil
+		}
+		return true, nil
 	}
 
 	return false, nil
