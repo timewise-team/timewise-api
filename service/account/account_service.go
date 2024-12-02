@@ -101,7 +101,7 @@ func (s *AccountService) checkIfEmailLinked(email string) (bool, error) {
 			return false, err
 		}
 		if userEmail.Status != nil && *userEmail.Status == "rejected" {
-			return true, nil
+			return false, nil
 		}
 		return true, nil
 	}
