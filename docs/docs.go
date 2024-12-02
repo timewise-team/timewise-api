@@ -1908,12 +1908,12 @@ const docTemplate = `{
                 "summary": "Remove member from schedule",
                 "parameters": [
                     {
-                        "description": "Schedule ID",
-                        "name": "schedule_id",
+                        "description": "Request body",
+                        "name": "schedule_participant",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/schedule_participant_dtos.RemoveMemberRequest"
                         }
                     },
                     {
@@ -1984,12 +1984,12 @@ const docTemplate = `{
                 "summary": "Unassign member",
                 "parameters": [
                     {
-                        "description": "Schedule ID",
-                        "name": "schedule_id",
+                        "description": "Request body",
+                        "name": "schedule_participant",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/schedule_participant_dtos.RemoveMemberRequest"
                         }
                     },
                     {
@@ -4260,6 +4260,14 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
+                "schedule_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "schedule_participant_dtos.RemoveMemberRequest": {
+            "type": "object",
+            "properties": {
                 "schedule_id": {
                     "type": "integer"
                 }
