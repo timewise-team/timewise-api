@@ -2233,6 +2233,33 @@ paths:
       summary: Send invitation to user
       tags:
       - ScheduleParticipant
+  /api/v1/schedule_participant/remove/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Remove participant (X-User-Email required, X-Workspace-Id required)
+      parameters:
+      - description: Schedule ID
+        in: body
+        name: schedule_id
+        required: true
+        schema:
+          type: string
+      - description: Participant ID
+        in: path
+        name: participant_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schedule_participant_dtos.ScheduleParticipantResponse'
+      summary: Remove member from schedule
+      tags:
+      - ScheduleParticipant
   /api/v1/schedule_participant/schedule/{scheduleId}:
     get:
       consumes:
@@ -2256,6 +2283,33 @@ paths:
       summary: Get schedule participants by schedule ID
       tags:
       - schedule_participant
+  /api/v1/schedule_participant/unassign/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Unassign member (X-User-Email required, X-Workspace-Id required)
+      parameters:
+      - description: Schedule ID
+        in: body
+        name: schedule_id
+        required: true
+        schema:
+          type: string
+      - description: Participant ID
+        in: path
+        name: participant_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schedule_participant_dtos.ScheduleParticipantResponse'
+      summary: Unassign member
+      tags:
+      - ScheduleParticipant
   /api/v1/schedules:
     post:
       consumes:
