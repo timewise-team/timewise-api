@@ -817,6 +817,11 @@ definitions:
       schedule_id:
         type: integer
     type: object
+  schedule_participant_dtos.RemoveMemberRequest:
+    properties:
+      schedule_id:
+        type: integer
+    type: object
   schedule_participant_dtos.ScheduleParticipantInfo:
     properties:
       assign_at:
@@ -2239,12 +2244,12 @@ paths:
       - application/json
       description: Remove participant (X-User-Email required, X-Workspace-Id required)
       parameters:
-      - description: Schedule ID
+      - description: Request body
         in: body
-        name: schedule_id
+        name: schedule_participant
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/schedule_participant_dtos.RemoveMemberRequest'
       - description: Participant ID
         in: path
         name: participant_id
@@ -2289,12 +2294,12 @@ paths:
       - application/json
       description: Unassign member (X-User-Email required, X-Workspace-Id required)
       parameters:
-      - description: Schedule ID
+      - description: Request body
         in: body
-        name: schedule_id
+        name: schedule_participant
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/schedule_participant_dtos.RemoveMemberRequest'
       - description: Participant ID
         in: path
         name: participant_id

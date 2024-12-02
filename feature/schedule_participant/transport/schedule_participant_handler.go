@@ -241,7 +241,7 @@ func (h *ScheduleParticipantHandler) DeclineInvite(c *fiber.Ctx) error {
 // @Tags ScheduleParticipant
 // @Accept json
 // @Produce json
-// @Param schedule_id body string true "Schedule ID"
+// @Param schedule_participant body schedule_participant_dtos.RemoveMemberRequest true "Request body"
 // @Param participant_id path string true "Participant ID"
 // @Success 200 {object} schedule_participant_dtos.ScheduleParticipantResponse
 // @Router /api/v1/schedule_participant/remove/{id} [put]
@@ -264,7 +264,7 @@ func (h *ScheduleParticipantHandler) RemoveParticipant(c *fiber.Ctx) error {
 // @Tags ScheduleParticipant
 // @Accept json
 // @Produce json
-// @Param schedule_id body string true "Schedule ID"
+// @Param schedule_participant body schedule_participant_dtos.RemoveMemberRequest true "Request body"
 // @Param participant_id path string true "Participant ID"
 // @Success 200 {object} schedule_participant_dtos.ScheduleParticipantResponse
 // @Router /api/v1/schedule_participant/unassign/{id} [put]
