@@ -71,18 +71,7 @@ func (h *ScheduleParticipantHandler) InviteToSchedule(c *fiber.Ctx) error {
 	if !ok {
 		return fiber.NewError(500, "Failed to retrieve schedule participant")
 	}
-	existingLinkedWorkspaceUser, checkErr := workspace_user.NewWorkspaceUserService().GetExistingLinkedWorkspaceUser(InviteToScheduleDto.Email, strconv.Itoa(workspaceUser.WorkspaceId))
-	if checkErr != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"message": "Internal server error",
-		})
-	}
-	if len(existingLinkedWorkspaceUser) > 0 {
-		return c.Status(500).JSON(fiber.Map{
-			"message": "This email is already linked to another workspace",
-			"email":   existingLinkedWorkspaceUser[0],
-		})
-	}
+
 	workspaceUserInvited, err := schedule_participant.NewScheduleParticipantService().GetWorkspaceUserByEmail(
 		InviteToScheduleDto.Email, workspaceUser.WorkspaceId,
 	)
@@ -104,6 +93,19 @@ func (h *ScheduleParticipantHandler) InviteToSchedule(c *fiber.Ctx) error {
 			"accept_link": acceptLink,
 		})
 	} else {
+		existingLinkedWorkspaceUser, checkErr := workspace_user.NewWorkspaceUserService().GetExistingLinkedWorkspaceUser(InviteToScheduleDto.Email, strconv.Itoa(workspaceUser.WorkspaceId))
+		if checkErr != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"message": "Internal server error",
+			})
+		}
+		if len(existingLinkedWorkspaceUser) > 0 {
+			return c.Status(500).JSON(fiber.Map{
+				"message": "This email is already linked to another workspace",
+				"email":   existingLinkedWorkspaceUser[0],
+			})
+		}
+
 		_, _, acceptLink, err1 := h.service.InviteOutsideWorkspace(workspaceUser, participant, InviteToScheduleDto)
 		if err1 != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
