@@ -2873,6 +2873,11 @@ const docTemplate = `{
         },
         "/api/v1/workspace_user/send-invitation": {
             "post": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
                 "description": "Send invitation to user (X-User-Email required, X-Workspace-Id required)",
                 "consumes": [
                     "application/json"
@@ -2885,6 +2890,20 @@ const docTemplate = `{
                 ],
                 "summary": "Send invitation to user (X-User-Email required, X-Workspace-Id required)",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User Email",
+                        "name": "X-User-Email",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "X-Workspace-Id",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "description": "Workspace user object",
                         "name": "workspace_user",
