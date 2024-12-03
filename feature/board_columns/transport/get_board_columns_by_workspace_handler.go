@@ -332,8 +332,8 @@ func (h *BoardColumnsHandler) getBoardColumnsByWorkspace(c *fiber.Ctx) error {
 						schedulesList.ID = schedule.ID
 						schedulesList.WorkspaceID = schedule.WorkspaceId
 						schedulesList.BoardColumnID = schedule.BoardColumnId
-						schedulesList.Title = schedule.Title
-						schedulesList.Description = schedule.Description
+						schedulesList.Title = "Locked"
+						schedulesList.Description = "Locked"
 						schedulesList.Visibility = schedule.Visibility
 						schedulesList.Position = schedule.Position
 						schedulesList.Status = schedule.Status
