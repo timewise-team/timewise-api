@@ -21,6 +21,9 @@ import (
 // @Tags WorkspaceUser
 // @Accept json
 // @Produce json
+// @Security bearerToken
+// @Param X-User-Email header string true "User Email"
+// @Param X-Workspace-Id header string true "Workspace ID"
 // @Param workspace_user body workspace_user_dtos.UpdateWorkspaceUserRoleRequest true "Workspace user object"
 // @Success 200 {object} models.TwWorkspaceUser
 // @Router /api/v1/workspace_user/send-invitation [post]
@@ -60,6 +63,23 @@ func (s *WorkspaceUserHandler) sendInvitation(c *fiber.Ctx) error {
 			"message": "Internal server error",
 		})
 	}
+
+	// workspaceId, email
+	// Check if any linked email is already in this workspace
+	// If yes, then return error
+	existingLinkedWorkspaceUser, checkErr := workspace_user.NewWorkspaceUserService().GetExistingLinkedWorkspaceUser(userEmail.Email, strconv.Itoa(workspaceUser.WorkspaceId))
+	if checkErr != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"message": "Internal server error",
+		})
+	}
+	if len(existingLinkedWorkspaceUser) > 0 {
+		return c.Status(500).JSON(fiber.Map{
+			"message": "This email is already linked to another workspace",
+			"email":   existingLinkedWorkspaceUser[0],
+		})
+	}
+
 	workspaceUserCheck, err1 := workspace_user.NewWorkspaceUserService().GetWorkspaceUserByEmailAndWorkspaceID(userEmail.Email, strconv.Itoa(workspaceUser.WorkspaceId))
 	if err1 != nil {
 		return c.Status(500).JSON(fiber.Map{

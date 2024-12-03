@@ -733,3 +733,32 @@ func (s *WorkspaceUserService) UpdateStatusByEmailAndWorkspace(email string, wor
 
 	return nil
 }
+
+func (s *WorkspaceUserService) GetExistingLinkedWorkspaceUser(email string, workspaceID string) (strings []string, err error) {
+	// Call API
+	resp, err := dms.CallAPI(
+		"GET",
+		"/workspace_user/check-existing/email/"+email+"/workspace/"+workspaceID,
+		nil,
+		nil,
+		nil,
+		120,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil || resp.StatusCode != http.StatusOK {
+		return nil, err
+	}
+
+	var workspaceUser []string
+	err = json.Unmarshal(body, &workspaceUser)
+	if err != nil {
+		return nil, err
+	}
+
+	return workspaceUser, nil
+}

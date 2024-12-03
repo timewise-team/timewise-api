@@ -2886,6 +2886,16 @@ paths:
       description: Send invitation to user (X-User-Email required, X-Workspace-Id
         required)
       parameters:
+      - description: User Email
+        in: header
+        name: X-User-Email
+        required: true
+        type: string
+      - description: Workspace ID
+        in: header
+        name: X-Workspace-Id
+        required: true
+        type: string
       - description: Workspace user object
         in: body
         name: workspace_user
@@ -2899,6 +2909,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/models.TwWorkspaceUser'
+      security:
+      - bearerToken: []
       summary: Send invitation to user (X-User-Email required, X-Workspace-Id required)
       tags:
       - WorkspaceUser
