@@ -73,10 +73,10 @@ func (s *WorkspaceUserHandler) sendInvitation(c *fiber.Ctx) error {
 			"message": "Internal server error",
 		})
 	}
-	if existingLinkedWorkspaceUser != nil {
+	if len(existingLinkedWorkspaceUser) > 0 {
 		return c.Status(500).JSON(fiber.Map{
 			"message": "This email is already linked to another workspace",
-			"email":   userEmail.Email,
+			"email":   existingLinkedWorkspaceUser[0],
 		})
 	}
 

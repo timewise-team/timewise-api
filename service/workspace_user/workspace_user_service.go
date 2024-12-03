@@ -734,7 +734,7 @@ func (s *WorkspaceUserService) UpdateStatusByEmailAndWorkspace(email string, wor
 	return nil
 }
 
-func (s *WorkspaceUserService) GetExistingLinkedWorkspaceUser(email string, workspaceID string) (existingWorkspaceUser *models.TwWorkspaceUser, err error) {
+func (s *WorkspaceUserService) GetExistingLinkedWorkspaceUser(email string, workspaceID string) (strings []string, err error) {
 	// Call API
 	resp, err := dms.CallAPI(
 		"GET",
@@ -754,7 +754,7 @@ func (s *WorkspaceUserService) GetExistingLinkedWorkspaceUser(email string, work
 		return nil, err
 	}
 
-	var workspaceUser *models.TwWorkspaceUser
+	var workspaceUser []string
 	err = json.Unmarshal(body, &workspaceUser)
 	if err != nil {
 		return nil, err
