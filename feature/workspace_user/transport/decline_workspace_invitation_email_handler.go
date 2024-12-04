@@ -61,7 +61,7 @@ func (h *WorkspaceUserHandler) declineInvitationViaEmail(c *fiber.Ctx) error {
 			if workspaceUser.Status == "pending" {
 
 				// Nếu token hết hạn, cập nhật trạng thái workspaceUser thành "removed".
-				err := workspace_user.NewWorkspaceUserService().UpdateStatusByEmailAndWorkspace(claims["email"].(string), claims["workspace_id"].(float64), "removed", false)
+				err := workspace_user.NewWorkspaceUserService().UpdateStatusByEmailAndWorkspace(claims["email"].(string), claims["workspace_id"].(float64), "removed", false, true)
 				if err != nil {
 					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 						"message": "Failed to update user status to 'removed': " + err.Error(),
@@ -77,7 +77,14 @@ func (h *WorkspaceUserHandler) declineInvitationViaEmail(c *fiber.Ctx) error {
 			"message": "Invalid token: " + err2.Error(),
 		})
 	}
-	var err = workspace_user.NewWorkspaceUserService().UpdateStatusByEmailAndWorkspace(claims["email"].(string), claims["workspace_id"].(float64), "declined", false)
+
+	isMember := claims["is_member"].(bool)
+	var err error
+	if isMember {
+		err = workspace_user.NewWorkspaceUserService().UpdateStatusByEmailAndWorkspace(claims["email"].(string), claims["workspace_id"].(float64), "declined", true, false)
+	} else {
+		err = workspace_user.NewWorkspaceUserService().UpdateStatusByEmailAndWorkspace(claims["email"].(string), claims["workspace_id"].(float64), "declined", true, true)
+	}
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"message": err.Error(),

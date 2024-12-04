@@ -2902,6 +2902,42 @@ paths:
         required)
       tags:
       - WorkspaceUser
+  /api/v1/workspace_user/member/send-invitation:
+    post:
+      consumes:
+      - application/json
+      description: Send invitation to user by member (X-User-Email required, X-Workspace-Id
+        required)
+      parameters:
+      - description: User Email
+        in: header
+        name: X-User-Email
+        required: true
+        type: string
+      - description: Workspace ID
+        in: header
+        name: X-Workspace-Id
+        required: true
+        type: string
+      - description: Workspace user object
+        in: body
+        name: workspace_user
+        required: true
+        schema:
+          $ref: '#/definitions/workspace_user_dtos.UpdateWorkspaceUserRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TwWorkspaceUser'
+      security:
+      - bearerToken: []
+      summary: Send invitation to user by member (X-User-Email required, X-Workspace-Id
+        required)
+      tags:
+      - WorkspaceUser
   /api/v1/workspace_user/send-invitation:
     post:
       consumes:

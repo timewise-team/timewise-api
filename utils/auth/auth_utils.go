@@ -116,12 +116,13 @@ func IsValidEmail(email string) bool {
 	return re.MatchString(email)
 }
 
-func GenerateInvitationToken(workspaceId int, action string, secretKey string, email string, role string) (string, error) {
+func GenerateInvitationToken(workspaceId int, action string, secretKey string, email string, role string, isMember bool) (string, error) {
 	claims := jwt.MapClaims{
 		"email":        email,
 		"workspace_id": workspaceId,
 		"role":         role,
-		"action":       action,                                // accept hoặc decline
+		"action":       action, // accept hoặc decline
+		"is_member":    isMember,
 		"exp":          time.Now().Add(24 * time.Hour).Unix(), // Token có thời hạn 24h
 	}
 

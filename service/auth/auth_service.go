@@ -242,12 +242,29 @@ func ConfigSMTP(cfg *config.Config) *gomail.Dialer {
 }
 
 func GenerateInviteLinks(cfg *config.Config, email string, workspaceId int, role string) (string, string, error) {
-	acceptToken, err := auth_utils.GenerateInvitationToken(workspaceId, "accept", cfg.JWT_SECRET, email, role)
+	acceptToken, err := auth_utils.GenerateInvitationToken(workspaceId, "accept", cfg.JWT_SECRET, email, role, false)
 	if err != nil {
 		return "", "", err
 	}
 
-	declineToken, err := auth_utils.GenerateInvitationToken(workspaceId, "decline", cfg.JWT_SECRET, email, role)
+	declineToken, err := auth_utils.GenerateInvitationToken(workspaceId, "decline", cfg.JWT_SECRET, email, role, false)
+	if err != nil {
+		return "", "", err
+	}
+
+	acceptLink := fmt.Sprintf("%s/workspace_user/accept-invitation-via-email/token/%s", cfg.BaseURL, acceptToken)
+	declineLink := fmt.Sprintf("%s/workspace_user/decline-invitation-via-email/token/%s", cfg.BaseURL, declineToken)
+
+	return acceptLink, declineLink, nil
+}
+
+func GenerateInviteByMemberLinks(cfg *config.Config, email string, workspaceId int, role string) (string, string, error) {
+	acceptToken, err := auth_utils.GenerateInvitationToken(workspaceId, "accept", cfg.JWT_SECRET, email, role, true)
+	if err != nil {
+		return "", "", err
+	}
+
+	declineToken, err := auth_utils.GenerateInvitationToken(workspaceId, "decline", cfg.JWT_SECRET, email, role, true)
 	if err != nil {
 		return "", "", err
 	}

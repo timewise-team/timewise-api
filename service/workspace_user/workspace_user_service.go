@@ -690,7 +690,7 @@ func (s *WorkspaceUserService) AcceptInvitation(workspaceUser *models.TwWorkspac
 	return nil
 }
 
-func (s *WorkspaceUserService) UpdateStatusByEmailAndWorkspace(email string, workspaceID float64, status string, isActive bool) error {
+func (s *WorkspaceUserService) UpdateStatusByEmailAndWorkspace(email string, workspaceID float64, status string, isActive bool, isVerified bool) error {
 	workspaceIDStr := fmt.Sprintf("%.0f", workspaceID)
 	if workspaceIDStr == "" {
 		return errors.New("workspace id not found")
@@ -718,7 +718,7 @@ func (s *WorkspaceUserService) UpdateStatusByEmailAndWorkspace(email string, wor
 		"/workspace_user/update-status/email/"+email+"/workspace/"+workspaceIDStr+"/status/"+status+"/is_active/"+strconv.FormatBool(isActive),
 		nil,
 		nil,
-		nil,
+		map[string]string{"is_verified": strconv.FormatBool(isVerified)},
 		120,
 	)
 	if err != nil {
