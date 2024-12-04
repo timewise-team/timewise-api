@@ -490,7 +490,7 @@ func (s *WorkspaceUserService) DisproveWorkspaceUserInvitation(workspaceUser *mo
 	return nil
 }
 
-func (s *WorkspaceUserService) AddWorkspaceUserInvitation(userEmail *models.TwUserEmail, workspaceID int, request workspace_user_dtos.UpdateWorkspaceUserRoleRequest) (models.TwWorkspaceUser, error) {
+func (s *WorkspaceUserService) AddWorkspaceUserInvitation(userEmail *models.TwUserEmail, workspaceID int, request workspace_user_dtos.UpdateWorkspaceUserRoleRequest, currentEmail string) (models.TwWorkspaceUser, error) {
 	if userEmail.ID == 0 {
 		return models.TwWorkspaceUser{}, errors.New("user email id not found")
 	}
@@ -502,7 +502,7 @@ func (s *WorkspaceUserService) AddWorkspaceUserInvitation(userEmail *models.TwUs
 		Status:      "pending",
 		IsActive:    false,
 		IsVerified:  true,
-		ExtraData:   "Invited by " + userEmail.Email,
+		ExtraData:   "Invited by " + currentEmail,
 	}
 	workspaceIDStr := strconv.Itoa(workspaceID)
 	if workspaceIDStr == "" {

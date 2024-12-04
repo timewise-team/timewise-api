@@ -140,7 +140,11 @@ func (s *WorkspaceUserHandler) sendInvitation(c *fiber.Ctx) error {
 		}
 
 	}
-	var workspaceUserResponse, err = workspace_user.NewWorkspaceUserService().AddWorkspaceUserInvitation(userEmail, workspaceUser.WorkspaceId, workspaceUserInvitationRequest)
+	currentEmail := c.Locals("email")
+	if currentEmail == nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid session email"})
+	}
+	var workspaceUserResponse, err = workspace_user.NewWorkspaceUserService().AddWorkspaceUserInvitation(userEmail, workspaceUser.WorkspaceId, workspaceUserInvitationRequest, currentEmail.(string))
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"message": err.Error(),
@@ -291,7 +295,11 @@ func (s *WorkspaceUserHandler) sendInvitationByMember(c *fiber.Ctx) error {
 		}
 
 	}
-	var workspaceUserResponse, err = workspace_user.NewWorkspaceUserService().AddWorkspaceUserInvitation(userEmail, workspaceUser.WorkspaceId, workspaceUserInvitationRequest)
+	currentEmail := c.Locals("email")
+	if currentEmail == nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid session email"})
+	}
+	var workspaceUserResponse, err = workspace_user.NewWorkspaceUserService().AddWorkspaceUserInvitation(userEmail, workspaceUser.WorkspaceId, workspaceUserInvitationRequest, currentEmail.(string))
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"message": err.Error(),
