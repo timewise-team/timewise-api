@@ -372,3 +372,15 @@ func (s *AccountService) GetParentLinkedEmails(email string) (string, error) {
 	}
 	return parentEmail.Email, nil
 }
+
+func (s *AccountService) ClearStatusRejectedEmail(email string) error {
+	resp, err := dms.CallAPI("GET", "/user_email/clear-rejected", nil, nil, map[string]string{"email": email}, 120)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return errors.New("failed to clear rejected email")
+	}
+	return nil
+}

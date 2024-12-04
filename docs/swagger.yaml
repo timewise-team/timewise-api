@@ -1115,6 +1115,29 @@ paths:
       summary: Get linked user emails
       tags:
       - account
+  /api/v1/account/user/emails/clear-rejected:
+    get:
+      consumes:
+      - application/json
+      description: Clear status rejected email
+      parameters:
+      - description: Email
+        in: query
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Clear status rejected email successfully
+          schema:
+            type: string
+      security:
+      - bearerToken: []
+      summary: Clear status rejected email
+      tags:
+      - account
   /api/v1/account/user/emails/link/{token}:
     get:
       consumes:

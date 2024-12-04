@@ -22,4 +22,5 @@ func RegisterAccountHandler(router fiber.Router) {
 	router.Post("/user/emails/unlink", accountHandler.Handler.unlinkAnEmail)
 	router.Post("/user/deactivate", accountHandler.Handler.deactivateAccount)
 	router.Get("/user/emails/parent", accountHandler.Handler.getParentLinkedEmails)
+	router.Get("/user/emails/clear-rejected", accountHandler.Handler.clearStatusRejectedEmail)
 }

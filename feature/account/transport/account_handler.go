@@ -476,3 +476,27 @@ func (h *AccountHandler) getParentLinkedEmails(c *fiber.Ctx) error {
 	// return parent email
 	return c.Status(fiber.StatusOK).JSON(userEmails)
 }
+
+// clearStatusRejectedEmail godoc
+// @Summary Clear status rejected email
+// @Description Clear status rejected email
+// @Tags account
+// @Security bearerToken
+// @Accept json
+// @Produce json
+// @Param email query string true "Email"
+// @Success 200 {object} string "Clear status rejected email successfully"
+// @Router /api/v1/account/user/emails/clear-rejected [get]
+func (h *AccountHandler) clearStatusRejectedEmail(c *fiber.Ctx) error {
+	// get target email from request
+	targetEmail := c.Query("email")
+	if targetEmail == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Email is required"})
+	}
+	// call service
+	err := h.service.ClearStatusRejectedEmail(targetEmail)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err})
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Clear status rejected email successfully"})
+}
