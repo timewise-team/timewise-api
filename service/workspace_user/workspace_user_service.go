@@ -502,6 +502,7 @@ func (s *WorkspaceUserService) AddWorkspaceUserInvitation(userEmail *models.TwUs
 		Status:      "pending",
 		IsActive:    false,
 		IsVerified:  true,
+		ExtraData:   "Invited by " + userEmail.Email,
 	}
 	workspaceIDStr := strconv.Itoa(workspaceID)
 	if workspaceIDStr == "" {
