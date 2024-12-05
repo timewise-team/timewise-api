@@ -22,7 +22,7 @@ func RegisterWorkspaceUserHandler(router fiber.Router) {
 	//get workspace user invitation list
 	router.Get("/workspace_user_invitation_list", middleware.CheckWorkspaceRole([]string{"owner", "admin"}), workspaceUserHandler.getWorkspaceUserInvitationList)
 	//get workspace user invitation not verified list
-	router.Get("/get-workspace_user_invitation_not_verified_list", middleware.CheckWorkspaceRole([]string{"owner", "admin"}), workspaceUserHandler.getWorkspaceUserInvitationNotVerifiedList)
+	router.Get("/get-workspace_user_invitation_not_verified_list", middleware.CheckWorkspaceRole([]string{"owner", "admin", "member"}), workspaceUserHandler.getWorkspaceUserInvitationNotVerifiedList)
 	//send invitation
 	router.Post("/send-invitation", middleware.CheckWorkspaceRole([]string{"owner", "admin"}), workspaceUserHandler.sendInvitation)
 	//send invitation by member
