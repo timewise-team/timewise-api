@@ -32,7 +32,6 @@ func RegisterWorkspaceUserHandler(router fiber.Router) {
 	//verify member's request invitation
 	router.Put("/verify-invitation",
 		middleware.CheckWorkspaceRole([]string{"owner", "admin"}),
-		middleware.CheckScheduleStatus([]string{"creator"}),
 		workspaceUserHandler.verifyMemberInvitationRequest)
 	//disprove member's request invitation
 	router.Put("/disprove-invitation", middleware.CheckWorkspaceRole([]string{"owner", "admin"}), workspaceUserHandler.disproveMemberInvitationRequest)

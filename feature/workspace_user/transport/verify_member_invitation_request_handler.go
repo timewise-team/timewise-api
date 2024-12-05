@@ -19,7 +19,10 @@ import (
 // @Tags WorkspaceUser
 // @Accept json
 // @Produce json
+// @Security bearerToken
 // @Param schedule_participant body schedule_participant_dtos.InviteToScheduleRequest true "Request body"
+// @Param X-User-Email header string true "User email"
+// @Param X-Workspace-Id header string true "Workspace ID"
 // @Success 200 {object} schedule_participant_dtos.ScheduleParticipantResponse
 // @Router /api/v1/workspace_user/verify-invitation [put]
 func (h *WorkspaceUserHandler) verifyMemberInvitationRequest(c *fiber.Ctx) error {

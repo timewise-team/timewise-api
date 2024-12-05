@@ -3056,6 +3056,11 @@ const docTemplate = `{
         },
         "/api/v1/workspace_user/verify-invitation": {
             "put": {
+                "security": [
+                    {
+                        "bearerToken": []
+                    }
+                ],
                 "description": "Verify member's request invitation (X-User-Email required, X-Workspace-Id required)",
                 "consumes": [
                     "application/json"
@@ -3076,6 +3081,20 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/schedule_participant_dtos.InviteToScheduleRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "User email",
+                        "name": "X-User-Email",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "X-Workspace-Id",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -3391,6 +3410,12 @@ const docTemplate = `{
                     "description": "Nullable field",
                     "type": "string"
                 },
+                "end_time": {
+                    "type": "string"
+                },
+                "start_time": {
+                    "type": "string"
+                },
                 "title": {
                     "description": "Nullable field",
                     "type": "string"
@@ -3413,11 +3438,17 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
+                "end_time": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "integer"
                 },
                 "position": {
                     "type": "integer"
+                },
+                "start_time": {
+                    "type": "string"
                 },
                 "title": {
                     "type": "string"

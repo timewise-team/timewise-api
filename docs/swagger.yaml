@@ -168,6 +168,10 @@ definitions:
       description:
         description: Nullable field
         type: string
+      end_time:
+        type: string
+      start_time:
+        type: string
       title:
         description: Nullable field
         type: string
@@ -183,10 +187,14 @@ definitions:
         type: integer
       description:
         type: string
+      end_time:
+        type: string
       id:
         type: integer
       position:
         type: integer
+      start_time:
+        type: string
       title:
         type: string
       workspace_id:
@@ -3013,6 +3021,16 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/schedule_participant_dtos.InviteToScheduleRequest'
+      - description: User email
+        in: header
+        name: X-User-Email
+        required: true
+        type: string
+      - description: Workspace ID
+        in: header
+        name: X-Workspace-Id
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -3020,6 +3038,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/schedule_participant_dtos.ScheduleParticipantResponse'
+      security:
+      - bearerToken: []
       summary: Verify member's request invitation (X-User-Email required, X-Workspace-Id
         required)
       tags:
