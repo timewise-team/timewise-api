@@ -41,6 +41,8 @@ func (s *ScheduleService) CreateSchedule(workspaceUser *models.TwWorkspaceUser, 
 		WorkspaceUserID: &workspaceUser.ID,
 		Title:           CreateScheduleDto.Title,
 		Description:     CreateScheduleDto.Description,
+		StartTime:       CreateScheduleDto.StartTime,
+		EndTime:         CreateScheduleDto.EndTime,
 	}
 
 	resp1, err := dms.CallAPI(
