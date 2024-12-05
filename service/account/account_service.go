@@ -235,12 +235,14 @@ func (s *AccountService) SendLinkAnEmailRequest(userId string, targetEmail strin
 	if parentEmail != "" && parentEmail == targetEmail {
 		return models.TwUserEmail{}, errors.New("you are already be linked to: " + parentEmail)
 	}
-	grandParentEmail, err := s.GetParentLinkedEmails(parentEmail)
-	if err != nil {
-		return models.TwUserEmail{}, err
-	}
-	if grandParentEmail != "" && grandParentEmail == targetEmail {
-		return models.TwUserEmail{}, errors.New("you cannot link to the higher-level parent email: " + grandParentEmail)
+	if parentEmail != "" {
+		grandParentEmail, err := s.GetParentLinkedEmails(parentEmail)
+		if err != nil {
+			return models.TwUserEmail{}, err
+		}
+		if grandParentEmail != "" && grandParentEmail == targetEmail {
+			return models.TwUserEmail{}, errors.New("you cannot link to the higher-level parent email: " + grandParentEmail)
+		}
 	}
 	// Update status to "pending."
 	err = s.updateEmailStatus(targetEmail, userId, "pending")
