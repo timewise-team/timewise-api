@@ -25,6 +25,7 @@ import (
 func (h *WorkspaceUserHandler) acceptInvitationViaEmail(c *fiber.Ctx) error {
 	cfg, err1 := config.LoadConfig()
 	if err1 != nil {
+		c.Set("Content-Type", "text/html")
 		return c.Status(500).SendString(errorHtml("Failed to load config"))
 	}
 	token := c.Params("token")
@@ -35,16 +36,20 @@ func (h *WorkspaceUserHandler) acceptInvitationViaEmail(c *fiber.Ctx) error {
 			workspaceIdStr := fmt.Sprintf("%.0f", workspaceId)
 			workspaceUser, err3 := workspace_user.NewWorkspaceUserService().GetWorkspaceUserByEmailAndWorkspaceID(claims["email"].(string), workspaceIdStr)
 			if err3 != nil || workspaceUser == nil {
+				c.Set("Content-Type", "text/html")
 				return c.Status(500).SendString(errorHtml("This request is invalid."))
 			}
 			if workspaceUser.Status == "pending" {
 				err := workspace_user.NewWorkspaceUserService().UpdateStatusByEmailAndWorkspace(claims["email"].(string), workspaceId, "removed", false, true)
 				if err != nil {
+					c.Set("Content-Type", "text/html")
 					return c.Status(fiber.StatusInternalServerError).SendString(errorHtml("Failed to update user status to 'removed': " + err.Error()))
 				}
+				c.Set("Content-Type", "text/html")
 				return c.Status(fiber.StatusUnauthorized).SendString(errorHtml("Token expired. User status set to 'removed'."))
 			}
 		}
+		c.Set("Content-Type", "text/html")
 		return c.Status(fiber.StatusUnauthorized).SendString(errorHtml("This invitation link has been broken. Please request a new invitation."))
 	}
 
@@ -52,9 +57,11 @@ func (h *WorkspaceUserHandler) acceptInvitationViaEmail(c *fiber.Ctx) error {
 	workspaceIdStr := fmt.Sprintf("%.0f", workspaceId)
 	workspaceUser, err3 := workspace_user.NewWorkspaceUserService().GetWorkspaceUserByEmailAndWorkspaceID(claims["email"].(string), workspaceIdStr)
 	if err3 != nil || workspaceUser == nil {
+		c.Set("Content-Type", "text/html")
 		return c.Status(500).SendString(errorHtml("This request is invalid."))
 	}
 	if workspaceUser.IsVerified && workspaceUser.Status == "joined" && workspaceUser.IsActive {
+		c.Set("Content-Type", "text/html")
 		return c.Status(400).SendString(errorHtml("User has already joined the workspace"))
 	}
 
@@ -67,10 +74,13 @@ func (h *WorkspaceUserHandler) acceptInvitationViaEmail(c *fiber.Ctx) error {
 			err = workspace_user.NewWorkspaceUserService().UpdateStatusByEmailAndWorkspace(claims["email"].(string), workspaceId, "joined", true, true)
 		}
 		if err != nil {
+			c.Set("Content-Type", "text/html")
 			return c.Status(500).SendString(errorHtml(err.Error()))
 		}
+		c.Set("Content-Type", "text/html")
 		return c.SendString(successHtml("accept"))
 	}
+	c.Set("Content-Type", "text/html")
 	return c.SendString(successHtml("already a member"))
 }
 
