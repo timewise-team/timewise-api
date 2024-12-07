@@ -25,81 +25,149 @@ import (
 func (h *WorkspaceUserHandler) acceptInvitationViaEmail(c *fiber.Ctx) error {
 	cfg, err1 := config.LoadConfig()
 	if err1 != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"message": "Failed to load config",
-		})
+		return c.Status(500).SendString(errorHtml("Failed to load config"))
 	}
 	token := c.Params("token")
 	claims, err2 := auth_utils.ParseInvitationToken(token, cfg.JWT_SECRET)
-	workspaceId := claims["workspace_id"].(float64)
-
-	workspaceIdStr := fmt.Sprintf("%.0f", workspaceId)
-	workspaceUser, err3 := workspace_user.NewWorkspaceUserService().GetWorkspaceUserByEmailAndWorkspaceID(claims["email"].(string), workspaceIdStr)
-	if err3 != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"message": err3.Error(),
-		})
-	}
-	if workspaceUser == nil {
-		return c.Status(404).JSON(fiber.Map{
-			"message": "workspace user not found",
-		})
-	}
-	if workspaceUser == nil {
-		return c.Status(404).JSON(fiber.Map{
-			"message": "workspace user not found",
-		})
-	}
-	if workspaceUser.IsVerified == true && workspaceUser.Status == "joined" && workspaceUser.IsActive == true {
-		return c.Status(400).JSON(fiber.Map{
-			"message": "User has already joined the workspace",
-		})
-	}
 	if err2 != nil {
 		if errors.Is(err2, jwt.ErrTokenExpired) {
+			workspaceId := claims["workspace_id"].(float64)
+			workspaceIdStr := fmt.Sprintf("%.0f", workspaceId)
+			workspaceUser, err3 := workspace_user.NewWorkspaceUserService().GetWorkspaceUserByEmailAndWorkspaceID(claims["email"].(string), workspaceIdStr)
+			if err3 != nil || workspaceUser == nil {
+				return c.Status(500).SendString(errorHtml("This request is invalid."))
+			}
 			if workspaceUser.Status == "pending" {
-
-				// Nếu token hết hạn, cập nhật trạng thái workspaceUser thành "removed".
-				err := workspace_user.NewWorkspaceUserService().UpdateStatusByEmailAndWorkspace(claims["email"].(string), claims["workspace_id"].(float64), "removed", false, true)
+				err := workspace_user.NewWorkspaceUserService().UpdateStatusByEmailAndWorkspace(claims["email"].(string), workspaceId, "removed", false, true)
 				if err != nil {
-					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-						"message": "Failed to update user status to 'removed': " + err.Error(),
-					})
+					return c.Status(fiber.StatusInternalServerError).SendString(errorHtml("Failed to update user status to 'removed': " + err.Error()))
 				}
-				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-					"message": "Token expired. User status set to 'removed'.",
-				})
+				return c.Status(fiber.StatusUnauthorized).SendString(errorHtml("Token expired. User status set to 'removed'."))
 			}
 		}
-		// Xử lý các lỗi khác liên quan đến token.
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"message": "Invalid token: " + err2.Error(),
-		})
+		return c.Status(fiber.StatusUnauthorized).SendString(errorHtml("This invitation link has been broken. Please request a new invitation."))
 	}
+
+	workspaceId := claims["workspace_id"].(float64)
+	workspaceIdStr := fmt.Sprintf("%.0f", workspaceId)
+	workspaceUser, err3 := workspace_user.NewWorkspaceUserService().GetWorkspaceUserByEmailAndWorkspaceID(claims["email"].(string), workspaceIdStr)
+	if err3 != nil || workspaceUser == nil {
+		return c.Status(500).SendString(errorHtml("This request is invalid."))
+	}
+	if workspaceUser.IsVerified && workspaceUser.Status == "joined" && workspaceUser.IsActive {
+		return c.Status(400).SendString(errorHtml("User has already joined the workspace"))
+	}
+
 	if workspaceUser.Status != "joined" {
 		isMember := claims["is_member"].(bool)
 		var err error
 		if isMember {
-			err = workspace_user.NewWorkspaceUserService().UpdateStatusByEmailAndWorkspace(claims["email"].(string), claims["workspace_id"].(float64), "joined", true, false)
+			err = workspace_user.NewWorkspaceUserService().UpdateStatusByEmailAndWorkspace(claims["email"].(string), workspaceId, "joined", true, false)
 		} else {
-			err = workspace_user.NewWorkspaceUserService().UpdateStatusByEmailAndWorkspace(claims["email"].(string), claims["workspace_id"].(float64), "joined", true, true)
+			err = workspace_user.NewWorkspaceUserService().UpdateStatusByEmailAndWorkspace(claims["email"].(string), workspaceId, "joined", true, true)
 		}
-
 		if err != nil {
-			return c.Status(500).JSON(fiber.Map{
-				"message": err.Error(),
-			})
+			return c.Status(500).SendString(errorHtml(err.Error()))
 		}
-		if workspaceUser == nil {
-			return c.Status(500).JSON(fiber.Map{
-				"message": "Failed to accept workspace invitation",
-			})
-		}
-		return c.JSON(fiber.Map{
-			"message": "Workspace invitation accepted successfully",
-		})
+		return c.SendString(successHtml("accept"))
 	}
-	return c.JSON(fiber.Map{
-		"message": "This user is already a member of this workspace",
-	})
+	return c.SendString(successHtml("already a member"))
+}
+
+func errorHtml(message string) string {
+	return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Invalid Email Request</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f8f9fa;
+                color: #343a40;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+            }
+            .container {
+                text-align: center;
+                max-width: 500px;
+                background: #fff;
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            h1 {
+                color: #e74c3c;
+                font-size: 24px;
+            }
+            p {
+                font-size: 16px;
+                line-height: 1.5;
+                margin: 10px 0;
+            }
+            a {
+                display: inline-block;
+                margin-top: 20px;
+                padding: 10px 20px;
+                background-color: #007bff;
+                color: white;
+                text-decoration: none;
+                border-radius: 5px;
+            }
+            a:hover {
+                background-color: #0056b3;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Oops! Invalid Request</h1>
+            <p>` + message + `</p>
+            <p>If you think this is a mistake, please contact support for further assistance.</p>
+        </div>
+    </body>
+    </html>
+    `
+}
+
+func successHtml(action string) string {
+	htmlContent := `
+		<!DOCTYPE html>
+		<html lang="en">
+		<head>
+			<meta charset="UTF-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<title>Email ` + action + ` Success</title>
+			<style>
+				body { font-family: Arial, sans-serif; }
+				.container { text-align: center; margin-top: 50px; }
+				.success { color: green; font-size: 20px; }
+				.error { color: red; font-size: 20px; }
+				.button { padding: 10px 20px; font-size: 16px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px; }
+			</style>
+		</head>
+		<body>
+			<div class="container">
+				<h1 class="success">Congratulations! Your email has been successfully ` + action + ` the workspace invitation.</h1>
+				<p>If you ` + action + ` the workspace invitation, you has been added to this workspace accordingly.</p>`
+
+	if action == "accept" {
+		htmlContent += `
+				<p>Your acceptance has been confirmed. You can now join the workspace.</p>`
+	} else if action == "reject" {
+		htmlContent += `
+				<p>Your invitation has been rejected. If this was a mistake, please contact support.</p>`
+	}
+	htmlContent += `
+				<a href="https://timewise.space/" class="button">You can close this page now.</a>
+			</div>
+		</body>
+		</html>
+	`
+	return htmlContent
 }
