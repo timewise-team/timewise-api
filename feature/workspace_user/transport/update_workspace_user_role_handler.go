@@ -35,7 +35,13 @@ func (s *WorkspaceUserHandler) updateRole(c *fiber.Ctx) error {
 			"message": "Invalid request",
 		})
 	}
-	err := workspace_user.NewWorkspaceUserService().UpdateWorkspaceUserRole(workspaceUser, UpdateWorkspaceUserRoleRequest)
+	email := c.Locals("email")
+	if email == nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Invalid session",
+		})
+	}
+	err := workspace_user.NewWorkspaceUserService().UpdateWorkspaceUserRole(workspaceUser, UpdateWorkspaceUserRoleRequest, email.(string))
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"message": err.Error(),

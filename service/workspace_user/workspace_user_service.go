@@ -341,7 +341,7 @@ func (s *WorkspaceUserService) GetWorkspaceUserInvitationNotVerifiedList(workspa
 	return workspaceUserList, nil
 }
 
-func (s *WorkspaceUserService) UpdateWorkspaceUserRole(workspaceUser *models.TwWorkspaceUser, request workspace_user_dtos.UpdateWorkspaceUserRoleRequest) error {
+func (s *WorkspaceUserService) UpdateWorkspaceUserRole(workspaceUser *models.TwWorkspaceUser, request workspace_user_dtos.UpdateWorkspaceUserRoleRequest, currentEmail string) error {
 	workspaceId := workspaceUser.WorkspaceId
 	workspaceIdStr := strconv.Itoa(workspaceId)
 	if workspaceIdStr == "" {
@@ -386,6 +386,28 @@ func (s *WorkspaceUserService) UpdateWorkspaceUserRole(workspaceUser *models.TwW
 
 	if err != nil || resp.StatusCode != http.StatusOK {
 		return err
+	}
+
+	if request.Role == "owner" {
+		request.Email = currentEmail
+		request.Role = "admin"
+		resp, err := dms.CallAPI(
+			"PUT",
+			"/workspace_user/role/workspace/"+workspaceIdStr,
+			request,
+			nil,
+			nil,
+			120,
+		)
+		if err != nil {
+			return err
+		}
+
+		defer resp.Body.Close()
+
+		if err != nil || resp.StatusCode != http.StatusOK {
+			return err
+		}
 	}
 
 	return nil
