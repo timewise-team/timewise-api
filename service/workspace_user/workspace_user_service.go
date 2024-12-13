@@ -359,7 +359,7 @@ func (s *WorkspaceUserService) UpdateWorkspaceUserRole(workspaceUser *models.TwW
 	if !auth_utils.IsValidEmail(request.Email) {
 		return errors.New("email is invalid")
 	}
-	if request.Role != "admin" && request.Role != "guest" && request.Role != "member" {
+	if request.Role != "owner" && request.Role != "admin" && request.Role != "guest" && request.Role != "member" {
 		return errors.New("role is invalid")
 	}
 	check, err := s.GetWorkspaceUserByEmailAndWorkspaceID(request.Email, workspaceIdStr)
