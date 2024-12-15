@@ -187,6 +187,9 @@ func applyUpdateFields(baseSchedule, updateSchedule models.TwSchedule, dto core_
 	if dto.Priority != nil {
 		updateSchedule.Priority = *dto.Priority
 	}
+	if dto.VideoTranscript != nil {
+		updateSchedule.VideoTranscript = *dto.VideoTranscript
+	}
 
 	return updateSchedule, nil
 }
