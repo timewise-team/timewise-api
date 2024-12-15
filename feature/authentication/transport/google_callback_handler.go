@@ -2,6 +2,7 @@ package transport
 
 import (
 	"api/dms"
+	"api/service/account"
 	auth_service "api/service/auth"
 	auth_utils "api/utils/auth"
 	"encoding/json"
@@ -56,7 +57,28 @@ func (h *AuthHandler) googleCallback(c *fiber.Ctx) error {
 		FamilyName:     oauthData.FamilyName,
 		Locale:         oauthData.Locale,
 	}
-
+	checkLinkedEmail, err := account.NewAccountService().GetParentLinkedEmails(oauthData.Email)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not get linked email"})
+	}
+	if len(checkLinkedEmail) > 0 {
+		User, err := account.NewAccountService().GetUserByEmail(checkLinkedEmail)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not get user by email"})
+		}
+		if User.ID != 0 {
+			getOrCreateUserReq = dtos.GetOrCreateUserRequestDto{
+				Email:          User.Email,
+				FullName:       User.LastName + " " + User.FirstName,
+				ProfilePicture: User.ProfilePicture,
+				VerifiedEmail:  User.IsVerified,
+				GoogleId:       User.GoogleId,
+				GivenName:      User.FirstName,
+				FamilyName:     User.LastName,
+				Locale:         User.Locale,
+			}
+		}
+	}
 	// Get or Create user
 	resp, err := dms.CallAPI(
 		"POST",
