@@ -895,8 +895,6 @@ definitions:
     type: object
   transport.CreateReminderRequest:
     properties:
-      reminder_time:
-        type: string
       schedule_id:
         type: integer
     type: object

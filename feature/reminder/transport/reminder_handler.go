@@ -22,8 +22,8 @@ func NewReminderHandler() *ReminderHandler {
 }
 
 type CreateReminderRequest struct {
-	ScheduleId   int    `json:"schedule_id"`
-	ReminderTime string `json:"reminder_time"`
+	ScheduleId int `json:"schedule_id"`
+	//ReminderTime string `json:"reminder_time"`
 	//type of reminder (only me, all participants)
 	//Type string `json:"type"`
 }
@@ -76,7 +76,7 @@ func (h ReminderHandler) CreateReminderAllParticipant(ctx *fiber.Ctx) error {
 			"message": "Unauthorized",
 		})
 	}
-	reminderTimeInt, err := strconv.Atoi(reminder.ReminderTime)
+	reminderTimeInt := 0
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Invalid reminder time format",

@@ -108,7 +108,7 @@ func (h *ReminderService) UpdateReminder(id string, request models.TwReminder) e
 func (h *ReminderService) CreateReminderAllParticipant(scheduleDetail *models.TwSchedule, WorkspaceUser *models.TwWorkspaceUser, ScheduleParticipant models.TwScheduleParticipant, reminderTimeInt int) error {
 
 	var reminderRequests []models.TwReminder
-	if WorkspaceUser.Role == "admin" || WorkspaceUser.Role == "owner" || (WorkspaceUser.Role == "member" && ScheduleParticipant.Status == "creator") || (WorkspaceUser.Role == "member" && ScheduleParticipant.Status == "assign to") {
+	if WorkspaceUser.Role == "admin" || WorkspaceUser.Role == "owner" || (WorkspaceUser.Role == "member" && ScheduleParticipant.Status == "creator") || (WorkspaceUser.Role == "member" && ScheduleParticipant.Status == "assign to" || (WorkspaceUser.Role == "member" && ScheduleParticipant.Status == "creator")) {
 		startTime := scheduleDetail.StartTime
 		reminderTime := startTime.Add(-time.Duration(reminderTimeInt) * time.Minute)
 		if reminderTime.Before(time.Now()) {

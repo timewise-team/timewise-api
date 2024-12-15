@@ -3,7 +3,6 @@ package schedule
 import (
 	"api/dms"
 	"api/notification"
-	"api/service/reminder"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -67,13 +66,13 @@ func (s *ScheduleService) CreateSchedule(workspaceUser *models.TwWorkspaceUser, 
 	if err != nil {
 		return nil, fiber.StatusInternalServerError, err
 	}
-	if scheduleDetail.StartTime != nil {
-		startTime := *scheduleDetail.StartTime
-		err1 := reminder.NewReminderService().CreateReminderAllParticipantWhenCreateSchedule(createdSchedule.ID, startTime, workspaceUser, 0)
-		if err1 != nil {
-			return nil, fiber.StatusInternalServerError, err
-		}
-	}
+	//if scheduleDetail.StartTime != nil {
+	//	startTime := *scheduleDetail.StartTime
+	//	err1 := reminder.NewReminderService().CreateReminderAllParticipantWhenCreateSchedule(createdSchedule.ID, startTime, workspaceUser, 0)
+	//	if err1 != nil {
+	//		return nil, fiber.StatusInternalServerError, err
+	//	}
+	//}
 
 	// send notification
 	notificationDto := models.TwNotifications{

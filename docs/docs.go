@@ -4512,9 +4512,6 @@ const docTemplate = `{
         "transport.CreateReminderRequest": {
             "type": "object",
             "properties": {
-                "reminder_time": {
-                    "type": "string"
-                },
                 "schedule_id": {
                     "type": "integer"
                 }
