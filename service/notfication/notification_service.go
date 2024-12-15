@@ -44,7 +44,7 @@ func (s *NotificationService) UpdateNotification(id string) error {
 		"notification_id": id,
 		"is_read":         "true",
 	}
-	resp, err := dms.CallAPI("PUT", "/notification/update-status", nil, nil, params, 120)
+	resp, err := dms.CallAPI("PUT", "/notification/update-status/read", nil, nil, params, 120)
 	if err != nil {
 		return err
 	}
