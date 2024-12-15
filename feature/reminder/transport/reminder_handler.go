@@ -3,7 +3,6 @@ package transport
 import (
 	"api/service/reminder"
 	"api/service/schedule"
-	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/timewise-team/timewise-models/models"
 	"strconv"
@@ -201,18 +200,18 @@ func (h ReminderHandler) UpdateReminderAllParticipant(ctx *fiber.Ctx) error {
 	}
 	reminderTime := scheduleDetail.StartTime.Add(-time.Duration(reminderTimeInt) * time.Minute)
 
-	loc, err := time.LoadLocation("Asia/Ho_Chi_Minh")
-	if err != nil {
-		// Xử lý lỗi nếu không thể tải múi giờ
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Error loading time zone",
-		})
-	}
+	//loc, err := time.LoadLocation("Asia/Ho_Chi_Minh")
+	//if err != nil {
+	//	// Xử lý lỗi nếu không thể tải múi giờ
+	//	return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+	//		"message": "Error loading time zone",
+	//	})
+	//}
 
-	reminderTimeInLocal := time.Date(reminderTime.Year(), reminderTime.Month(), reminderTime.Day(), reminderTime.Hour(), reminderTime.Minute(), reminderTime.Second(), reminderTime.Nanosecond(), loc)
-	fmt.Printf("reminderTime: %v\n", reminderTimeInLocal)
-	fmt.Printf("time.Now(): %v\n", time.Now().In(loc))
-	if reminderTimeInLocal.Before(time.Now().In(loc)) {
+	//reminderTimeInLocal := time.Date(reminderTime.Year(), reminderTime.Month(), reminderTime.Day(), reminderTime.Hour(), reminderTime.Minute(), reminderTime.Second(), reminderTime.Nanosecond())
+	//fmt.Printf("reminderTime: %v\n", reminderTimeInLocal)
+	//fmt.Printf("time.Now(): %v\n", time.Now())
+	if reminderTime.Before(time.Now()) {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Reminder time must be after current time",
 		})
@@ -466,16 +465,16 @@ func (h ReminderHandler) UpdateReminderOnlyMe(ctx *fiber.Ctx) error {
 		})
 	}
 
-	loc, err := time.LoadLocation("Asia/Ho_Chi_Minh")
-	if err != nil {
-		// Xử lý lỗi nếu không thể tải múi giờ
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Error loading time zone",
-		})
-	}
-
-	reminderTimeInLocal := time.Date(reminderTime.Year(), reminderTime.Month(), reminderTime.Day(), reminderTime.Hour(), reminderTime.Minute(), reminderTime.Second(), reminderTime.Nanosecond(), loc)
-	if reminderTimeInLocal.Before(time.Now().In(loc)) {
+	//loc, err := time.LoadLocation("Asia/Ho_Chi_Minh")
+	//if err != nil {
+	//	// Xử lý lỗi nếu không thể tải múi giờ
+	//	return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+	//		"message": "Error loading time zone",
+	//	})
+	//}
+	//
+	//reminderTimeInLocal := time.Date(reminderTime.Year(), reminderTime.Month(), reminderTime.Day(), reminderTime.Hour(), reminderTime.Minute(), reminderTime.Second(), reminderTime.Nanosecond(), loc)
+	if reminderTime.Before(time.Now()) {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Reminder time must be after current time",
 		})
