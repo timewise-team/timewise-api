@@ -392,3 +392,23 @@ func (s *AccountService) ClearStatusRejectedEmail(email string) error {
 	}
 	return nil
 }
+
+func (s *AccountService) GetUserByEmail(email string) (models.TwUser, error) {
+	resp, err := dms.CallAPI("GET", "/user/get", nil, nil, map[string]string{"email": email}, 120)
+	if err != nil {
+		return models.TwUser{}, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return models.TwUser{}, errors.New("failed to get user by email")
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return models.TwUser{}, err
+	}
+	var user models.TwUser
+	if err := json.Unmarshal(body, &user); err != nil {
+		return models.TwUser{}, err
+	}
+	return user, nil
+}
