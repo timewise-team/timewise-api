@@ -184,11 +184,11 @@ func applyUpdateFields(baseSchedule, updateSchedule models.TwSchedule, dto core_
 	if dto.RecurrencePattern != nil {
 		updateSchedule.RecurrencePattern = *dto.RecurrencePattern
 	}
-	if dto.Priority != nil {
-		updateSchedule.Priority = *dto.Priority
-	}
 	if dto.VideoTranscript != nil {
 		updateSchedule.VideoTranscript = *dto.VideoTranscript
+	}
+	if dto.Priority != nil {
+		updateSchedule.Priority = *dto.Priority
 	}
 
 	return updateSchedule, nil
@@ -225,6 +225,7 @@ func (s *ScheduleService) UpdateSchedule(
 		updateSchedule.StartTime = schedule.StartTime
 		updateSchedule.EndTime = schedule.EndTime
 		updateSchedule.Priority = schedule.Priority
+		updateSchedule.VideoTranscript = schedule.VideoTranscript
 
 		if UpdateScheduleDto.Status != nil {
 			updateSchedule.Status = *UpdateScheduleDto.Status
