@@ -54,3 +54,23 @@ func (h NotificationHandler) GetNotifications(ctx *fiber.Ctx) error {
 	}
 	return ctx.JSON(notifications)
 }
+
+// UpdateNotification godoc
+// @Summary Update notification
+// @Description Update notification
+// @Tags notification
+// @Accept json
+// @Produce json
+// @Security bearerToken
+// @Param notification_id path string true "Notification ID"
+// @Success 200 {string} string
+// @Router /api/v1/notification/{notification_id} [put]
+func (h NotificationHandler) UpdateNotification(ctx *fiber.Ctx) error {
+	notificationId := ctx.Params("notification_id")
+
+	err := h.notificationService.UpdateNotification(notificationId)
+	if err != nil {
+		return ctx.Status(fiber.StatusNotFound).SendString(err.Error())
+	}
+	return ctx.JSON("Update notification successfully")
+}

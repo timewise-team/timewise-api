@@ -38,3 +38,16 @@ func (s *NotificationService) GetNotifications(userEmailIds []string) ([]models.
 
 	return notifications, nil
 }
+
+func (s *NotificationService) UpdateNotification(id string) error {
+	params := map[string]string{
+		"notification_id": id,
+		"is_read":         "true",
+	}
+	resp, err := dms.CallAPI("PUT", "/notification/update-status", nil, nil, params, 120)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return nil
+}

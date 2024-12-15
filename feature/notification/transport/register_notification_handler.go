@@ -16,4 +16,5 @@ func RegisterNotificationHandler(router fiber.Router) {
 	}
 
 	router.Get("", notificationHandler.Handler.GetNotifications)
+	router.Put("/:notification_id", notificationHandler.Handler.UpdateNotification)
 }
