@@ -399,7 +399,7 @@ func (s *AccountService) GetUserByEmail(email string) (models.TwUser, error) {
 		return models.TwUser{}, err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNotFound {
 		return models.TwUser{}, errors.New("failed to get user by email")
 	}
 	body, err := ioutil.ReadAll(resp.Body)
