@@ -1766,6 +1766,29 @@ paths:
       summary: Get notifications
       tags:
       - notification
+  /api/v1/notification/{notification_id}:
+    put:
+      consumes:
+      - application/json
+      description: Update notification
+      parameters:
+      - description: Notification ID
+        in: path
+        name: notification_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - bearerToken: []
+      summary: Update notification
+      tags:
+      - notification
   /api/v1/notification_setting:
     get:
       consumes:
