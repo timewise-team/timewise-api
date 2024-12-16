@@ -179,7 +179,18 @@ func (s *ScheduleFilterService) ScheduleFilter(c *fiber.Ctx) (*http.Response, er
 				if err != nil {
 					return nil, errors.New("could not unmarshal response body: " + err.Error())
 				}
+				wspUserIdMap := make(map[string]bool)
+				for _, wspID := range wspUserId {
+					wspUserIdMap[wspID] = true
+				}
 				for _, participant := range participants {
+					participantID := strconv.Itoa(participant.WorkspaceUserId)
+					if wspUserIdMap[participantID] {
+						filteredSchedules = append(filteredSchedules, schedule)
+						break
+					}
+				}
+				/*for _, participant := range participants {
 					participantID := strconv.Itoa(participant.WorkspaceUserId)
 					for _, wspID := range wspUserId {
 						if participantID == wspID {
@@ -187,7 +198,8 @@ func (s *ScheduleFilterService) ScheduleFilter(c *fiber.Ctx) (*http.Response, er
 							break
 						}
 					}
-				}
+				}*/
+
 			}
 		} else {
 			// Public schedules are included
