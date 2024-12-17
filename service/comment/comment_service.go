@@ -2,8 +2,14 @@ package comment
 
 import (
 	"api/dms"
+	"api/notification"
+	"api/service/schedule"
+	"api/service/schedule_participant"
+	"api/service/workspace"
+	"api/service/workspace_user"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/timewise-team/timewise-models/dtos/core_dtos/comment_dtos"
 	"github.com/timewise-team/timewise-models/models"
@@ -119,6 +125,32 @@ func (s *CommentService) CreateComment(workspaceUser *models.TwWorkspaceUser, Co
 		Commenter:       comment.Commenter,
 		Content:         comment.Content,
 	}
+	scheduleDetail, err := schedule.NewScheduleService().GetScheduleDetailByID(strconv.Itoa(*CommentRequestDto.ScheduleId))
+	if err != nil {
+		return nil, err
+	}
+	scheduleParticipant, err := schedule_participant.NewScheduleParticipantService().GetScheduleParticipantsByScheduleID(*CommentRequestDto.ScheduleId)
+	if err != nil {
+		return nil, err
+	}
+	workspaceUserDetail, err := workspace_user.NewWorkspaceUserService().GetWorkspaceUserInformation(strconv.Itoa(workspaceUser.ID))
+	workspaceDetail := workspace.NewWorkspaceService().GetWorkspaceById(strconv.Itoa(workspaceUser.WorkspaceId))
+	for _, participant := range scheduleParticipant {
+		if participant.InvitationStatus == "joined" && participant.IsVerified == true && participant.Status != "" && participant.WorkspaceUserId != workspaceUser.ID {
+			notificationDto := models.TwNotifications{
+				Title:       "New Comment",
+				Description: fmt.Sprintf("%s( %s ) have new comment on schedule %s in workspace %s", workspaceUserDetail.FirstName+""+workspaceUserDetail.LastName, workspaceUserDetail.Email, scheduleDetail.Title, workspaceDetail.Title),
+				Link:        fmt.Sprintf("/organization/%d?schedule_id=%d", workspaceUser.WorkspaceId, scheduleDetail.ID),
+				UserEmailId: participant.UserId,
+				Type:        "new_comment",
+				IsSent:      true,
+			}
+			err = notification.PushNotifications(notificationDto)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
 
 	return &newCommentResponse, nil
 }
@@ -201,7 +233,7 @@ func (s *CommentService) DeleteComment(commentId string) (*comment_dtos.CommentR
 	if commentIdInt <= 0 {
 		return nil, errors.New("comment id must be greater than zero")
 	}
-	
+
 	resp1, err1 := dms.CallAPI(
 		"GET",
 		"/comment/"+commentId,
