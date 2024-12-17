@@ -59,7 +59,8 @@ func (h *AuthHandler) googleCallback(c *fiber.Ctx) error {
 	}
 	checkLinkedEmail, err := account.NewAccountService().GetParentLinkedEmails(oauthData.Email)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not get linked email"})
+		print("No checkLinkedEmail", err)
+		//return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not get linked email"})
 	}
 	if len(checkLinkedEmail) > 0 {
 		User, err := account.NewAccountService().GetUserByEmail(checkLinkedEmail)
