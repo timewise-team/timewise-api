@@ -302,7 +302,7 @@ func (s *WorkspaceUserService) AddWorkspaceLog(workspaceLog models.TwWorkspaceLo
 	return nil
 }
 
-func (s *WorkspaceUserService) GetWorkspaceUserInvitationNotVerifiedList(workspaceID string) ([]workspace_user_dtos.GetWorkspaceUserListResponse, error) {
+func (s *WorkspaceUserService) GetWorkspaceUserInvitationNotVerifiedList(workspaceID string) ([]workspace_user_dtos.GetWorkspaceUserListNotVerifiedResponse, error) {
 	if workspaceID == "" {
 		return nil, errors.New("workspace id not found")
 	}
@@ -332,7 +332,7 @@ func (s *WorkspaceUserService) GetWorkspaceUserInvitationNotVerifiedList(workspa
 		return nil, err
 	}
 
-	var workspaceUserList []workspace_user_dtos.GetWorkspaceUserListResponse
+	var workspaceUserList []workspace_user_dtos.GetWorkspaceUserListNotVerifiedResponse
 	err = json.Unmarshal(body, &workspaceUserList)
 	if err != nil {
 		return nil, err
